@@ -62,8 +62,12 @@ newSegment s l p q =
  
      -- distances of the left- and right-most signals to the endpoints of this segment
      dL <- newTerm s (l `min` distMax)
-     dR <- newTerm s (l `min` distMax)
-     
+     dR <- if nMax <= 1 then
+             -- an optimization for when we can have at most one point
+             return (number l .-. dL)
+            else
+             newTerm s (l `min` distMax)
+
      -- internally, number of signals must match the distances
      lessThanEqualOr    s [n0] (dL .+. (distMin .* (n .-. number 1)) .+. dR) (number l)
      greaterThanEqualOr s [n0] (dL .+. (distMax .* (n .-. number 1)) .+. dR) (number l)
