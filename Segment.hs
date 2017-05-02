@@ -25,11 +25,22 @@ leftPoint, rightPoint :: Point
 leftPoint  = Point (number distMin) (number 0)
 rightPoint = Point (number 0)       (number distMax)
 
+-- create a new point
 newPoint :: Solver -> IO Point
 newPoint s =
   do d1 <- newTerm s distMin
      d2 <- newTerm s distMax
      return (Point d1 d2)
+
+-- create a new point, connected with an empty segment to another point
+excludePoint :: Solver -> Point -> Integer -> IO Point
+excludePoint s p l =
+  do lessThanEqual s dMin' (number distMin)
+     lessThanEqual s dMax' (number distMax)
+     return (Point dMin' dMax')
+ where
+  dMin' = dMin p .+. number l
+  dMax' = dMax p .+. number l
 
 data Segment
   = Segment
@@ -94,20 +105,26 @@ printSegment s name seg =
 main :: IO ()
 main =
   withNewSolver $ \s ->
-    do p1 <- newPoint s
-       p2 <- newPoint s
-       p3 <- newPoint s
+    do p1  <- newPoint s
+       p2' <- newPoint s
+       p3  <- newPoint s
        
-       sa <- newSegment s 400 leftPoint p1
-       sb <- newSegment s 400 p1        p2
-       sc <- newSegment s 200 p2        rightPoint
-       sd <- newSegment s 250 p1        p3
-       se <- newSegment s 250 p3        rightPoint
-       sf <- newSegment s 150 p3       p2
+       p1'  <- excludePoint s p1  50
+       p2   <- excludePoint s p2' 100
+       p1'' <- excludePoint s p1  100
+       p3'  <- excludePoint s p3  50
+       p3'' <- excludePoint s p3  150
+       
+       sa  <- newSegment s 400 leftPoint p1
+       sb  <- newSegment s 250 p1'       p2'
+       sc  <- newSegment s 200 p2        rightPoint
+       sd  <- newSegment s 150 p1''      p3
+       se  <- newSegment s 200 p3'       rightPoint
+       sf  <- newSegment s 0   p3''      p2
        let segs = [sa,sb,sc,sd,se,sf]
        
        -- set number of signals
-       greaterThanEqual s (foldr (.+.) (number 0) (map numb segs)) (number 9)
+       greaterThanEqual s (foldr (.+.) (number 0) (map numb segs)) (number 8)
        
        b <- solve s []
        if b then
