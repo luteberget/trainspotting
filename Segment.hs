@@ -20,29 +20,29 @@ distMax = 400
 
 --------------------------------------------------------------------------------
 
-data Point
-  = Point
+data Node
+  = Node
   { dMin :: Term
   , dMax :: Term
   }
 
-leftPoint, rightPoint :: Point
-leftPoint  = Point (number distMin) (number 0)
-rightPoint = Point (number 0)       (number distMax)
+leftNode, rightNode :: Node
+leftNode  = Node (number distMin) (number 0)
+rightNode = Node (number 0)       (number distMax)
 
--- create a new point
-newPoint :: Solver -> IO Point
-newPoint s =
+-- create a new node
+newNode :: Solver -> IO Node
+newNode s =
   do d1 <- newTerm s distMin
      d2 <- newTerm s distMax
-     return (Point d1 d2)
+     return (Node d1 d2)
 
--- create a new point, connected with an empty segment to another point
-excludePoint :: Solver -> Point -> Integer -> IO Point
-excludePoint s p l =
+-- create a new node, connected with an empty segment to another node
+excludeNode :: Solver -> Node -> Integer -> IO Node
+excludeNode s p l =
   do lessThanEqual s dMin' (number distMin)
      lessThanEqual s dMax' (number distMax)
-     return (Point dMin' dMax')
+     return (Node dMin' dMax')
  where
   dMin' = dMin p .+. number l
   dMax' = dMax p .+. number l
@@ -55,7 +55,7 @@ data Segment
   , dRight :: Term
   }
 
-newSegment :: Solver -> Integer -> Point -> Point -> IO Segment
+newSegment :: Solver -> Integer -> Node -> Node -> IO Segment
 newSegment s l p q =
   do -- number of signals on this segment
      n' <- newTerm s (fromIntegral (nMax - nMin))
@@ -65,10 +65,10 @@ newSegment s l p q =
             else
              isEqual s n (number 0)
  
-     -- distances of the left- and right-most signals to the endpoints of this segment
+     -- distances of the left- and right-most signals to the endnodes of this segment
      dL <- newTerm s (l `min` distMax)
      dR <- if nMax <= 1 then
-             -- an optimization for when we can have at most one point
+             -- an optimization for when we can have at most one node
              return (number l .-. dL)
             else
              newTerm s (l `min` distMax)
@@ -118,18 +118,18 @@ main :: IO ()
 main = do
   args <- getArgs
   contents <- readFile (head args)
-  let (nodes,edges) = (read contents) :: ([String],[(String,String,Float)])
+  let (nodeNames,edges) = (read contents) :: ([String],[(String,String,Float)])
 
   withNewSolver $ \s -> do
 
-    -- Create a "point" for each node in the graph
-    points <- forM nodes $ \nm -> do
-      pt <- newPoint s
+    -- Create a node for each node in the graph
+    nodes <- forM nodeNames $ \nm -> do
+      pt <- newNode s
       return (nm,pt)
     
-    let findPoint p = fromJust $ lookup p points
+    let findNode p = fromJust $ lookup p nodes
     segments <- forM edges $ \(a,b,l) -> do
-       seg <- newSegment s (round l) (findPoint a) (findPoint b)
+       seg <- newSegment s (round l) (findNode a) (findNode b)
        return (a,b,seg)
 
     -- set number of signals
@@ -138,7 +138,7 @@ main = do
     b <- solve s []
     if b then
       do putStrLn "+++ SOLUTION:"
-         let colWidth = (maximum $ map length nodes) + 1
+         let colWidth = (maximum $ map length nodeNames) + 1
          let pad l x = x ++ (replicate (l - (length x)) ' ')
          let showName a b = (pad colWidth a) ++ " -- " ++ (pad colWidth b)
 
