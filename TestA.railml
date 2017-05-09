@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<railml xmlns="http://www.railml.org/schemas/2013">
+  <infrastructure xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns="http://www.railml.org/schemas/2013">
+
+    <tracks>
+      <track id="t1" name="Track 1">
+        <trackTopology>
+          <trackBegin id="t1b" pos="0.0">
+            <openEnd id="t1b_open" />
+          </trackBegin>
+          <trackEnd id="t1e" pos="1000.0">
+            <openEnd id="t1e_open" />
+          </trackEnd>
+          <connections>
+            <switch id="sw1" pos="400.0">
+              <connection id="sw1_conn" ref="t2b_conn" />
+            </switch>
+            <switch id="sw3" pos="800.0">
+              <connection id="sw3_conn" ref="t13e_conn" />
+            </switch>
+          </connections>
+        </trackTopology>
+      </track>
+      <track id="t2" name="Track 2">
+        <trackTopology>
+          <trackBegin id="t2b" pos="0.0">
+            <connection id="t2b_conn" ref="sw1_conn" />
+          </trackBegin>
+          <trackEnd id="t2e" pos="500.0">
+            <openEnd id="t2e_open" />
+          </trackEnd>
+          <connections>
+            <switch id="sw2" pos="250.0">
+              <connection id="sw2_conn" ref="t13b_conn" />
+            </switch>
+          </connections>
+        </trackTopology>
+      </track>
+      <track id="t13" name="Track 13">
+        <trackTopology>
+          <trackBegin id="t13b" pos="0.0">
+            <connection id="t13b_conn" ref="sw2_conn" />
+          </trackBegin>
+          <trackEnd id="t13e" pos="150.0">
+            <connection id="t13e_conn" ref="sw3_conn" />
+          </trackEnd>
+        </trackTopology>
+      </track>
+    </tracks>
+
+  </infrastructure>
+</railml>

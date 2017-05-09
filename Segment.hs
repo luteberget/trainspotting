@@ -1,5 +1,10 @@
 module Main where
 
+import System.Environment (getArgs)
+import System.IO (readFile)
+import Control.Monad (forM, forM_)
+import Data.Maybe (fromJust)
+
 import SAT
 import SAT.Equal
 import SAT.Order
@@ -97,47 +102,49 @@ printSegment s name seg =
      putStrLn ( name
              ++ ": "
              ++ if n > 0 then
-                  showr dL ++ " - " ++ show n ++ " signals -" ++ showr dR
+                  showr 5 dL ++ " - " ++ showr 3 n ++ " signals -" ++ showr 5 dR
                 else
                   "-"
               )
  where
-  showr x = let s = show x in replicate (5-length s) ' ' ++ s
+  showr l x = let s = show x in replicate (l-length s) ' ' ++ s
 
 --------------------------------------------------------------------------------
+
+termSum :: [Term] -> Term
+termSum = foldr (.+.) (number 0)
 
 main :: IO ()
-main =
-  withNewSolver $ \s ->
-    do p1  <- newPoint s
-       p2' <- newPoint s
-       p3  <- newPoint s
-       
-       p1'  <- excludePoint s p1  50
-       p2   <- excludePoint s p2' 100
-       p1'' <- excludePoint s p1  100
-       p3'  <- excludePoint s p3  50
-       p3'' <- excludePoint s p3  150
-       
-       sa  <- newSegment s 400 leftPoint p1
-       sb  <- newSegment s 250 p1'       p2'
-       sc  <- newSegment s 200 p2        rightPoint
-       sd  <- newSegment s 150 p1''      p3
-       se  <- newSegment s 200 p3'       rightPoint
-       sf  <- newSegment s 0   p3''      p2
-       let segs = [sa,sb,sc,sd,se,sf]
-       
-       -- set number of signals
-       greaterThanEqual s (foldr (.+.) (number 0) (map numb segs)) (number 8)
-       
-       b <- solve s []
-       if b then
-         do putStrLn "+++ SOLUTION:"
-            sequence_ [ printSegment s [c] seg
-                      | (seg,c) <- segs `zip` ['A'..]
-                      ]
-        else
-         do putStrLn "*** NO SOLUTION"
+main = do
+  args <- getArgs
+  contents <- readFile (head args)
+  let (nodes,edges) = (read contents) :: ([String],[(String,String,Float)])
 
---------------------------------------------------------------------------------
+  withNewSolver $ \s -> do
+
+    -- Create a "point" for each node in the graph
+    points <- forM nodes $ \nm -> do
+      pt <- newPoint s
+      return (nm,pt)
+    
+    let findPoint p = fromJust $ lookup p points
+    segments <- forM edges $ \(a,b,l) -> do
+       seg <- newSegment s (round l) (findPoint a) (findPoint b)
+       return (a,b,seg)
+
+    -- set number of signals
+    greaterThanEqual s (termSum (map (\(a,b,seg) -> numb seg) segments)) (number 120)
+    
+    b <- solve s []
+    if b then
+      do putStrLn "+++ SOLUTION:"
+         let colWidth = (maximum $ map length nodes) + 1
+         let pad l x = x ++ (replicate (l - (length x)) ' ')
+         let showName a b = (pad colWidth a) ++ " -- " ++ (pad colWidth b)
+
+         forM_ segments $ \(a,b,seg) -> printSegment s (showName a b) seg
+     else
+      do putStrLn "*** NO SOLUTION"
+
+-----------------------------------------------------------------------------
 
