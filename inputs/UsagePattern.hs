@@ -1,10 +1,17 @@
 {-# LANGUAGE DeriveGeneric #-}
 
+module UsagePattern where
+
 import GHC.Generics
 import Data.Aeson
 
+type VehicleRef = String
+type SignalRef = String
+type EventRef = String
+
 -- Usage pattern for railway lines
 data UsagePattern = UsagePattern {
+  vehicles :: [Vehicle],
   movements :: [MovementSpec],
   timings :: [TimingSpec]
 }
@@ -13,30 +20,30 @@ instance ToJSON UsagePattern
 instance FromJSON UsagePattern
 
 data MovementSpec = MovementSpec {
-  trainTypeRef :: String,
-  visits :: [[String]] -- Signal references
+  vehicleRef :: VehicleRef,
+  visits :: [(Maybe String, [SignalRef])] -- Signal references
 }
     deriving (Generic, Show)
 instance ToJSON MovementSpec
 instance FromJSON MovementSpec
 
 data TimingSpec = TimingSpec {
-  visitA :: (Int, Int),
-  visitB :: (Int, Int),
-  timingDiff :: Float
+  visitA :: EventRef,
+  visitB :: EventRef,
+  timingDiff :: Double
 }
     deriving (Generic, Show)
 instance ToJSON TimingSpec
 instance FromJSON TimingSpec
 
-data TrainType = TrainType {
+data Vehicle = Vehicle {
   name :: String,
-  length :: Float,
-  maxAccel :: Float,
-  maxBrake :: Float,
-  maxVelocity :: Float
+  length :: Double,
+  maxAccel :: Double,
+  maxBrake :: Double,
+  maxVelocity :: Double
 }
     deriving (Generic, Show)
-instance ToJSON TrainType
-instance FromJSON TrainType
+instance ToJSON Vehicle
+instance FromJSON Vehicle
 

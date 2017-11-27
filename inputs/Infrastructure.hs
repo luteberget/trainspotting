@@ -1,13 +1,16 @@
 {-# LANGUAGE DeriveGeneric #-}
+module Infrastructure where
 
 import GHC.Generics
 import Data.Aeson
 
+type TrackRef = String
+
 -- Infrastructure model
 data Infrastructure = Infrastructure {
       tracks :: [Track],
-      trackNodes :: [TrackNode],
-      tracksideObjects :: [TracksideObject]
+      nodes :: [Node],
+      components :: [Component]
     } 
     deriving (Generic, Show)
 instance ToJSON Infrastructure
@@ -15,32 +18,32 @@ instance FromJSON Infrastructure
 
 data Track = Track {
     trackId :: String,
-    length :: Float
+    length :: Double 
 }
     deriving (Generic, Show)
 instance ToJSON Track
 instance FromJSON Track
 
-data TrackNode = TrackNode {
-  nodesFrom :: [String],
-  nodesTo :: [String]
+data Node = Node {
+  nodesFrom :: [TrackRef],
+  nodesTo :: [TrackRef]
 }
     deriving (Generic, Show)
-instance ToJSON TrackNode
-instance FromJSON TrackNode
+instance ToJSON Node
+instance FromJSON Node
 
-data TracksideObject = 
-    Signal String Position 
-  | Detector Position
+data Component = 
+    Signal String Location 
+  | Detector Location
     deriving (Generic, Show)
-instance ToJSON TracksideObject
-instance FromJSON TracksideObject
+instance ToJSON Component 
+instance FromJSON Component
 
-data Position = Position{
-  posTrackRef :: String,
-  posLength :: Float
+data Location = Location {
+  posTrackRef :: TrackRef,
+  posLength :: Double 
 }
     deriving (Generic, Show)
-instance ToJSON Position
-instance FromJSON Position
+instance ToJSON Location
+instance FromJSON Location
 
