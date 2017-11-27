@@ -7,8 +7,8 @@ track tr40 2568.0
 signal si8872 (tr40, 1380.0) // Distant before home/up at Mjøndalen
 signal si8889 (tr40, 2568.0) // The only home/up at Mjøndalen
 
-detector (tr40, 0.0)
-detector (tr40, 2568.0)
+detector (tr40, 0.0) // tcb8862
+detector (tr40, 2568.0) // tcb8889
 
 // Main track tr57 on Mjøndalen spilt into parts
 track tr57-0 354.0
@@ -18,10 +18,23 @@ track tr57-2 614.0
 track tr57-3 197.0
 track tr57-4 256.0
 
+signal si8935 (tr57-2, 553.0) // Main exit Mjøndalen tr57
+// detector (tr57-0, 0.0)  // tcb8890 Same as tcb8889 (tr40, 2568.0)
+// Each detector seems to be registered twice in the railML file, once per direction up/down
+detector (tr57-0, 339.0) // tcb24955 tcb24956
+detector (tr57-0, 353.0) // tcb24939 tcb24940
+detector (tr57-1, 33.0) // tcb25571 tcb25572
+detector (tr57-1, 69.0) // tcb24923 tcb24924
+detector (tr57-2, 62.0) // tcb8905 tcb8906
+detector (tr57-2, 553.0) // tcb8935 tcb8936
+detector (tr57-3, 134.0) // tcb8947 tcb8948
+detector (tr57-3, 31.0) // tcb25583 tcb25584
+
 // Exit track from Mjøndalen until distant before home/up at Steinberget
 track tr41-0 547.0
 node [tr57-4] [tr41-0]
 detector (tr41-0, 0.0) // tcb8964
+signal si8968 (tr41-0, 547.0)
 
 // Side track tr11 at Mjøndalen
 track tr11 689.0
@@ -40,4 +53,21 @@ node [tr32, tr57-3] [tr57-4] // SPV-2 1:9 V
 detector (tr32,62.0) // tcb15756 / tcb15758
 detector (tr32,748.0) // tcb15789 / tcb15791
 
+
+vehicle passengertrain length 200.0 accel 1.0 brake 1.0 maxspeed 100.0
+vehicle goodstrain length 650.0 accel 0.5 brake 0.5 maxspeed 25.0
+
+movement passengertrain {
+  visit [si8872]
+  visit [si8935, si15720, si15789]
+  visit #p1exit [si8968]
+}
+
+movement passengertrain {
+  visit [si8872]
+  visit [si8935, si15720, si15789]
+  visit #p2exit [si8968]
+}
+
+timing p1exit p2exit 90.0
 
