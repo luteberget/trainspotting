@@ -1,0 +1,43 @@
+// Mjøndalen station  
+// based on Bane NOR railML model 2016-02-26
+
+// (tr40, 0.0) is home/down at Daler. Starting model from there.
+track tr40 2568.0
+
+signal si8872 (tr40, 1380.0) // Distant before home/up at Mjøndalen
+signal si8889 (tr40, 2568.0) // The only home/up at Mjøndalen
+
+detector (tr40, 0.0)
+detector (tr40, 2568.0)
+
+// Main track tr57 on Mjøndalen spilt into parts
+track tr57-0 354.0
+node [tr40] [tr57-0]
+track tr57-1 75.0
+track tr57-2 614.0
+track tr57-3 197.0
+track tr57-4 256.0
+
+// Exit track from Mjøndalen until distant before home/up at Steinberget
+track tr41-0 547.0
+node [tr57-4] [tr41-0]
+detector (tr41-0, 0.0) // tcb8964
+
+// Side track tr11 at Mjøndalen
+track tr11 689.0
+node [tr57-0] [tr57-1, tr11] // SPV-1 1:12 V
+signal s15720 (tr11, 628.0) // main exit Mjøndalen tr11
+node [tr11, tr57-2] [tr57-3] // SPV-4 1:9 H
+detector (tr11, 33.0) // tcb25559 / tcb25560
+detector (tr11, 137.0) // tcb15696 / tcb15698
+detector (tr11, 628.0) // tcb15720 / tcb15722
+
+// Side track tr32 at Mjøndalen
+track tr32 811.0
+node [tr57-1] [tr57-2, tr32] // SPV-7 1:9 H
+signal si15789 (tr32, 748.0) // Main exit Mjøndalen tr32
+node [tr32, tr57-3] [tr57-4] // SPV-2 1:9 V
+detector (tr32,62.0) // tcb15756 / tcb15758
+detector (tr32,748.0) // tcb15789 / tcb15791
+
+
