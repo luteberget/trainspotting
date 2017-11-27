@@ -1,0 +1,29 @@
+vehicle passengertrain length 200.0 accel 1.0 brake 1.0 maxspeed 100.0
+vehicle goodstrain length 650.0 accel 0.5 brake 0.5 maxspeed 25.0
+
+track t1-0 3000.0
+track t1-1 250.0
+track t1-2 3000.0
+track t2 252.0
+
+node [t1-0]     [t1-1, t2]
+node [t1-1, t2] [t1-2]
+
+signal si (t1-0, 0.0)
+signal s1 (t1-2, 3000.0)
+signal s2 (t2, 237.0)
+signal sf (t1-1, 235.0)
+
+movement goodstrain {
+  visit [si]
+  visit [s1]
+  visit [s2]
+  visit [sf]
+}
+
+movement passengertrain {
+  visit [sf]
+  visit [s2]
+  visit [s1]
+  visit [si]
+}
