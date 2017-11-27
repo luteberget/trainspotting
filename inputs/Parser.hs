@@ -14,8 +14,13 @@ import ScreenCoords
 
 type Output = (Infrastructure, UsagePattern, [ScreenCoords])
 
+parseFile :: String -> IO (Either String Output)
+parseFile fn = do
+  contents <- readFile fn
+  return (Parser.parse fn contents)
+
 parse :: String -> String -> Either String Output
-parse name contents = case MP.parse (some statement) name contents of
+parse name contents = case MP.parse (sc >> some statement) name contents of
   (Left err) -> Left $ parseErrorPretty err
   (Right statements) -> Right $ toStructured statements
 
@@ -61,7 +66,8 @@ number :: Parser Double
 number = lexeme L.float
 
 identifier :: Parser String
-identifier = lexeme ((:) <$> letterChar <*> many alphaNumChar)
+identifier = lexeme ((:) <$> letterChar <*> many bodyChar)
+  where bodyChar = alphaNumChar <|> (char '-') <|> (char '_')
 
 data Statement = 
     TrackStmt Track
