@@ -38,7 +38,7 @@ type System = ([Segment],[Train])
 
 data State
   = State
-  { segments :: [(SegmentId,Lit)]
+  { segments :: [(SegmentId,Val (Maybe TrainId))]
   , trains   :: [(TrainId,TrainState)]
   }
  deriving ( Eq, Ord, Show )
@@ -56,7 +56,7 @@ data TrainState
 mkState :: System -> [(TrainId,SegmentId)] -> State
 mkState (tks,tns) tts =
   State
-  { segments = [ (i, if i `elem` map snd tts then true else false)
+  { segments = [ (i, val (head $ [ Just j | (j,i') <- tts, i'==i ] ++ [Nothing]))
                | t <- tks
                , let i = segmentId t
                ]
@@ -71,28 +71,31 @@ mkState (tks,tns) tts =
 
 newState :: Solver -> System -> IO State
 newState s (tks,tns) =
-  do xs <- sequence [ newLit s | t <- tks ]
+  do xs <- sequence [ newVal s (Nothing : [ Just (trainId t) | t <- tns ])
+                    | t <- tks
+                    ]
      qs <- sequence [ newTrainState s tks t | t <- tns ]
 
      -- front and back occupy segment
      sequence_
-       [ do addClause s [ neg (fr .= i), occ ]
-            lessThanEqualOr s [neg (fr .= i)] v (number (segmentMaxVel t))
-            addClause s [ neg (bk .= i), occ ]
-            lessThanEqualOr s [neg (bk .= i)] v (number (segmentMaxVel t))
+       [ do addClause s [ neg (fr .= j), mytrain .= Just i ]
+            addClause s [ neg (bk .= j), mytrain .= Just i ]
        | (t,q) <- tns `zip` qs
        , let fr = front q
              bk = back q
-             v  = trainVel q
-       , (t,occ) <- tks `zip` xs
-       , let i = segmentId t
+             i  = trainId t
+       , (t,mytrain) <- tks `zip` xs
+       , let j = segmentId t
        ]
      
-     -- trains don't clash
+     -- trains don't go faster than their occupied segments
+     -- TODO: can share stuff here
      sequence_
-       [ do atMostOne s [ front q .= i | q <- qs ]
-            atMostOne s [ back  q .= i | q <- qs ]
-       | i <- map segmentId tks
+       [ lessThanEqualOr s [neg (mytrain .= Just i)]
+                           (trainVel q) (number (segmentMaxVel t))
+       | (t,q) <- tns `zip` qs
+       , let i = trainId t
+       , (t,mytrain) <- tks `zip` xs
        ]
 
      return $ State
@@ -144,30 +147,18 @@ newStep s (tks,tns) s1 s2 =
      ds <- sequence [ newTerm s l | t <- tns ]
 
      -- segment occupance
+     -- TODO: WORK
      sequence_
-       [ do newOcc <- newLit s
-            sequence_
-              [ addClause s [neg (front t2 .= i), front t1 .= i, newOcc]
-              | ((_,t1),(_,t2)) <- trains s1 `zip` trains s2
-              ]
-            
-            newFree <- newLit s
-            addClause s ( neg newFree
-                        : [ back t1 .= i | (_,t1) <- trains s1 ]
-                        )
-            sequence_
-              [ addClause s [neg newFree, neg (back t1 .= i), neg (back t2 .= i)]
-              | ((_,t1),(_,t2)) <- trains s1 `zip` trains s2
-              ]
-
-            addClause s [neg newOcc,  occ']
-            --addClause s [neg newFree, neg occ']
-            addClause s [neg occ, newFree, occ']
-            --addClause s [occ,     newOcc, neg occ']
-       | t <- tks
-       , let i    = segmentId t
-             occ  = head [ occ | (j,occ) <- segments s1, j == i ]
-             occ' = head [ occ | (j,occ) <- segments s2, j == i ]
+       [ equalOr s [occ .= Nothing, occ' .= Nothing] occ occ'
+       | ((_,occ),(_,occ')) <- segments s1 `zip` segments s2
+       ]
+     
+     sequence_
+       [ addClause s ( neg (occ' .= Nothing)
+                     : occ .= Nothing
+                     : [ back q .= i | (_,q) <- trains s1 ]
+                     )
+       | ((i,occ),(_,occ')) <- segments s1 `zip` segments s2
        ]
      
      -- train movement
@@ -192,11 +183,23 @@ trainStep :: Solver -> System -> Term -> Term -> State -> TrainId -> TrainState 
 trainStep s (tks,tns) tm d s1 i t1 t2 =
   do -- if front moves to a new piece, it was not already occupied
      sequence_
-       [ do addClause s [ neg (front t2 .= i)
-                        , (front t1 .= i)
-                        , neg occ
+       [ do addClause s [ neg (front t2 .= j)
+                        , front t1 .= j
+                        , occ .= Nothing
                         ]
        | (t,(_,occ)) <- tks `zip` segments s1
+       , let j = segmentId t
+       ]
+  
+     -- if back moves to a new piece, it was already occupied by the same train, or the new front is there too
+     sequence_
+       [ do addClause s [ neg (back t2 .= j)
+                        , back t1 .= j
+                        , occ .= Just i
+                        , front t2 .= j
+                        ]
+       | (t,(_,occ)) <- tks `zip` segments s1
+       , let j = segmentId t
        ]
   
      -- front and back move at most 1 segment, and an equal distance d
@@ -267,7 +270,7 @@ main =
   plan sys
        (mkState sys [(1,1),(2,2)])
        3
-       (mkState sys [(1,4),(2,5)])
+       (mkState sys [(1,4),(2,2)])
 
 plan :: System -> State -> Int -> State -> IO ()
 plan sys s0 n sz =
