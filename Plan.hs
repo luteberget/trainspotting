@@ -109,14 +109,13 @@ newTrainState s tks t =
      fro <- newTerm s l
      bk  <- newVal  s is
      bko <- newTerm s l
-     --v   <- newTerm s (trainMaxVel t)
-     v   <- newTermFrom s [0,1,2,trainMaxVel t `div` 2,trainMaxVel t]
+     v   <- newTerm s (trainMaxVel t)
      
      -- offsets fit in current segments
      -- TODO: these can be aggregated for different segments of the same length
      sequence_
-       [ do lessThanEqualOr s [neg (fr .= i)] fro (number l)
-            lessThanEqualOr s [neg (bk .= i)] bko (number l)
+       [ do lessThanOr s [neg (fr .= i)] fro (number l)
+            lessThanOr s [neg (bk .= i)] bko (number l)
        | t <- tks
        , let i = segmentId t
              l = segmentLen t
@@ -144,7 +143,7 @@ data Step
 
 newStep :: Solver -> System -> State -> State -> IO Step
 newStep s (tks,tns) s1 s2 =
-  do tm <- newTerm s 120 -- what should this be?
+  do tm <- (.+. number 1) `fmap` newTerm s 63 -- what should this be?
      ds <- sequence [ newTerm s l | t <- tns ]
 
      -- segment occupance
@@ -255,7 +254,7 @@ maxAcc = 1.5
 maxDec = 1
 
 plan :: Solver -> System -> State -> Int -> State
-               -> ([State] -> [Step] -> IO ()) -> IO ()
+               -> ([State] -> [Step] -> IO (IO ())) -> IO ()
 plan s sys s0 n sz f =
     do putStrLn "+++ creating..."
        states <- sequence [ newState s sys | i <- [1..n] ]
@@ -263,7 +262,7 @@ plan s sys s0 n sz f =
        steps <- sequence [ newStep s sys st st' | (st,st') <- states' `zip` tail states' ]
        
        -- add more constraints
-       f states steps
+       mod <- f states' steps
        
        putStrLn "+++ solving..."
        b <- solve s []
@@ -299,13 +298,15 @@ plan s sys s0 n sz f =
                       | (stt,stp) <- states' `zip` steps
                       ]
             printState (last states')
+            mod
         else
          do putStrLn "*** no solution"
 
 --------------------------------------------------------------------------------
 -- examples
 
-main = main1
+--main = main1
+main = main2
 
 --------------------------------------------------------------------------------
 -- example 1
@@ -330,8 +331,93 @@ main1 =
          (mkState sys1 [(1,1),(2,2)])
          3
          (mkState sys1 [(1,4),(2,2)]) $ \states steps ->
-           -- arbitrary time constraint, just a test
-           lessThanEqual s (foldr1 (.+.) [ time stp | stp <- steps ]) (number 60)
+           do -- arbitrary time constraint, just a test
+              lessThanEqual s (foldr1 (.+.) [ time stp | stp <- steps ]) (number 60)
+              return (return ())
 
+--------------------------------------------------------------------------------
+-- example 1
+
+sys2 :: System
+sys2 = ( [ Segment 1 60  50 [2,3]
+         , Segment 2 70  50 [4]
+         , Segment 3 70  50 [4]
+         , Segment 4 10  50 [1]
+         ]
+       , [ Train 1 50 50
+         , Train 2 50 50
+         ]
+       )
+
+main2 :: IO ()
+main2 =
+  withNewSolver $ \s ->
+    do st_ <- newState s sys2
+       v   <- newTerm s 50
+       let st0 = st_{ trains = [ (1, TrainState (val 1) (number 50)
+                                                (val 1) (number 0)
+                                                v) ]
+                            ++ filter ((/=1).fst) (trains st_)
+                    }
+
+       let wait tid sid dur states steps =
+             do -- decide which intervals the train is waiting
+                ws <- sequence [ newLit s | _ <- steps ]
+                qs <- sequence [ newLit s | _ <- steps ]
+                atMostOne s qs
+                sequence_ [ addClause s [ neg w, pre_w, q ]
+                          | (q,(pre_w,w)) <- qs `zip` ((last ws:ws) `zip` ws)
+                          ]
+                
+                -- if you wait, you are at the right platform and not moving
+                sequence_
+                  [ do addClause s [neg w, front tr .= sid ]
+                       addClause s [neg w, back  tr .= sid ]
+                       lessThanEqualOr s [neg w] d (number 0)
+                  | ((st,stp),w) <- (states `zip` steps)
+                                    `zip` ws
+                  , let tr = head [ tr | (i,tr) <- trains st, i == tid ]
+                        d  = head [ d  | (i,d)  <- distances stp, i == tid ]
+                  ]
+
+                -- sum of waiting times sums up to a minimum
+                wts <- sequence [ multiply s (fromList [(1,w)]) (time stp)               
+                                | (w,stp) <- ws `zip` steps
+                                ]
+                greaterThanEqual s (foldr1 (.+.) wts) (number dur)
+
+                -- train is not always at that platform
+                addClause s [ neg (front tr .= sid)
+                            | st <- init states
+                            , let tr = head [ tr | (i,tr) <- trains st, i == tid ]
+                            ]
+       
+           h states steps =
+             do -- total period not more than 90 seconds
+                lessThanEqual s (foldr1 (.+.) [ time stp | stp <- steps ])
+                                (number 85)
+                                
+                -- length of T2 needs to be added somewhere
+                sequence_
+                  [ equalOr s [neg (front tr .= 3), neg (back tr .= 3)]
+                              (backOffset tr .+. number 50) (frontOffset tr)
+                  | st <- states
+                  , let tr = head [ tr | (2,tr) <- trains st ]
+                  ]
+
+                -- trains wait for at least 60 secs at their platforms
+                wait 1 2 60 states steps
+                wait 2 3 60 states steps
+
+                -- model
+                return (return ())                  
+
+       plan s
+            sys2
+            st0
+            7
+            st0
+            h
+           
 --------------------------------------------------------------------------------
 
