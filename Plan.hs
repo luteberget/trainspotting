@@ -143,7 +143,7 @@ data Step
 
 newStep :: Solver -> System -> State -> State -> IO Step
 newStep s (tks,tns) s1 s2 =
-  do tm <- (.+. number 1) `fmap` newTerm s 63 -- what should this be?
+  do tm <- ((2 .*) . (.+. number 1)) `fmap` newTerm s 31 -- what should this be?
      ds <- sequence [ newTerm s l | t <- tns ]
 
      -- segment occupance
@@ -305,8 +305,8 @@ plan s sys s0 n sz f =
 --------------------------------------------------------------------------------
 -- examples
 
---main = main1
-main = main2
+main = main1
+--main = main2
 
 --------------------------------------------------------------------------------
 -- example 1
@@ -340,9 +340,9 @@ main1 =
 
 sys2 :: System
 sys2 = ( [ Segment 1 60  50 [2,3]
-         , Segment 2 70  50 [4]
-         , Segment 3 70  50 [4]
-         , Segment 4 10  50 [1]
+         , Segment 2 80  50 [4]
+         , Segment 3 80  50 [4]
+         , Segment 4 60  50 [1]
          ]
        , [ Train 1 50 50
          , Train 2 50 50
@@ -395,7 +395,7 @@ main2 =
            h states steps =
              do -- total period not more than 90 seconds
                 lessThanEqual s (foldr1 (.+.) [ time stp | stp <- steps ])
-                                (number 85)
+                                (number 90)
                                 
                 -- length of T2 needs to be added somewhere
                 sequence_
@@ -415,7 +415,7 @@ main2 =
        plan s
             sys2
             st0
-            7
+            5
             st0
             h
            
