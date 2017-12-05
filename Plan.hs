@@ -1,4 +1,4 @@
-module Plan where
+module Main where
 
 import Data.Ratio
 
@@ -109,7 +109,8 @@ newTrainState s tks t =
      fro <- newTerm s l
      bk  <- newVal  s is
      bko <- newTerm s l
-     v   <- newTerm s (trainMaxVel t)
+     --v   <- newTerm s (trainMaxVel t)
+     v   <- newTermFrom s [0,1,2,trainMaxVel t `div` 2,trainMaxVel t]
      
      -- offsets fit in current segments
      -- TODO: these can be aggregated for different segments of the same length
@@ -250,38 +251,19 @@ trainStep s (tks,tns) tm d s1 i t1 t2 =
 --------------------------------------------------------------------------------
 
 maxAcc, maxDec :: Rational
-maxAcc = 2
+maxAcc = 1.5
 maxDec = 1
 
-sys :: System
-sys = ( [ Segment 1 100 50 [3]
-        , Segment 2 100 50 [3]
-        , Segment 3 1   50 [4,5]
-        , Segment 4 100 50 []
-        , Segment 5 100 50 []
-        ]
-      , [ Train 1 50 50
-        , Train 2 50 50
-        ]
-      )
-
-main :: IO ()
-main =
-  plan sys
-       (mkState sys [(1,1),(2,2)])
-       3
-       (mkState sys [(1,4),(2,2)])
-
-plan :: System -> State -> Int -> State -> IO ()
-plan sys s0 n sz =
-  withNewSolver $ \s ->
+plan :: Solver -> System -> State -> Int -> State
+               -> ([State] -> [Step] -> IO ()) -> IO ()
+plan s sys s0 n sz f =
     do putStrLn "+++ creating..."
        states <- sequence [ newState s sys | i <- [1..n] ]
        let states' = s0 : states ++ [sz]
        steps <- sequence [ newStep s sys st st' | (st,st') <- states' `zip` tail states' ]
        
-       -- arbitrary time constraint, just a test
-       lessThanEqual s (foldr1 (.+.) [ time stp | stp <- steps ]) (number 60)
+       -- add more constraints
+       f states steps
        
        putStrLn "+++ solving..."
        b <- solve s []
@@ -320,4 +302,36 @@ plan sys s0 n sz =
         else
          do putStrLn "*** no solution"
 
+--------------------------------------------------------------------------------
+-- examples
+
+main = main1
+
+--------------------------------------------------------------------------------
+-- example 1
+
+sys1 :: System
+sys1 = ( [ Segment 1 100 50 [3]
+         , Segment 2 100 50 [3]
+         , Segment 3 1   50 [4,5]
+         , Segment 4 100 50 []
+         , Segment 5 100 50 []
+         ]
+       , [ Train 1 50 50
+         , Train 2 50 50
+         ]
+       )
+
+main1 :: IO ()
+main1 =
+  withNewSolver $ \s ->
+    plan s
+         sys1
+         (mkState sys1 [(1,1),(2,2)])
+         3
+         (mkState sys1 [(1,4),(2,2)]) $ \states steps ->
+           -- arbitrary time constraint, just a test
+           lessThanEqual s (foldr1 (.+.) [ time stp | stp <- steps ]) (number 60)
+
+--------------------------------------------------------------------------------
 
