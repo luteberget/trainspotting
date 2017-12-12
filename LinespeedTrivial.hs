@@ -25,23 +25,26 @@ transition s fs s1 s2 = do
   let (v1,v2) = (snd s1, snd s2)
 
   brakingDecision <- newLit s 
-  isBraking <- mkFloatConstraint fs (v2 .<=. v1)
+  --isBraking <- mkFloatConstraint fs (v2 .<=. v1)
 
   let brakeDiff = (square (v1 .-. v2)) .*. (floatConst (1.0/(2.0*maxBrake)))
   let accelDiff = (square (v1 .-. v2)) .*. (floatConst (1.0/(2.0*maxAccel)))
 
-  addClause s [neg brakingDecision, isBraking]
-  addClause s [brakingDecision, neg isBraking]
+  -- addClause s [neg brakingDecision, isBraking]
+  -- addClause s [brakingDecision, neg isBraking]
   
-  braking1  <- mkFloatConstraint fs (((dt .*. v2) .+. brakeDiff) .<=. dx)
+  --braking1  <- mkFloatConstraint fs (((dt .*. v2) .+. brakeDiff) .<=. dx)
   braking2  <- mkFloatConstraint fs (dx .<=. ((dt .*. v1) .-. brakeDiff))
-  addClause s [neg brakingDecision, braking1]
+  --addClause s [neg brakingDecision, braking1]
   addClause s [neg brakingDecision, braking2]
 
-  acceling1 <- mkFloatConstraint fs (((dt .*. v1) .+. accelDiff) .<=. dx)
+  --acceling1 <- mkFloatConstraint fs (((dt .*. v1) .+. accelDiff) .<=. dx)
   acceling2 <- mkFloatConstraint fs (dx .<=. ((dt .*. v2) .-. accelDiff))
-  addClause s [brakingDecision, acceling1]
+  --addClause s [brakingDecision, acceling1]
   addClause s [brakingDecision, acceling2]
+
+  travelDistance <- mkFloatConstraint fs ((fst s1) .+. dx .==. (fst s2))
+  addClause s [travelDistance]
 
   return (dx,dt)
 
