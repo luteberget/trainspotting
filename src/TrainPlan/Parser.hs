@@ -1,4 +1,4 @@
-module Parser where
+module TrainPlan.Parser where
 
 import Control.Monad (void)
 import Data.Void
@@ -8,16 +8,21 @@ import Text.Megaparsec.Char
 import Text.Megaparsec.Expr
 import qualified Text.Megaparsec.Char.Lexer as L
 
-import Infrastructure
-import UsagePattern
-import ScreenCoords
+import TrainPlan.Infrastructure
+import TrainPlan.UsagePattern
+import TrainPlan.ScreenCoords
 
 type Output = (Infrastructure, UsagePattern, [ScreenCoords])
 
 parseFile :: String -> IO (Either String Output)
 parseFile fn = do
   contents <- readFile fn
-  return (Parser.parse fn contents)
+  return (TrainPlan.Parser.parse fn contents)
+
+parseStdin :: IO (Either String Output)
+parseStdin = do
+  contents <- getContents
+  return (TrainPlan.Parser.parse "<stdin>" contents)
 
 parse :: String -> String -> Either String Output
 parse name contents = case MP.parse (sc >> some statement) name contents of

@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
-module Infrastructure where
+module TrainPlan.Infrastructure where
 
 import GHC.Generics
 import Data.Aeson

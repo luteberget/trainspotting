@@ -1,8 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
-module ScreenCoords where
+module TrainPlan.ScreenCoords where
 
 import GHC.Generics
-import Infrastructure
+import TrainPlan.Infrastructure
 
 data ScreenCoords = ScreenCoords {
   loc :: Location,

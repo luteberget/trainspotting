@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module UsagePattern where
+module TrainPlan.UsagePattern where
 
 import GHC.Generics
 import Data.Aeson
