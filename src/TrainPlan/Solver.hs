@@ -1,4 +1,9 @@
-module Main where
+module TrainPlan.Solver (
+   SegmentId, TrainId, RouteId,
+   Route(..),
+   Segment(..),
+   Train(..),
+ ) where
 
 --
 -- TODO: segment border now represents both track branching and 

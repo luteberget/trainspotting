@@ -1,5 +1,5 @@
-vehicle passengertrain length 200.0 accel 1.0 brake 1.0 maxspeed 100.0
 vehicle goodstrain length 650.0 accel 0.5 brake 0.5 maxspeed 25.0
+vehicle passengertrain length 200.0 accel 1.0 brake 1.0 maxspeed 100.0
 
 track t1 3000.0
 signal s1 (t1, 0.0)

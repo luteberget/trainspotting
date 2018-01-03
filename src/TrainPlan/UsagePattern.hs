@@ -37,11 +37,11 @@ instance ToJSON TimingSpec
 instance FromJSON TimingSpec
 
 data Vehicle = Vehicle {
-  name :: String,
-  length :: Double,
-  maxAccel :: Double,
-  maxBrake :: Double,
-  maxVelocity :: Double
+  vehicleName :: String,
+  vehicleLength :: Double,
+  vehicleMaxAccel :: Double,
+  vehicleMaxBrake :: Double,
+  vehicleMaxVelocity :: Double
 }
     deriving (Generic, Show)
 instance ToJSON Vehicle
