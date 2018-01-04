@@ -113,7 +113,7 @@ signalStmt :: Parser Statement
 signalStmt = do
   symbol "signal"
   name <- identifier
-  loc <- location
+  loc <- directionalLocation 
   return (ComponentStmt (Signal name loc))
 
 detectorStmt :: Parser Statement
@@ -130,6 +130,21 @@ location = do
   l <- number
   symbol ")"
   return (Location ref l)
+
+directionalLocation :: Parser (Location, Direction)
+directionalLocation = do
+  symbol "("
+  ref <- identifier
+  symbol ","
+  l <- number
+  symbol ","
+  dir <- direction
+  symbol ")"
+  return ((Location ref l), dir)
+
+direction :: Parser Direction
+direction =     (symbol "up" >> return Up) 
+            <|> (symbol "down" >> return Down)
 
 vehicleStmt :: Parser Statement
 vehicleStmt = vehicle >>= return . VehicleStmt
@@ -148,21 +163,37 @@ vehicle = do
   vmax <- number
   return (Vehicle name l a b vmax)
 
-visit :: Parser (Maybe String, [SignalRef])
+visit :: Parser (Maybe String, [DirectionalLocation], Maybe Double)
 visit = do
   symbol "visit"
   name <- optional $ do 
      char '#'
      identifier
-  locations <- list identifier
-  return (name, locations)
+  locations <- list directionalLocation
+  waittime <- optional $ do
+    symbol "wait"
+    number
+  return (name, locations, waittime)
 
 movementStmt :: Parser Statement
 movementStmt = do
   symbol "movement"
   vehicle <- identifier
-  visits <- between (symbol "{") (symbol "}") $ some visit
-  return (MovementStmt (MovementSpec vehicle visits))
+  symbol "{"
+  enter <- enterExit "enter"
+  visits <- some visit
+  exit <- enterExit "exit"
+  symbol "}"
+  return (MovementStmt (MovementSpec vehicle enter visits exit))
+
+enterExit :: String -> Parser ([DirectionalLocation], Maybe ConstVelocity)
+enterExit n = do
+  symbol n
+  locations <- list directionalLocation
+  velocity <- optional $ do
+    symbol "velocity"
+    number
+  return (locations, velocity)
 
 timingStmt :: Parser Statement
 timingStmt = do

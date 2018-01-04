@@ -1,7 +1,11 @@
 module TrainPlan.Infrastructure where
 
+type DirectionalLocation = (Location, Direction)
+type ConstVelocity = Double
 
 type TrackRef = String
+data Direction = Up | Down
+  deriving (Show)
 
 -- Infrastructure model
 data Infrastructure = Infrastructure {
@@ -24,7 +28,7 @@ data Node = Node {
     deriving (Show)
 
 data Component = 
-    Signal String Location 
+    Signal String DirectionalLocation
   | Detector Location
     deriving (Show)
 

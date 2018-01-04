@@ -9,10 +9,10 @@ track t2 252.0
 node [t1-0]     [t1-1, t2]
 node [t1-1, t2] [t1-2]
 
-signal si (t1-0, 0.0)
-signal s1 (t1-2, 3000.0)
-signal s2 (t2, 237.0)
-signal sf (t1-1, 235.0)
+signal si (t1-0, 0.0, up)
+signal s1 (t1-2, 3000.0, up)
+signal s2 (t2, 237.0, up)
+signal sf (t1-1, 235.0, up)
 
 movement goodstrain {
   visit [si]

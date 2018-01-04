@@ -32,7 +32,7 @@ solverInput  :: Infrastructure -> UsagePattern ->  ([Solver.Route],[Solver.Segme
 solverInput is up = (undefined,undefined,fmap train (zip [0..] $ movements up))
   where
     train :: (Int, MovementSpec) -> Solver.Train
-    train (i,(MovementSpec typeRef visits)) = Solver.Train i 
+    train (i,(MovementSpec typeRef enter visits exit)) = Solver.Train i 
         (round $ vehicleLength t) (round $ vehicleMaxVelocity t) -- TODO pass max acc/brake
       where t = getTrainType typeRef
 
@@ -43,7 +43,7 @@ solverInput is up = (undefined,undefined,fmap train (zip [0..] $ movements up))
 solve :: Infrastructure -> UsagePattern -> IO (Maybe Schedule)
 solve is up = do 
   let (_,_,x) = solverInput is up
-  output (show x)
+  logmsg (show x)
   undefined
 
 formatSchedule :: Schedule -> String

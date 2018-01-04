@@ -1,13 +1,13 @@
 vehicle goodstrain length 650.0 accel 0.5 brake 0.5 maxspeed 25.0
 vehicle passengertrain length 200.0 accel 1.0 brake 1.0 maxspeed 100.0
 
-track t1 3000.0
-signal s1 (t1, 0.0)
-signal s2 (t1, 2000.0)
-signal s3 (t1, 3000.0)
+track t1 3500.0
+signal s1 (t1, 250.0, up)
+signal s2 (t1, 2000.0, up)
+signal s3 (t1, 3000.0, up)
 
 movement passengertrain {
-  visit [s1]
-  visit [s2]
-  visit [s3]
+  enter [(t1,200.0,up)]
+  visit [(t1,2000.0,up)] wait 60.0
+  exit [(t1,3500.0,up)]
 }

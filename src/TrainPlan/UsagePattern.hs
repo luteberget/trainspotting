@@ -1,8 +1,11 @@
 module TrainPlan.UsagePattern where
+import TrainPlan.Infrastructure
 
 type VehicleRef = String
 type SignalRef = String
 type EventRef = String
+
+type WaitTime = Double
 
 -- Usage pattern for railway lines
 data UsagePattern = UsagePattern {
@@ -14,7 +17,9 @@ data UsagePattern = UsagePattern {
 
 data MovementSpec = MovementSpec {
   vehicleRef :: VehicleRef,
-  visits :: [(Maybe String, [SignalRef])] -- Signal references
+  enter :: ([DirectionalLocation], Maybe ConstVelocity),
+  visits :: [(Maybe String, [DirectionalLocation], Maybe WaitTime)],
+  exit :: ([DirectionalLocation], Maybe ConstVelocity)
 }
     deriving (Show)
 
