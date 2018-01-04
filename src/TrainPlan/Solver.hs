@@ -3,6 +3,7 @@ module TrainPlan.Solver (
    Route(..),
    Segment(..),
    Train(..),
+   Location(..),
  ) where
 
 --
@@ -57,11 +58,25 @@ data Segment
   }
  deriving ( Eq, Ord, Show )
 
+data Location
+  = Location
+  { frontLoc       :: SegmentId
+  , frontOffsetLoc :: Int
+  , backLoc        :: SegmentId
+  , backOffsetLoc  :: Int
+  -- TODO velocity constraint here?
+  }
+ deriving ( Eq, Ord, Show )
+
 data Train
   = Train
   { trainId     :: TrainId
   , trainLen    :: Integer
   , trainMaxVel :: Integer
+  -- , trainMaxAcc :: Rational
+  -- , trainMaxBrk :: Rational
+  -- , trainEnter  :: [Location]
+  -- , trainExit   :: [Location]
   }
  deriving ( Eq, Ord, Show )
 
@@ -88,6 +103,7 @@ data TrainState
   , trainVel    :: Term
   , authorityLength  :: Term
   , authoritySegment :: Val SegmentId
+  -- , trainActive :: Lit
   }
  deriving ( Eq, Ord, Show )
 
