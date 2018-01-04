@@ -9,5 +9,5 @@ signal s3 (t1, 3000.0, up)
 movement passengertrain {
   enter [(t1,200.0,up)]
   visit [(t1,2000.0,up)] wait 60.0
-  exit [(t1,3500.0,up)]
+  exit [(t1,2500.0,up)]
 }

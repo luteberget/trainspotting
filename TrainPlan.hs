@@ -38,6 +38,38 @@ rationalAccel a = (toRational $ round (a*(fromIntegral precision)))
   where 
     precision = 10 :: Integer
 
+placeTrain :: [Solver.Segment] -> Double -> (Solver.SegmentId, Double) 
+              -> Solver.Location
+placeTrain segments trainLength (segmentId,offset) 
+  | offset < trainLength = error "Not enough space for train on track"
+  | otherwise =  Solver.Location fr frOff bk bkOff
+  where 
+    (bk,bkOff) = place segmentId (offset - trainLength)
+    (fr,frOff) = place segmentId (offset)
+    place :: Solver.SegmentId -> Double -> (Solver.SegmentId, Integer)
+    place sgId off
+      | round off <= Solver.segmentLen sg = (sgId, round off)
+      | otherwise = place sgNext (off - (fromIntegral $ Solver.segmentLen sg))
+      where
+        sgNext = fromMaybe (error "Not enough space for train on track") $ 
+                   listToMaybe (Solver.segmentNexts sg)
+        sg = segmentById segments sgId
+
+
+-- Segments in the beginning of tracks are numbered as 
+-- the tracks appear in the Infrastructure
+trackIdToSegmentId :: Infrastructure -> TrackRef -> Solver.SegmentId
+trackIdToSegmentId is ref = fromMaybe (error $ "Track not found " ++ (show ref)) $
+    listToMaybe [ i | (i,t) <- zip [0..] (tracks is), (trackId t) == ref ]
+
+segLoc :: Infrastructure -> [Solver.Segment] 
+          -> ([DirectionalLocation], Maybe ConstVelocity) 
+          -> [(Solver.SegmentId, Double)]
+segLoc is sgs (locs,_vel) = fmap go locs
+  where
+    go ((Location tref off),_dir) = (trackIdToSegmentId is tref, off)
+
+
 solverInput  :: Infrastructure -> UsagePattern -> ([Solver.Route],[Solver.Segment],[Solver.Train])
 solverInput is up = (routes,segments,trains)
   where
@@ -47,8 +79,12 @@ solverInput is up = (routes,segments,trains)
 
     train :: (Int, MovementSpec) -> Solver.Train
     train (i,(MovementSpec typeRef enter visits exit)) = Solver.Train i 
-        (round $ vehicleLength t) (round $ vehicleMaxVelocity t) -- TODO pass max acc/brake
+        (round $ len) (round $ vehicleMaxVelocity t) 
+        (rationalAccel $ vehicleMaxAccel t) (rationalAccel $ vehicleMaxBrake t)
+        (fmap (placeTrain segments len) (segLoc is segments enter)) 
+        (fmap (placeTrain segments len) (segLoc is segments exit)) 
       where t = getTrainType typeRef
+            len = vehicleLength t
 
     getTrainType :: VehicleRef -> Vehicle
     getTrainType ref = fromMaybe (error $ "unknown vehicle: " ++ ref) $ 
@@ -68,7 +104,8 @@ mkSegments is = evalState go 0
       numberedTracks <- sequence [ do i <- fresh
                                       return (i,t)
                                  | t <- tracks is]
-      segmentsAndSignals <- sequence [ mkTrackSegments d | d <- trackData numberedTracks]
+      segmentsAndSignals <- sequence [ mkTrackSegments d 
+                                     | d <- trackData numberedTracks]
 
       let segments = join (map fst segmentsAndSignals)
       let signals  = join (map snd segmentsAndSignals)
@@ -138,7 +175,9 @@ solve is up = do
   logmsg (show segments)
   logmsg "TRAINS"
   logmsg (show trains)
-  undefined
+  Solver.plan (routes,segments,trains) 7
+  -- TODO return schedule from Solver.plan
+  return Nothing
 
 formatSchedule :: Schedule -> String
 formatSchedule = undefined

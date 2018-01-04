@@ -4,6 +4,7 @@ module TrainPlan.Solver (
    Segment(..),
    Train(..),
    Location(..),
+   plan
  ) where
 
 --
@@ -61,9 +62,9 @@ data Segment
 data Location
   = Location
   { frontLoc       :: SegmentId
-  , frontOffsetLoc :: Int
+  , frontOffsetLoc :: Integer
   , backLoc        :: SegmentId
-  , backOffsetLoc  :: Int
+  , backOffsetLoc  :: Integer
   -- TODO velocity constraint here?
   }
  deriving ( Eq, Ord, Show )
@@ -73,10 +74,10 @@ data Train
   { trainId     :: TrainId
   , trainLen    :: Integer
   , trainMaxVel :: Integer
-  -- , trainMaxAcc :: Rational
-  -- , trainMaxBrk :: Rational
-  -- , trainEnter  :: [Location]
-  -- , trainExit   :: [Location]
+  , trainMaxAcc :: Rational
+  , trainMaxBrk :: Rational
+  , trainEnter  :: [Location]
+  , trainExit   :: [Location]
   }
  deriving ( Eq, Ord, Show )
 
@@ -107,21 +108,34 @@ data TrainState
   }
  deriving ( Eq, Ord, Show )
 
-mkState :: System -> [(TrainId,SegmentId,Integer,Integer,SegmentId)] -> State
-mkState (routes,tks,tns) tts =
-  State
-  { segments = [ (i, val (head $ [ Just j | (j,i',_,_,_) <- tts, i'==i ] ++ [Nothing]))
-               | t <- tks
-               , let i = segmentId t
-               ]
-  , trains   = [ (i, TrainState (val j) (number (pos+l)) (val j) (number (pos)) (number 0) 
-                 (number al) (val as))
-               | t <- tns
-               , let i = trainId t
-                     l = trainLen t
-                     (j,pos,al,as) = head [ (j,posi,ali,asi) | (i',j, posi, ali, asi) <- tts, i' == i ]
-               ]
-  }
+
+atLocation :: Solver -> State -> (TrainId,Location) -> IO ()
+atLocation s state (tid, loc) = do
+  let (Location fr frOff bk bkOff) = loc
+  let train = head [ st | (id,st) <- trains state, id == tid ]
+  
+  equalOr s [] (front train) (val fr)
+  equalOr s [] (frontOffset train) (number frOff)
+  equalOr s [] (back train) (val bk)
+  equalOr s [] (backOffset train) (number bkOff)
+  return ()
+  
+
+-- mkState :: System -> [(TrainId,SegmentId,Integer,Integer,SegmentId)] -> State
+-- mkState (routes,tks,tns) tts =
+--   State
+--   { segments = [ (i, val (head $ [ Just j | (j,i',_,_,_) <- tts, i'==i ] ++ [Nothing]))
+--                | t <- tks
+--                , let i = segmentId t
+--                ]
+--   , trains   = [ (i, TrainState (val j) (number (pos+l)) (val j) (number (pos)) (number 0) 
+--                  (number al) (val as))
+--                | t <- tns
+--                , let i = trainId t
+--                      l = trainLen t
+--                      (j,pos,al,as) = head [ (j,posi,ali,asi) | (i',j, posi, ali, asi) <- tts, i' == i ]
+--                ]
+--   }
 
 newState :: Solver -> System -> IO State
 newState s (routes,tks,tns) =
@@ -306,7 +320,8 @@ trainStep s (routes,tks,tns) tm d s1 s2 i t1 t2 =
        addClause s [neg didAlloc, (authoritySegment t1) .= (routeStartSegment route)]
 
        -- And we must already be in a segment which has sight to the route
-       addClause s (neg didAlloc : [front t1 .= allocSegmentId | allocSegmentId <- routeAllocatesFrom route])
+       -- TODO
+       -- addClause s (neg didAlloc : [front t1 .= allocSegmentId | allocSegmentId <- routeAllocatesFrom route])
 
        -- Adjust length of movement authority
        -- TODO: join to a single addition with [(routeLength route, didAlloc) | .. <- .. ] ?
@@ -372,38 +387,19 @@ maxAcc, maxDec :: Rational
 maxAcc = 2
 maxDec = 1
 
-sys :: System
-sys = ( [ Route 2 4 [2,3] (200) [1]
-        , Route 2 6 [2,5,4] (300) [1]
-        ]
-      ,
-        [ Segment 1 100 50 [2]
-        , Segment 2 100 50 [3,5]
-        , Segment 3 100 50 [4]
-        , Segment 4 100 50 [6]
-        , Segment 5 100 50 [4]
-        , Segment 6 100 50 []
-        ]
-      , [ Train 1 50 50
-        ]
-      )
-
-main :: IO ()
-main =
-  plan sys
-       (mkState sys [(1,1,0,50,2)])
-       4
-       (mkState sys [(1,4,40,10,6)])
-
-plan :: System -> State -> Int -> State -> IO ()
-plan sys s0 n sz =
+plan :: System -> Int -> IO ()
+plan sys@(routeSpec,segmentSpec,trainSpec) n =
   withNewSolver $ \s ->
     do 
+       putStrLn $ show trainSpec
        -- solverVerbosity s 1000
        putStrLn "+++ creating..."
        states <- sequence [ newState s sys | i <- [1..n] ]
-       let states' = s0 : states ++ [sz]
-       steps <- sequence [ newStep s sys st st' | (st,st') <- states' `zip` tail states' ]
+       sequence_ [ do atLocation s (head states) (trainId tr, head (trainEnter tr))
+                      atLocation s (last states) (trainId tr, head (trainExit tr))
+                 | tr <- trainSpec ]
+
+       steps <- sequence [ newStep s sys st st' | (st,st') <- states `zip` tail states ]
        
        -- arbitrary time constraint, just a test
        let total_time = (foldr1 (.+.) [ time stp | stp <- steps ])
@@ -444,9 +440,9 @@ plan sys s0 n sz =
 
             sequence_ [ do printState stt
                            printStep stp
-                      | (stt,stp) <- states' `zip` steps
+                      | (stt,stp) <- states `zip` steps
                       ]
-            printState (last states')
+            printState (last states)
         else
          do putStrLn "*** no solution"
 
