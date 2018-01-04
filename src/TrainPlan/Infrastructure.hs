@@ -17,7 +17,7 @@ data Infrastructure = Infrastructure {
 
 data Track = Track {
     trackId :: String,
-    length :: Double 
+    trackLength :: Double 
 }
     deriving (Show)
 
@@ -36,5 +36,5 @@ data Location = Location {
   posTrackRef :: TrackRef,
   posLength :: Double 
 }
-    deriving (Show)
+    deriving (Show, Ord, Eq)
 
