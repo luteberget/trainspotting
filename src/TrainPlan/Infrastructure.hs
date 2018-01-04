@@ -1,8 +1,5 @@
-{-# LANGUAGE DeriveGeneric #-}
 module TrainPlan.Infrastructure where
 
-import GHC.Generics
-import Data.Aeson
 
 type TrackRef = String
 
@@ -12,38 +9,28 @@ data Infrastructure = Infrastructure {
       nodes :: [Node],
       components :: [Component]
     } 
-    deriving (Generic, Show)
-instance ToJSON Infrastructure
-instance FromJSON Infrastructure
+    deriving (Show)
 
 data Track = Track {
     trackId :: String,
     length :: Double 
 }
-    deriving (Generic, Show)
-instance ToJSON Track
-instance FromJSON Track
+    deriving (Show)
 
 data Node = Node {
   nodesFrom :: [TrackRef],
   nodesTo :: [TrackRef]
 }
-    deriving (Generic, Show)
-instance ToJSON Node
-instance FromJSON Node
+    deriving (Show)
 
 data Component = 
     Signal String Location 
   | Detector Location
-    deriving (Generic, Show)
-instance ToJSON Component 
-instance FromJSON Component
+    deriving (Show)
 
 data Location = Location {
   posTrackRef :: TrackRef,
   posLength :: Double 
 }
-    deriving (Generic, Show)
-instance ToJSON Location
-instance FromJSON Location
+    deriving (Show)
 
