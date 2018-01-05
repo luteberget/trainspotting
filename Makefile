@@ -1,3 +1,6 @@
+RoutePlan: RoutePlan.hs
+	ghc -O2 -isatplus RoutePlan.hs
+
 TrainPlan: TrainPlan.hs src/*/*hs
 	ghc -O2 -isrc -isatplus TrainPlan.hs
 
