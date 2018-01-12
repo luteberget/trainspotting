@@ -25,7 +25,7 @@ parseStdin = do
   return (TrainPlan.Parser.parse "<stdin>" contents)
 
 parse :: String -> String -> Either String Output
-parse name contents = case MP.parse (sc >> some statement) name contents of
+parse name contents = case MP.parse (sc >> some statement <* eof) name contents of
   (Left err) -> Left $ parseErrorPretty err
   (Right statements) -> Right $ toStructured statements
 
