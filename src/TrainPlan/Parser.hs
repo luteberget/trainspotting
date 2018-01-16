@@ -33,12 +33,14 @@ toStructured :: [Statement] -> Output
 toStructured xs = foldl f emptyOutput xs
   where
     f :: Output -> Statement -> Output
-    f ((Infrastructure ts ns cs), up, sc) 
-      (TrackStmt t) = ((Infrastructure (t:ts) ns cs), up, sc)
-    f ((Infrastructure ts ns cs), up, sc)
-      (NodeStmt n) = ((Infrastructure ts (n:ns) cs), up, sc)
-    f ((Infrastructure ts ns cs), up, sc)
-      (ComponentStmt c) = ((Infrastructure ts ns (c:cs), up, sc))
+    f ((Infrastructure ts ns cs rs), up, sc) 
+      (TrackStmt t) = ((Infrastructure (t:ts) ns cs rs), up, sc)
+    f ((Infrastructure ts ns cs rs), up, sc)
+      (NodeStmt n) = ((Infrastructure ts (n:ns) cs rs), up, sc)
+    f ((Infrastructure ts ns cs rs), up, sc)
+      (ComponentStmt c) = ((Infrastructure ts ns (c:cs) rs, up, sc))
+    f ((Infrastructure ts ns cs rs), up, sc)
+      (RouteStmt r) = ((Infrastructure ts ns cs (r:rs), up, sc))
     f (is, (UsagePattern vs ms ts), sc)
       (VehicleStmt v) = (is, (UsagePattern (v:vs) ms ts), sc)
     f (is, (UsagePattern vs ms ts), sc)
@@ -49,7 +51,7 @@ toStructured xs = foldl f emptyOutput xs
       (ScreenCoordsStmt s) = (is, up, (s:sc))
 
 emptyOutput :: Output
-emptyOutput = ((Infrastructure [] [] []),
+emptyOutput = ((Infrastructure [] [] [] []),
                (UsagePattern [] [] []),
                [])
 
@@ -82,12 +84,14 @@ data Statement =
   | MovementStmt MovementSpec
   | TimingStmt TimingSpec
   | ScreenCoordsStmt ScreenCoords
+  | RouteStmt Route
   deriving (Show)
 
 statement :: Parser Statement
 statement = trackStmt <|> nodeStmt <|> componentStmt  -- infrastructure
   <|> vehicleStmt <|> movementStmt <|> timingStmt -- usagepattern
   <|> screenCoordsStmt -- screen coordinates
+  <|> routeStmt
 
 list :: Parser a -> Parser [a]
 list =  (between (symbol ("[")) (symbol ("]"))) . (\x -> sepBy x (symbol ","))
@@ -99,15 +103,26 @@ trackStmt = do
   l <- (number :: Parser Double)
   return (TrackStmt (Track name l))
 
+nodeData :: Parser NodeData
+nodeData = boundary <|> trackRefList
+  where 
+    boundary = do
+      symbol "boundary"
+      return BoundaryNode
+    trackRefList = do
+      l <- list identifier
+      return $ ConnectionNode l
+
 nodeStmt :: Parser Statement
 nodeStmt = do
   symbol "node"
-  from <- list identifier
-  to <- list identifier
-  return (NodeStmt (Node from to))
+  name <- identifier 
+  from <- nodeData
+  to <- nodeData
+  return (NodeStmt (Node name from to))
 
 componentStmt :: Parser Statement
-componentStmt = signalStmt <|> detectorStmt
+componentStmt = signalStmt <|> detectorStmt <|> tvdStmt
 
 signalStmt :: Parser Statement
 signalStmt = do
@@ -120,7 +135,19 @@ detectorStmt :: Parser Statement
 detectorStmt = do
   symbol "detector"
   loc <- location
-  return (ComponentStmt (Detector loc))
+  uptvd <- optional $ do
+    symbol "uptvd"
+    identifier
+  downtvd <- optional $ do
+    symbol "downtvd"
+    identifier
+  return (ComponentStmt (Detector loc uptvd downtvd))
+
+tvdStmt :: Parser Statement
+tvdStmt = do
+  symbol "tvd"
+  name <- identifier
+  return (ComponentStmt (TVD name))
 
 location :: Parser Location 
 location = do
@@ -163,12 +190,15 @@ vehicle = do
   vmax <- number
   return (Vehicle name l a b vmax)
 
+optname :: Parser (Maybe String)
+optname = optional $ do 
+  char '#'
+  identifier 
+
 visit :: Parser (Maybe String, [DirectionalLocation], Maybe Double)
 visit = do
   symbol "visit"
-  name <- optional $ do 
-     char '#'
-     identifier
+  name <- optname
   locations <- list directionalLocation
   waittime <- optional $ do
     symbol "wait"
@@ -186,10 +216,10 @@ movementStmt = do
   symbol "}"
   return (MovementStmt (MovementSpec vehicle enter visits exit))
 
-enterExit :: String -> Parser ([DirectionalLocation], Maybe ConstVelocity)
+enterExit :: String -> Parser ([NodeRef], Maybe ConstVelocity)
 enterExit n = do
   symbol n
-  locations <- list directionalLocation
+  locations <- list identifier
   velocity <- optional $ do
     symbol "velocity"
     number
@@ -219,3 +249,57 @@ screenCoordsStmt = do
   c <- coords
   return (ScreenCoordsStmt (ScreenCoords loc c))
 
+swpos :: Parser SwitchPosition
+swpos =     (symbol "left"  >> return SwLeft) 
+        <|> (symbol "right" >> return SwRight)
+
+release :: Parser ReleaseSpec
+release = do
+  symbol "release"
+  symbol "{"
+  symbol "trigger"
+  trigger <- identifier
+  symbol "resources"
+  res <- list identifier
+  symbol "}"
+  return (ReleaseSpec trigger res)
+
+routeStmt :: Parser Statement
+routeStmt = fullRouteStmt <|> boundaryRouteStmt
+
+boundaryRouteStmt :: Parser Statement
+boundaryRouteStmt = do
+  symbol "boundaryroute"
+  entryExit <-     (symbol "entry" >> return True) 
+               <|> (symbol "exit" >> return False)
+  entry <- identifier
+  exit <- identifier
+  symbol "length"
+  l <- number
+  let (ri,rx) = if entryExit then (Nothing, Just exit) else (Just entry, Nothing)
+  return (RouteStmt (Route ri rx [] [] l []))
+
+fullRouteStmt :: Parser Statement
+fullRouteStmt = do
+  symbol "route"
+  name <- optname
+  symbol "entry"
+  entry <- identifier
+  symbol "exit"
+  exit <- identifier
+  symbol "{"
+  symbol "length"
+  length <- number
+  symbol "tvds"
+  tvds <- list identifier
+  symbol "switches"
+  swpos <- list $ do
+    symbol "("
+    swref <- identifier
+    symbol ","
+    pos <- swpos
+    symbol ")"
+    return (swref,pos)
+  releases <- many release
+  symbol "}"
+  return (RouteStmt (Route (Just entry) (Just exit) tvds swpos length releases))

@@ -24,11 +24,23 @@ data Segment
   }
  deriving ( Eq, Ord, Show )
 
+data Location
+  = Location
+  { frontLoc       :: SegmentId
+  , frontOffsetLoc :: Int
+  , backLoc        :: SegmentId
+  , backOffsetLoc  :: Int
+  }
+
 data Train
   = Train
   { trainId     :: TrainId
   , trainLen    :: Integer
   , trainMaxVel :: Integer
+  , trainMaxAcc :: Rational
+  , trainMaxBrk :: Rational
+  , trainEnter  :: [Location]
+  , trainExit   :: [Location]
   }
  deriving ( Eq, Ord, Show )
 
@@ -50,6 +62,7 @@ data TrainState
   , back        :: Val SegmentId
   , backOffset  :: Term
   , trainVel    :: Term
+  , trainActive :: Lit
   }
  deriving ( Eq, Ord, Show )
 
@@ -305,8 +318,8 @@ plan s sys s0 n sz f =
 --------------------------------------------------------------------------------
 -- examples
 
-main = main1
---main = main2
+--main = main1
+main = main2
 
 --------------------------------------------------------------------------------
 -- example 1

@@ -6,8 +6,31 @@ signal s1 (t1, 250.0, up)
 signal s2 (t1, 2000.0, up)
 signal s3 (t1, 3000.0, up)
 
+tvd a1
+tvd a2
+
+detector (t1, 250.0) uptvd a1
+detector (t1, 2000.0) uptvd a2 downtvd a1
+detector (t1, 3000.0) downtvd a2
+
+node b1 boundary [t1]
+node b2 [t1] boundary
+
+boundaryroute entry b1 s1 length 250.0
+boundaryroute exit s3 b2 length 500.0
+
+route #r1 entry s1 exit s2 {
+  length 1750.0 tvds [a1] switches []
+  release { trigger a1   resources [a1] }
+}
+
+route #r2 entry s2 exit s3 {
+  length 1000.0 tvds [a2] switches []
+  release { trigger a2   resources [a2] }
+}
+
 movement passengertrain {
-  enter [(t1,200.0,up)]
+  enter [b1]
   visit [(t1,2000.0,up)] wait 60.0
-  exit [(t1,2500.0,up)]
+  exit [b2]
 }

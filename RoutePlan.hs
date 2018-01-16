@@ -6,6 +6,22 @@ import SAT
 import SAT.Val
 import SAT.Bool
 
+import TrainPlan.Infrastructure hiding (Route)
+import TrainPlan.UsagePattern
+import TrainPlan.Schedule
+import TrainPlan.DefaultRoutes
+import qualified TrainPlan.Parser
+import qualified TrainPlan.Solver as Solver
+import qualified TrainSim.ConvertInput as SimConv
+import qualified TrainSim.Builder as SimBuilder
+
+
+import System.IO (stderr,hPutStrLn)
+import System.Exit (exitFailure,exitSuccess)
+logmsg = hPutStrLn stderr
+output = putStrLn
+
+
 type SignalId = Int
 type RouteId = Int
 type TrainId = Int
@@ -19,6 +35,7 @@ data Route
   , routeEntry     :: Maybe SignalId
   , routeExit      :: Maybe SignalId
   , routeConflicts :: [RouteId]
+  , routeWaitableConflicts :: [RouteId]
   , routeLength    :: Double
   } deriving (Eq, Ord, Show)
 
@@ -31,17 +48,17 @@ data Train
 
 type State    = [(RouteId, Val (Maybe TrainId))]
 
-type Schedule = [[(RouteId, Maybe TrainId)]]
+type RoutePlan = [[(RouteId, Maybe TrainId)]]
 
 testRoutes =
-  [ Route 1 Nothing (Just 1) [] 50.0
-  , Route 2 (Just 1) Nothing [] 78.0
-  , Route 3 (Just 1) Nothing [] 74.0
-  , Route 4 (Just 1) Nothing [] 78.0
-  , Route 5 (Just 1) Nothing [] 78.0
-  , Route 6 (Just 1) (Just 66) [] 73.0
-  , Route 7 (Just 1) Nothing [] 78.0
-  , Route 8 (Just 1) Nothing [] 78.0
+  [ Route 1 Nothing (Just 1) [] [] 50.0
+  , Route 2 (Just 1) Nothing [] [] 78.0
+  , Route 3 (Just 1) Nothing [] [] 74.0
+  , Route 4 (Just 1) Nothing [] [] 78.0
+  , Route 5 (Just 1) Nothing [] [] 78.0
+  , Route 6 (Just 1) (Just 66) [] [] 73.0
+  , Route 7 (Just 1) Nothing [] [] 78.0
+  , Route 8 (Just 1) Nothing [] [] 78.0
   ]
 
 testTrains =
@@ -212,12 +229,57 @@ before s states trainId v1 v2 = do
   
 succPairs x = zip x (tail x)
 
-main = do
-  schedule <- plan testRoutes testTrains $ \suggestedSchedule -> do
-    return False -- Accept schedule
-  putStrLn "DONE"
 
-plan :: [Route] -> [Train] -> (Schedule -> IO Bool) -> IO (Maybe Schedule)
+main = do
+  input <- TrainPlan.Parser.parseStdin
+  case input of
+    Left err -> do
+      logmsg $ "Parse error: " ++ err
+      exitFailure
+    Right (infrastructure,usagepattern,_) -> do
+      schedule <- Main.solve infrastructure usagepattern
+      case schedule of
+        Nothing -> output "No plan found"
+        Just schedule -> do
+          output "Plan found"
+          output (show schedule)
+
+
+solve :: Infrastructure -> UsagePattern -> IO (Maybe Schedule)
+solve is up = do
+  logmsg "INFRASTRUCTURE"
+  logmsg (show is)
+  logmsg "USAGE PATTERN"
+  logmsg (show up)
+  let simIS = SimConv.resolveIds (SimConv.mkInfrastructureObjs is)
+  let simX = SimConv.completeLinks simIS
+  --let simRoutes = Simluator.mkRoutes simIS
+  let (planRoutes,planTrains) = plannerInput (is,up)
+  logmsg "CONVERTED"
+  logmsg "SIMULATOR INFRASTRUCTURE"
+  forM_ simX $ \x -> logmsg (show x)
+  let isWithRoutes = SimConv.mkInfrastructure simX []
+  -- logmsg "PLANNER ROUTES"
+  -- logmsg (show planRoutes)
+  -- logmsg "PLANNER TRAINS"
+  -- logmsg (show planTrains)
+  -- HERE, create FFI infrastructurespec 
+  -- run planner on routes/trains, create simplan
+  --   run simplan on infrastructurespec
+  --     feedback
+  SimBuilder.withSimulator isWithRoutes $ \sim -> do
+    logmsg "simulator here"
+  return Nothing
+
+plannerInput :: (Infrastructure,UsagePattern) -> ([Route],[Train])
+plannerInput (is,up) = undefined
+
+-- main = do
+--   schedule <- plan testRoutes testTrains $ \suggestedSchedule -> do
+--     return False -- Accept schedule
+--   putStrLn "DONE"
+
+plan :: [Route] -> [Train] -> (RoutePlan -> IO Bool) -> IO (Maybe RoutePlan)
 plan routes trains test = do
   withNewSolver $ \s -> do
     putStrLn "creating"
@@ -250,7 +312,7 @@ plan routes trains test = do
   where
     solveLoop s states = do 
       putStrLn "solving"
-      b <- solve s []
+      b <- SAT.solve s []
       if b then do 
         putStrLn "*** solution"
         scheduleValues <- forM states $ \state -> do
@@ -273,20 +335,20 @@ plan routes trains test = do
         return Nothing
     
 
-showSchedule :: Schedule -> String
+showSchedule :: RoutePlan -> String
 showSchedule s = join [ line ++ "\n" | line <- fmap showState s]
   where
     showState s = join [ cell ++ " " | cell <- fmap showRoute s]
     showRoute (r,Nothing) = (show r) ++ "_"
     showRoute (r,Just t) = (show r) ++ (show t)
 
--- showSchedule :: Schedule -> String
+-- showSchedule :: RoutePlan -> String
 -- showSchedule s = join [ line ++ "\n", 
 --                       | line <- fmap showState s ]
 --   where
 --     showState :: [(RouteId, Maybe TrainId)]
 -- 
--- diffSchedule :: Schedule -> Schedule
+-- diffSchedule :: RoutePlan -> RoutePlan
 -- diffSchedule s = map (\(s1,s2) -> ) s
 --   where
 --     pairs = succPairs ([(r,Nothing) | (r,i) <- head s ] : s)
