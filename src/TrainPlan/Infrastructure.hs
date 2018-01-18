@@ -5,7 +5,26 @@ type ConstVelocity = Double
 
 type TrackRef = String
 type NodeRef = String
-type RouteEnd = String -- Boundary node name or signal name
+type SignalRef = String
+
+data RoutePoint = RoutePointBoundary NodeRef
+                | RoutePointSignal SignalRef
+                | RoutePointTrackEnd 
+  deriving (Show, Eq, Ord)
+
+isBoundary :: RoutePoint -> Bool
+isBoundary (RoutePointBoundary _) = True
+isBoundary _ = False
+
+routePointRef :: RoutePoint -> String
+routePointRef (RoutePointBoundary s) = s
+routePointRef (RoutePointSignal s) = s
+
+maybeRoutePointRef :: RoutePoint -> Maybe String
+maybeRoutePointRef (RoutePointBoundary s) = Just s
+maybeRoutePointRef (RoutePointSignal s) = Just s
+maybeRoutePointRef _ = Nothing
+
 type ResourceRef = String -- TVD or switch reference
 type TVDRef = String
 
@@ -24,10 +43,12 @@ data Infrastructure = Infrastructure {
     deriving (Show)
 
 data Route = Route {
-  entry :: Maybe RouteEnd,
-  exit :: Maybe RouteEnd,
+  entry :: RoutePoint,
+  exit :: RoutePoint,
   tvds :: [TVDRef],
   switchPos :: [(NodeRef, SwitchPosition)],
+  -- TODO add overlap to grammar
+  -- overlap :: Maybe ([TVDRef], Double), -- Resource and timeout 
   length :: Double,
   releases :: [ReleaseSpec]
 } deriving (Show)

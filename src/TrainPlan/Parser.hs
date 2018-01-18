@@ -1,6 +1,7 @@
 module TrainPlan.Parser where
 
 import Control.Monad (void)
+import Data.Maybe (fromMaybe)
 import Data.Void
 import Text.Megaparsec
 import qualified Text.Megaparsec as MP
@@ -264,42 +265,47 @@ release = do
   symbol "}"
   return (ReleaseSpec trigger res)
 
+routePoint :: Parser RoutePoint
+routePoint = bdry <|> sig <|> end
+  where
+    bdry = do
+      symbol "boundary"
+      id <- identifier
+      return (RoutePointBoundary id)
+    sig = do
+      symbol "signal"
+      id <- identifier
+      return (RoutePointSignal id)
+    end = do
+      symbol "trackend"
+      return RoutePointTrackEnd
+
 routeStmt :: Parser Statement
-routeStmt = fullRouteStmt <|> boundaryRouteStmt
-
-boundaryRouteStmt :: Parser Statement
-boundaryRouteStmt = do
-  symbol "boundaryroute"
-  entryExit <-     (symbol "entry" >> return True) 
-               <|> (symbol "exit" >> return False)
-  entry <- identifier
-  exit <- identifier
-  symbol "length"
-  l <- number
-  let (ri,rx) = if entryExit then (Nothing, Just exit) else (Just entry, Nothing)
-  return (RouteStmt (Route ri rx [] [] l []))
-
-fullRouteStmt :: Parser Statement
-fullRouteStmt = do
+routeStmt = do
   symbol "route"
   name <- optname
   symbol "entry"
-  entry <- identifier
+  entry <- routePoint
   symbol "exit"
-  exit <- identifier
+  exit <- routePoint
   symbol "{"
   symbol "length"
   length <- number
-  symbol "tvds"
-  tvds <- list identifier
-  symbol "switches"
-  swpos <- list $ do
-    symbol "("
-    swref <- identifier
-    symbol ","
-    pos <- swpos
-    symbol ")"
-    return (swref,pos)
+  tvds <- optional $ do 
+    symbol "tvds"
+    list identifier
+  swpos <- optional $ do
+    symbol "switches"
+    list $ do
+      symbol "("
+      swref <- identifier
+      symbol ","
+      pos <- swpos
+      symbol ")"
+      return (swref,pos)
   releases <- many release
   symbol "}"
-  return (RouteStmt (Route (Just entry) (Just exit) tvds swpos length releases))
+  return (RouteStmt (Route entry exit 
+                           (fromMaybe [] tvds) 
+                           (fromMaybe [] swpos)
+                           length releases))

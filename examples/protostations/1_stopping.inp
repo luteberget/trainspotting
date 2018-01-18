@@ -16,18 +16,18 @@ detector (t1, 3000.0) downtvd a2
 node b1 boundary [t1]
 node b2 [t1] boundary
 
-boundaryroute entry b1 s1 length 250.0
-boundaryroute exit s3 b2 length 500.0
 
-route #r1 entry s1 exit s2 {
+// Routes
+route #rb1 entry boundary b1 exit signal s1 { length 250.0 }
+route #r1 entry signal s1 exit signal s2 {
   length 1750.0 tvds [a1] switches []
   release { trigger a1   resources [a1] }
 }
-
-route #r2 entry s2 exit s3 {
+route #r2 entry signal s2 exit signal s3 {
   length 1000.0 tvds [a2] switches []
   release { trigger a2   resources [a2] }
 }
+route #rb2 entry signal s3 exit boundary b2 { length 500.0 }
 
 movement passengertrain {
   enter [b1]

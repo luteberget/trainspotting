@@ -1,3 +1,6 @@
+TestDrive: TestDrive.hs src/TrainSim/builder.o
+	ghc -O2 -isrc -isatplus TestDrive.hs src/TrainSim/builder.o -lstdc++
+
 RoutePlan: RoutePlan.hs src/TrainSim/builder.o
 	ghc -O2 -isrc -isatplus RoutePlan.hs src/TrainSim/builder.o -lstdc++
 
