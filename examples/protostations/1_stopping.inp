@@ -16,7 +16,6 @@ detector (t1, 3000.0) downtvd a2
 node b1 boundary [t1]
 node b2 [t1] boundary
 
-
 // Routes
 route #rb1 entry boundary b1 exit signal s1 { length 250.0 }
 route #r1 entry signal s1 exit signal s2 {
