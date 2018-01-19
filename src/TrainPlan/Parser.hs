@@ -130,11 +130,14 @@ signalStmt = do
   symbol "signal"
   name <- identifier
   loc <- directionalLocation 
-  return (ComponentStmt (Signal name loc))
+  symbol "detector"
+  d <- identifier
+  return (ComponentStmt (Signal name loc d))
 
 detectorStmt :: Parser Statement
 detectorStmt = do
   symbol "detector"
+  name <- identifier
   loc <- location
   uptvd <- optional $ do
     symbol "uptvd"
@@ -142,7 +145,7 @@ detectorStmt = do
   downtvd <- optional $ do
     symbol "downtvd"
     identifier
-  return (ComponentStmt (Detector loc uptvd downtvd))
+  return (ComponentStmt (Detector name loc uptvd downtvd))
 
 tvdStmt :: Parser Statement
 tvdStmt = do
@@ -283,6 +286,7 @@ routePoint = bdry <|> sig <|> end
 routeStmt :: Parser Statement
 routeStmt = do
   symbol "route"
+  dir <- direction
   name <- optname
   symbol "entry"
   entry <- routePoint
@@ -308,4 +312,4 @@ routeStmt = do
   return (RouteStmt (Route entry exit 
                            (fromMaybe [] tvds) 
                            (fromMaybe [] swpos)
-                           length releases))
+                           length releases dir))

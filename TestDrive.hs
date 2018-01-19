@@ -7,16 +7,14 @@ import qualified TrainPlan.Convert
 import qualified TrainPlan.Solver
 import Control.Monad (forM, forM_)
 
+import Data.Map (Map)
+import qualified Data.Map as Map
+
 import System.IO (stderr,hPutStrLn)
 import System.Exit (exitFailure,exitSuccess)
 
 logmsg = hPutStrLn stderr
 output = putStrLn
-
-type TrainId = Int
-type RouteId = Int
-type Plan = [PlanItem]
-data PlanItem = PlanEntry RouteId TrainId | PlanRoute RouteId
 
 main = do
   input <- TrainPlan.Parser.parseStdin
@@ -27,21 +25,23 @@ main = do
     Right (infrastructure,usagepattern,_) -> do
       logmsg (show infrastructure)
       let (planRoutes,planTrains) = TrainPlan.Convert.convert infrastructure usagepattern
-      -- logmsg "PLAN ROUTES"
-      -- sequence_ [ logmsg $ show r | r <- planRoutes ]
-      -- logmsg "PLAN TRAINS"
-      -- logmsg $ show planTrains
-      TrainSim.Builder.withInfrastructureSimulator infrastructure $ \sim -> do
+      logmsg "PLAN ROUTES"
+      sequence_ [ logmsg $ show r | r <- planRoutes ]
+      logmsg "PLAN TRAINS"
+      logmsg $ show planTrains
+      TrainSim.Builder.withInfrastructureSimulator infrastructure $ \sim objmap -> do
+        logmsg "OBJMAP"
+        forM_ (Map.toList objmap) $ \(k,v) -> do logmsg $ "k=" ++ (show k) ++ ", v=" ++ (show v)
         logmsg "planning"
         final <- TrainPlan.Solver.plan planRoutes planTrains $ \plan -> do
           logmsg "FOUND PLAN"
           logmsg $ show plan
-          let simPlan = TrainSim.ConvertInput.convertPlan infrastructure usagepattern plan
-          planObj <- TrainSim.Builder.add_plan simPlan
-          v <- doSimulation
+          let simPlan = TrainSim.ConvertInput.convertPlan infrastructure usagepattern plan objmap
           logmsg $ show simPlan
-          logmsg "simulating"
+          TrainSim.Builder.withPlan simPlan $ \plan -> do
+            logmsg "simulating"
+            perf <-  TrainSim.Builder.testPlan sim plan
+            logmsg ("sim finished: " ++ (show perf))
           return False
         logmsg "quitting"
         return ()
-        -- TrainSim.Simulator.test sim simPlan

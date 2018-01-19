@@ -37,5 +37,5 @@ data Vehicle = Vehicle {
   vehicleMaxBrake :: Double,
   vehicleMaxVelocity :: Double
 }
-    deriving (Show)
+    deriving (Show, Ord, Eq)
 

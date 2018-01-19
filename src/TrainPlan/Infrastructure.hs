@@ -6,6 +6,7 @@ type ConstVelocity = Double
 type TrackRef = String
 type NodeRef = String
 type SignalRef = String
+type DetectorRef = String
 
 data RoutePoint = RoutePointBoundary NodeRef
                 | RoutePointSignal SignalRef
@@ -50,7 +51,8 @@ data Route = Route {
   -- TODO add overlap to grammar
   -- overlap :: Maybe ([TVDRef], Double), -- Resource and timeout 
   length :: Double,
-  releases :: [ReleaseSpec]
+  releases :: [ReleaseSpec],
+  routeDir :: Direction
 } deriving (Show)
 
 data ReleaseSpec
@@ -74,8 +76,8 @@ data Node = Node {
     deriving (Show)
 
 data Component = 
-    Signal String DirectionalLocation
-  | Detector Location (Maybe TVDRef) (Maybe TVDRef)
+    Signal String DirectionalLocation DetectorRef
+  | Detector String Location (Maybe TVDRef) (Maybe TVDRef)
   | TVD String
     deriving (Show)
 
