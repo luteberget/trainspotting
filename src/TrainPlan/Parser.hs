@@ -123,7 +123,15 @@ nodeStmt = do
   return (NodeStmt (Node name from to))
 
 componentStmt :: Parser Statement
-componentStmt = signalStmt <|> detectorStmt <|> tvdStmt
+componentStmt = signalStmt <|> detectorStmt <|> sightStmt <|> tvdStmt
+
+sightStmt :: Parser Statement
+sightStmt = do
+  symbol "sight"
+  sig <- identifier
+  dist <- number
+  loc <- location
+  return (ComponentStmt (Sight sig loc))
 
 signalStmt :: Parser Statement
 signalStmt = do

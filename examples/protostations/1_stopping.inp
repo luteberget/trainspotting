@@ -2,6 +2,7 @@ vehicle goodstrain length 650.0 accel 0.5 brake 0.5 maxspeed 25.0
 vehicle passengertrain length 200.0 accel 1.0 brake 0.9 maxspeed 100.0
 
 track t1 3500.0
+
 signal s1 (t1, 250.0, up) detector d1
 signal s2 (t1, 2000.0, up) detector d2
 signal s3 (t1, 3000.0, up) detector d3
@@ -12,6 +13,10 @@ tvd a2
 detector d1 (t1, 250.0) uptvd a1
 detector d2 (t1, 2000.0) uptvd a2 downtvd a1
 detector d3 (t1, 3000.0) downtvd a2
+
+sight s1 249.0 (t1,1.0)
+sight s2 600.0 (t1,1400.0)
+sight s3 200.0 (t1,2800.0)
 
 node b1 boundary [t1]
 node b2 [t1] boundary

@@ -1,3 +1,6 @@
+InputToSim: InputToSim.hs
+	ghc -O2 -isrc InputToSim.hs
+
 TestDrive: TestDrive.hs src/TrainSim/builder.o src/TrainSim/il.o src/TrainSim/traindynamics.o
 	ghc -O2 -isrc -isatplus TestDrive.hs src/TrainSim/builder.o src/TrainSim/il.o src/TrainSim/traindynamics.o -lstdc++
 
