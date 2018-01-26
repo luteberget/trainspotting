@@ -131,7 +131,7 @@ sightStmt = do
   sig <- identifier
   dist <- number
   loc <- location
-  return (ComponentStmt (Sight sig loc))
+  return (ComponentStmt (Sight loc sig dist))
 
 signalStmt :: Parser Statement
 signalStmt = do

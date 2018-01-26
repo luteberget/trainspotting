@@ -78,7 +78,7 @@ data Node = Node {
 data Component = 
     Signal String DirectionalLocation DetectorRef
   | Detector String Location (Maybe TVDRef) (Maybe TVDRef)
-  | Sight SignalRef Location
+  | Sight Location SignalRef Double
   | TVD String
     deriving (Show)
 
