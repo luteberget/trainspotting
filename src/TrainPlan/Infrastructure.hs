@@ -44,6 +44,7 @@ data Infrastructure = Infrastructure {
     deriving (Show)
 
 data Route = Route {
+  routeName :: String,
   entry :: RoutePoint,
   exit :: RoutePoint,
   tvds :: [TVDRef],

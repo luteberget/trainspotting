@@ -295,7 +295,7 @@ routeStmt :: Parser Statement
 routeStmt = do
   symbol "route"
   dir <- direction
-  name <- optname
+  name <- identifier
   symbol "entry"
   entry <- routePoint
   symbol "exit"
@@ -317,7 +317,7 @@ routeStmt = do
       return (swref,pos)
   releases <- many release
   symbol "}"
-  return (RouteStmt (Route entry exit 
+  return (RouteStmt (Route name entry exit 
                            (fromMaybe [] tvds) 
                            (fromMaybe [] swpos)
                            length releases dir))
