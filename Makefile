@@ -1,3 +1,8 @@
+EnumeratePlans: 
+	ghc -O2 -isrc -isatplus EnumeratePlans.hs
+.PHONY:EnumeratePlans
+
+
 InputToSim: InputToSim.hs
 	ghc -O2 -isrc InputToSim.hs
 

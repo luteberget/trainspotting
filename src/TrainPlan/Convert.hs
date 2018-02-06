@@ -13,7 +13,7 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 
 convert :: IS.Infrastructure -> UP.UsagePattern -> ([S.Route], [S.Train])
-convert is up = (outRoutes, outTrains)
+convert is up = (reverse outRoutes, outTrains)
   where
     outRoutes = fmap convertRoute (zip [0..] (IS.routes is))
     outTrains = fmap convertTrain (zip [0..] (UP.movements up))

@@ -8,66 +8,7 @@ import qualified Data.Set as Set
 import SAT
 import SAT.Val
 import SAT.Bool
-
-import TrainPlan.Infrastructure hiding (Route)
-import TrainPlan.UsagePattern
-import TrainPlan.Schedule
-import qualified TrainPlan.Parser
-import qualified TrainSim.ConvertInput as SimConv
-import qualified TrainSim.Builder as SimBuilder
-
-
-import System.IO (stderr,hPutStrLn)
-import System.Exit (exitFailure,exitSuccess)
-logmsg = hPutStrLn stderr
-output = putStrLn
-
-
-type SignalId = String
-type RouteId = Int
-type TrainId = Int
-
- -- data RouteEntry = NoEntry | SourceNode | SignalEntry SignalId
- -- data RouteExit  = NoExit  | SinkNode   | SignalExit  SignalId
-
-data Route
-  = Route
-  { routeId        :: RouteId
-  , routeEntry     :: Maybe SignalId
-  , routeExit      :: Maybe SignalId
-  , routeConflicts :: [RouteId]
-  , routeLength    :: Double
-  } deriving (Eq, Ord, Show)
-
-data Train
-  = Train
-  { trainId     :: TrainId
-  , trainLength :: Double
-  , trainVisits :: [RouteId]
-  } deriving (Eq, Ord, Show)
-
-type State    = [(RouteId, Val (Maybe TrainId))]
-
-type RoutePlan = [[(RouteId, Maybe TrainId)]]
-
-testRoutes =
-  [ Route 1 Nothing (Just "1") [] 50.0
-  , Route 2 (Just "1") Nothing [] 78.0
-  , Route 3 (Just "1") Nothing [] 74.0
-  , Route 4 (Just "1") Nothing [] 78.0
-  , Route 5 (Just "1") Nothing [] 78.0
-  , Route 6 (Just "1") (Just "66") [] 73.0
-  , Route 7 (Just "1") Nothing [] 78.0
-  , Route 8 (Just "1") Nothing [] 78.0
-  ]
-
-testTrains =
-  [ Train 1 75.0 [1,2]
-  , Train 2 75.0 [1,2]
-  , Train 3 75.0 [1,2]
-  , Train 4 75.0 [1,2]
-  , Train 5 75.0 [1,2]
-  ]
+import TrainPlan.SolverInput
 
 
 birthCondition :: Solver -> [Route] -> [Train] -> [State] -> IO ()
