@@ -37,7 +37,7 @@ sight s1 100.0 (t1, 120.0)
 sight s2 100.0 (t2, 137.0)
 sight sf 400.0 (t_out, 2500.0)
 
-route up rb1 entry boundary b1 exit signal s1 { length 100.0 }
+route up rb1 entry boundary b1 exit signal si { length 100.0 }
 
 route up ri1 entry signal si exit signal s1 {
   length 3120.0 tvds [a_in, a_sw1, a_t1]

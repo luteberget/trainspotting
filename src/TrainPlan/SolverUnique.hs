@@ -118,8 +118,7 @@ plan maxN routes trains test = withNewSolver $ \s -> do
       bornNow <- orl s [ firstState .! (rId route) .= Just (tId train)
                        | route <- routes `startingIn` Nothing ]
       bornFuture <- newLit s   -- Or is it born sometime in the future?
-      --addClause s [bornNow, bornFuture]
-      equalOr s [] bornNow (neg bornFuture)
+      equal s bornNow (neg bornFuture)
       return bornFuture
     | train <- trains ]
 
@@ -181,11 +180,23 @@ plan maxN routes trains test = withNewSolver $ \s -> do
                 | route <- routes, train <- trains ]
 
       bornFuture <- sequence [ do
-          let bornNow = [state .! (rId route) .= Just (tId train)
-                        | route <- routes `startingIn` Nothing ]
-          bornSatisfied <- orl s ((neg needBirth):bornNow)
+          bornNow <- orl s =<< mapM (andl s) [ [ neg (prevState .! (rId route) .= Just (tId train)),
+                                               state .! (rId route) .= Just (tId train) ]
+                                             | route <- routes `startingIn` Nothing ]
+
           bornFuture <- newLit s
-          equal s bornSatisfied (neg bornFuture)
+          bornSatisfied <- orl s [bornNow, bornFuture]
+          equal s needBirth bornSatisfied
+
+          -- Being born now, we need some excuse for not having done it earlier
+          let trainBirthPlace = head $ filter (\r -> (rId r) == head (trainVisits train)) routes 
+          let hadConflict = [ [ neg (prevState .! conflicting .= Nothing),
+                                -- neg (prevState .! conflicting .= Just (tId train)),
+                                state .! (rId trainBirthPlace) .= Just (tId train) ]
+                            | conflicting <- ((rId trainBirthPlace):(routeConflicts trainBirthPlace)) ]
+          conflictResolved <- mapM (andl s) hadConflict
+          addClause s ([neg bornNow] ++ conflictResolved)
+
           return bornFuture
         | (train, needBirth) <- zip trains needBirths ]
 
@@ -197,7 +208,7 @@ plan maxN routes trains test = withNewSolver $ \s -> do
                 thisVisitOrdered <- andl s [thisVisitOk, prevVisits]
                 futureVisit      <- newLit s
                 addClause s [thisVisitOrdered, futureVisit]
-                f thisVisitOrdered (futureVisit:futures) xs
+                f thisVisitOrdered (futures ++ [futureVisit]) xs
           f true [] (zip (trainVisits train) needVisit)
         | (train, needVisit) <- zip trains needVisits ]
 
@@ -211,10 +222,10 @@ plan maxN routes trains test = withNewSolver $ \s -> do
                                       | r <- routes `startingIn` (Just signal)]
               deferredProgress <- newLit s
               let hadConflict = [ [ neg (prevState .! conflicting .= Nothing),
-                                    state .! conflicting .= Nothing,
+                                    -- state .! conflicting .= Nothing,   --- Excluding conflicting is already in another constraint
                                     state .! (rId nextRoute) .= Just (tId train) ]
                                 | nextRoute <- routes `startingIn` (Just signal) 
-                                , conflicting <- routeConflicts nextRoute ]
+                                , conflicting <- ( (rId nextRoute) : (routeConflicts nextRoute)) ] -- Also conflicts with itself
 
               conflictResolved <- mapM (andl s) hadConflict
 
