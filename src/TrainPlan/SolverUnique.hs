@@ -5,9 +5,12 @@ module TrainPlan.SolverUnique (
 -- Train route planner, enhanced version of Solver.hs with:
 --   * incremental bound on number of transitions 
 --   * maximal progress, which should ensure unique solutions.
+--   * maximal progress on boundary
 --
 -- TODOs:
---  * maximal progress on boundary
+--  * Partial release (done in the route converter)
+--  * Timing (ordering) constraints between visits on different trains
+--  * Repeated visits? How to handle ordering.
 
 
 import Data.Maybe
