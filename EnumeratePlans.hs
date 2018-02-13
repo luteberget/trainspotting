@@ -27,7 +27,7 @@ main = do
       sequence_ [ logmsg $ show r | r <- planRoutes ]
       logmsg "*-> TRAINS"
       logmsg $ show planTrains
-      final <- TrainPlan.SolverUnique.plan 10 planRoutes planTrains $ \plan -> do
+      final <- TrainPlan.SolverUnique.plan 8 (planRoutes,planTrains,[]) $ \plan -> do
         return False
       exitSuccess
         

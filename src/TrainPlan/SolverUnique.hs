@@ -38,8 +38,13 @@ stateValue s r = fromMaybe (error "state lookup") $
   listToMaybe [ val | (rid, val) <- s, rid == r ]
 (.!) = stateValue
 
-newState :: Solver -> [Route] -> [Train] -> IO State
-newState s routes trains = do
+exactlyOne :: Solver -> [Lit] -> IO ()
+exactlyOne s xs = do
+  atMostOne s xs
+  addClause s xs
+
+newState :: Solver -> Problem -> Maybe State -> IO State
+newState s (routes,trains,orderings) prevState = do
   routeStates <- sequence [ newVal s (Nothing :  [ Just (tId t) | t <- trains ])
                           | _ <- routes ]
   let state = [(rId r, occ) | (r,occ) <- zip routes routeStates ]
@@ -55,6 +60,11 @@ newState s routes trains = do
   sequence_ [ atMostOne s [ state .! (rId route) .= Just (tId train)
                           | route <- routes `startingIn` entry ]
             | train <- trains, entry <- startPts ]
+  
+  -- Special first state "transition" from nothing.
+  -- This constraint is applied unconditionally.
+  sequence_ [ allocateRoute s routes route train (prevState, state)
+            | route <- routes, train <- trains ]
 
   return state
 
@@ -89,52 +99,83 @@ allocateRoute s routes route train (s1,s2) = case routeEntry route of
     addClause s $ catMaybes 
       ([fmap neg becomesAllocated, wasAllocated] ++ previousIsAllocated)
 
-allocateAhead :: Solver -> [Route] -> Route -> Train -> State -> IO Lit
-allocateAhead s routes route train state = case routeExit route of
-  Nothing -> return false -- Not relevant for boundary exit routes
+allocateAhead :: Solver -> [Route] -> Route -> Train -> (Maybe State, State) -> Lit -> IO Lit
+allocateAhead s routes route train (prevState,state) progressBefore = case routeExit route of
+  Nothing -> return true -- Not relevant for boundary exit routes
   Just signal -> do
     let isAllocated = state .! (rId route) .= Just (tId train)
     let nextRs = routes `startingIn` (Just signal)
-    let immediateProgress = [state .! (rId r) .= Just (tId train)    | r <- nextRs ]
-    --deferredProgress <- sequence [ newLit s >>= \l -> return (r, l)  | r <- nextRs ]
-    deferredProgress <- newLit s
-    addClause s ([neg isAllocated, deferredProgress] ++ immediateProgress)
-    return deferredProgress
+    let progressNow = [state .! (rId r) .= Just (tId train)    | r <- nextRs ]
+    progressFuture <- newLit s
+    addClause s ([neg isAllocated, progressFuture] ++ progressNow)
 
-plan :: Int -> [Route] -> [Train] -> (RoutePlan -> IO Bool) -> IO (Maybe RoutePlan)
-plan maxN routes trains test = withNewSolver $ \s -> do
-  firstState <- newState s routes trains
+    case prevState of
+      Just prev -> do
+        let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
+                              state .! (rId nextRoute) .= Just (tId train) ]
+                          | nextRoute <- routes `startingIn` (Just signal) 
+                          , conflicting <- ( (rId nextRoute) : (routeConflicts nextRoute)) ]
+        conflictResolved <- mapM (andl s) hadConflict
+        addClause s ([progressBefore, progressFuture] ++ conflictResolved)
+      Nothing -> return ()
+    return (neg progressFuture)
 
-  -- Special first state "transition" from nothing.
-  -- This constraint is applied unconditionally.
-  sequence_ [ allocateRoute s routes route train (Nothing, firstState)
-            | route <- routes, train <- trains ]
+bornCondition :: Solver -> [Route] -> Train -> (Maybe State, State) -> Lit -> IO Lit
+bornCondition s routes train (prevState,state) bornBefore = do
+   -- Is this train born in this step?
+   let bornNowAlternatives = 
+         [ catMaybes [ fmap (\prev -> neg (prev .! (rId route) .= Just (tId train))) prevState,
+                       Just (state .! (rId route) .= Just (tId train)) ]
+         | route <- routes `startingIn` Nothing ]
+   bornNow <- orl s =<< mapM (andl s) bornNowAlternatives
+   bornFuture <- newLit s   -- Or is it born sometime in the future?
+   exactlyOne s [bornBefore, bornNow, bornFuture]
+   let trainBirthPlace = head $ filter (\r -> (rId r) == head (trainVisits train)) routes 
+   case prevState of 
+     Just prev -> do
+       -- If train is not born in the first step,
+       -- then it must be after a conflict has been resolved.
+       let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
+                             state .! (rId trainBirthPlace) .= Just (tId train) ]
+                         | conflicting <- ((rId trainBirthPlace):
+                              (routeConflicts trainBirthPlace)) ]
+       conflictResolved <- mapM (andl s) hadConflict
+       addClause s ([neg bornNow] ++ conflictResolved)
+     Nothing -> return ()
+   return (neg bornFuture)
 
-  progressFuture <- sequence [ sequence [ allocateAhead s routes route train firstState
+visitConstraint :: Solver -> State -> Maybe (TrainId,RouteId,Lit) -> (TrainId, RouteId,Lit) -> IO Lit
+visitConstraint s state precedingVisit (train,route,visitBefore) = do
+  -- Visits must happen
+  let visitNow = state .! route .= Just train
+  visitFuture <- newLit s
+  addClause s [visitBefore, visitNow, visitFuture]
+
+  -- ... and in the given order
+  case precedingVisit of
+    Just (precedingTrain,precedingRoute,precedingVisitBefore) -> do
+      let precedingVisitNow = state .! precedingRoute .= Just precedingTrain
+      addClause s [precedingVisitBefore, precedingVisitNow, visitFuture]
+    Nothing -> return ()
+
+  return (neg visitFuture)
+
+plan :: Int -> Problem -> (RoutePlan -> IO Bool) -> IO (Maybe RoutePlan)
+plan maxN problem@(routes,trains,orderings) test = withNewSolver $ \s -> do
+  firstState <- newState s problem Nothing
+
+  progressFuture <- sequence [ sequence [ allocateAhead s routes route train (Nothing, firstState) false
                                         | route <- routes ]
                              | train <- trains ]
-
-  -- First state train birth condition
-  -- This constraint is applied conditionally on not having more transitions.
-  bornFuture <- sequence [ do
-      -- Is this train born in this step?
-      bornNow <- orl s [ firstState .! (rId route) .= Just (tId train)
-                       | route <- routes `startingIn` Nothing ]
-      bornFuture <- newLit s   -- Or is it born sometime in the future?
-      equal s bornNow (neg bornFuture)
-      return bornFuture
-    | train <- trains ]
-
-  -- Visits need to happen, and in order
-  -- Only one state at this point, so the ordering does not matter yet.
+  bornFuture <- sequence [ bornCondition s routes train (Nothing, firstState) false | train <- trains ]
   visitFuture <- sequence [ do
-      sequence [ do
-          visitFuture <- newLit s
-          addClause s [ firstState .! visit .= Just (tId train), visitFuture]
-          return visitFuture
-        | visit <- trainVisits train ]
+    let visits = zip (trainVisits train) (repeat false)
+    sequence [ do
+      let prevVisit = fmap (\(prevRoute, prevLit) -> (prevRoute, tId train, prevLit)) prev
+      let nextVisit = (nextRoute, tId train, nextLit)
+      visitConstraint s firstState prevVisit nextVisit
+      | (prev, (nextRoute, nextLit)) <- zip (Nothing:(fmap Just visits)) visits ]
     | train <- trains ]
-
   -- The problem can now be solved for n=1 by solving conditionally on 
   -- the negation of all the future variables.
   solveAdd s 1 [firstState] progressFuture bornFuture visitFuture
@@ -143,9 +184,7 @@ plan maxN routes trains test = withNewSolver $ \s -> do
     solveAdd :: Solver -> Int -> [State] -> [[Lit]] -> [Lit] -> [[Lit]]  -> IO (Maybe RoutePlan)
     solveAdd s n states progressFuture bornFuture visitFuture = do
       putStrLn $ "Solving n=" ++ (show n) 
-      b <- SAT.solve s (fmap neg (bornFuture ++ 
-                                   (join visitFuture) ++ 
-                                   (join progressFuture) ))
+      b <- SAT.solve s ((join progressFuture) ++ bornFuture ++ (fmap neg (join visitFuture)))
       if b then do
         putStrLn "*** Solution"
         schedule <- sequence [ sequence [ do v <- SAT.Val.modelValue s x
@@ -172,69 +211,30 @@ plan maxN routes trains test = withNewSolver $ \s -> do
     newTransition :: Solver -> Int -> [State] -> [[Lit]] -> [Lit] -> [[Lit]] -> IO (Maybe RoutePlan)
     newTransition s n states needProgress needBirths needVisits = do
       let prevState = last states
-      state <- newState s routes trains
+      state <- newState s problem (Just prevState)
 
           -- Free routes which are no longer needed
       sequence_ [ freeRoute s routes route train (prevState,state)
                 | route <- routes, train <- trains ]
 
-      -- Constraint on allowed allocations
-      sequence_ [ allocateRoute s routes route train (Just prevState,state)
-                | route <- routes, train <- trains ]
 
-      bornFuture <- sequence [ do
-          bornNow <- orl s =<< mapM (andl s) [ [ neg (prevState .! (rId route) .= Just (tId train)),
-                                               state .! (rId route) .= Just (tId train) ]
-                                             | route <- routes `startingIn` Nothing ]
-
-          bornFuture <- newLit s
-          bornSatisfied <- orl s [bornNow, bornFuture]
-          equal s needBirth bornSatisfied
-
-          -- Being born now, we need some excuse for not having done it earlier
-          let trainBirthPlace = head $ filter (\r -> (rId r) == head (trainVisits train)) routes 
-          let hadConflict = [ [ neg (prevState .! conflicting .= Nothing),
-                                -- neg (prevState .! conflicting .= Just (tId train)),
-                                state .! (rId trainBirthPlace) .= Just (tId train) ]
-                            | conflicting <- ((rId trainBirthPlace):(routeConflicts trainBirthPlace)) ]
-          conflictResolved <- mapM (andl s) hadConflict
-          addClause s ([neg bornNow] ++ conflictResolved)
-
-          return bornFuture
-        | (train, needBirth) <- zip trains needBirths ]
+      bornFuture <- sequence [ bornCondition s routes train (Just prevState, state) bornBefore
+        | (train, bornBefore) <- zip trains needBirths ]
 
       visitFuture <- sequence [ do
-          let f prevVisits futures [] = return futures
-              f prevVisits futures ((route,needed):xs) = do
-                let arrivedNow = state .! route .= Just (tId train)
-                thisVisitOk      <- orl s  [neg needed, arrivedNow]
-                thisVisitOrdered <- andl s [thisVisitOk, prevVisits]
-                futureVisit      <- newLit s
-                addClause s [thisVisitOrdered, futureVisit]
-                f thisVisitOrdered (futures ++ [futureVisit]) xs
-          f true [] (zip (trainVisits train) needVisit)
-        | (train, needVisit) <- zip trains needVisits ]
+        let visits = zip (trainVisits train) needs
+        sequence [ do
+            let prevVisit = fmap (\(prevRoute, prevLit) -> (prevRoute, tId train, prevLit)) prev
+            let nextVisit = (nextRoute, tId train, nextLit)
+            visitConstraint s state prevVisit nextVisit
+          | (prev, (nextRoute, nextLit)) <- zip (Nothing:(fmap Just visits)) visits ]
+        | (train,needs) <- zip trains needVisits ]
 
-      progressFuture <- forM (zip trains needProgress) $ \(train,needProgressTrain) -> do
-        forM (zip routes needProgressTrain) $ \(route,need) -> do
-          case routeExit route of
-            Nothing -> return false -- Not relevant for boundary exit routes
-            Just signal -> do
-              let isAllocated = state .! (rId route) .= Just (tId train)
-              let immediateProgress = [state .! (rId r) .= Just (tId train) 
-                                      | r <- routes `startingIn` (Just signal)]
-              deferredProgress <- newLit s
-              let hadConflict = [ [ neg (prevState .! conflicting .= Nothing),
-                                    -- state .! conflicting .= Nothing,   --- Excluding conflicting is already in another constraint
-                                    state .! (rId nextRoute) .= Just (tId train) ]
-                                | nextRoute <- routes `startingIn` (Just signal) 
-                                , conflicting <- ( (rId nextRoute) : (routeConflicts nextRoute)) ] -- Also conflicts with itself
-
-              conflictResolved <- mapM (andl s) hadConflict
-
-              addClause s ([neg need, deferredProgress] ++ conflictResolved)
-              addClause s ([neg isAllocated, deferredProgress] ++ immediateProgress)
-              return deferredProgress
+      progressFuture <- sequence [ 
+          sequence [
+            allocateAhead s routes route train (Just prevState, state) progressBefore
+          | (route, progressBefore) <- zip routes trainProgress ]
+        | (train, trainProgress) <- zip trains needProgress ] 
 
       solveAdd s n (states ++ [state]) progressFuture bornFuture visitFuture
 
