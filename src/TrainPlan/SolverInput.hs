@@ -28,8 +28,5 @@ data Train
 type OrderingConstraint = ((TrainId, Int),(TrainId,Int))
 type Problem = ([Route],[Train],[Ordering])
 
-
-type State    = [(RouteId, Val (Maybe TrainId))]
-    
 type RoutePlan = [[(RouteId, Maybe TrainId)]]
 

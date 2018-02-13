@@ -4,7 +4,7 @@ module TrainPlan.Convert (
 
 import qualified TrainPlan.Infrastructure as IS
 import qualified TrainPlan.UsagePattern as UP
-import qualified TrainPlan.Solver as S
+import qualified TrainPlan.SolverInput as S
 import TrainPlan.Infrastructure (isBoundary, routePointRef, maybeRoutePointRef)
 
 import Data.Map (Map)
