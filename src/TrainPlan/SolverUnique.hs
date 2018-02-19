@@ -249,6 +249,6 @@ showSchedule :: RoutePlan -> String
 showSchedule s = join [ line ++ "\n" | line <- fmap showState s]
   where
     showState s = join [ cell ++ " " | cell <- fmap showRoute s]
-    showRoute (r,Nothing) = (show r) ++ "_"
-    showRoute (r,Just t) = (show r) ++ (show t)
+    showRoute (r,Nothing) = (show r) ++ "-[ ]"
+    showRoute (r,Just t) = (show r) ++ "-[" ++ (show t) ++ "]"
 
