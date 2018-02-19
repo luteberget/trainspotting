@@ -58,7 +58,8 @@ data Route = Route {
 
 data ReleaseSpec
   = ReleaseSpec
-  { trigger :: TVDRef
+  { releaseLength :: Double
+  , trigger :: TVDRef
   , resources :: [ResourceRef]
   } deriving (Show)
 

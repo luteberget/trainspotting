@@ -22,7 +22,8 @@ import SAT.Equal
 import TrainPlan.SolverInput
 import Data.Set (Set)
 import qualified Data.Set as Set
-import Control.Monad (join, foldM, foldM_, forM, forM_, mapM)
+import Control.Monad (join)
+forM_ = flip mapM_
 
 --type State    = [(RouteId, Val (Maybe TrainId))]
 --
@@ -156,15 +157,13 @@ allocateAhead s routes route train (prevState,state) progressBefore = case route
     progressFuture <- newLit s
     addClause s ([neg isAllocated, progressFuture] ++ progressNow)
 
-    case prevState of
-      Just prev -> do
+    forM_ prevState $ \prev -> do 
         let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
                               state .! (rId nextRoute) .= Just (tId train) ]
                           | nextRoute <- routes `startingIn` (Just signal) 
                           , conflicting <- ( (rId nextRoute) : (routeConflicts nextRoute)) ]
         conflictResolved <- mapM (andl s) hadConflict
         addClause s ([progressBefore, progressFuture] ++ conflictResolved)
-      Nothing -> return ()
     return (neg progressFuture)
 
 bornCondition :: Solver -> [Route] -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
@@ -178,8 +177,7 @@ bornCondition s routes train (prevState,state) bornBefore = do
    bornFuture <- newLit s   -- Or is it born sometime in the future?
    exactlyOne s [bornBefore, bornNow, bornFuture]
    let trainBirthPlace = head $ filter (\r -> (rId r) == head (trainVisits train)) routes 
-   case prevState of 
-     Just prev -> do
+   forM_ prevState $ \prev -> do 
        -- If train is not born in the first step,
        -- then it must be after a conflict has been resolved.
        let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
@@ -188,7 +186,6 @@ bornCondition s routes train (prevState,state) bornBefore = do
                               (routeConflicts trainBirthPlace)) ]
        conflictResolved <- mapM (andl s) hadConflict
        addClause s ([neg bornNow] ++ conflictResolved)
-     Nothing -> return ()
    return (neg bornFuture)
 
 visitConstraint :: Solver -> Occupation -> Maybe (TrainId,RouteId,Lit) -> (TrainId, RouteId,Lit) -> IO Lit

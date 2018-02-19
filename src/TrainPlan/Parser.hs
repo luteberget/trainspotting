@@ -269,12 +269,14 @@ release :: Parser ReleaseSpec
 release = do
   symbol "release"
   symbol "{"
+  symbol "length"
+  length <- number
   symbol "trigger"
   trigger <- identifier
   symbol "resources"
   res <- list identifier
   symbol "}"
-  return (ReleaseSpec trigger res)
+  return (ReleaseSpec length trigger res)
 
 routePoint :: Parser RoutePoint
 routePoint = bdry <|> sig <|> end

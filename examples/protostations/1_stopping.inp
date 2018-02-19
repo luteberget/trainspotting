@@ -25,11 +25,11 @@ node b2 [t1] boundary
 route up rb1 entry boundary b1 exit signal s1 { length 250.0 }
 route up r1 entry signal s1 exit signal s2 {
   length 1750.0 tvds [a1] switches []
-  release { trigger a1   resources [a1] }
+  release { length 1750.0 trigger a1  resources [a1] }
 }
 route up r2 entry signal s2 exit signal s3 {
   length 1000.0 tvds [a2] switches []
-  release { trigger a2   resources [a2] }
+  release { length 1000.0 trigger a2  resources [a2] }
 }
 route up rb2 entry signal s3 exit boundary b2 { length 500.0 }
 

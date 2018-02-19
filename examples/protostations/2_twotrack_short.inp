@@ -42,29 +42,29 @@ route up rb1 entry boundary b1 exit signal si { length 100.0 }
 route up ri1 entry signal si exit signal s1 {
   length 3120.0 tvds [a_in, a_sw1, a_t1]
   switches [(sw1, right)]
-  release { trigger a_sw1 resources [a_in, a_sw1, sw1 ] }
-  release { trigger a_t1 resources [a_t1] }
+  release { length 2920.0 trigger a_sw1 resources [a_in, a_sw1, sw1 ] }
+  release { length 200.0 trigger a_t1 resources [a_t1] }
 }
 
 route up ri2 entry signal si exit signal s2 {
   length 3137.0 tvds [a_in, a_sw1, a_t2]
   switches [(sw1, left)]
-  release { trigger a_sw1 resources [a_in, a_sw1, sw1 ] }
-  release { trigger a_t2 resources [a_t2] }
+  release { length 2920.0 trigger a_sw1 resources [a_in, a_sw1, sw1 ] }
+  release { length 217.0 trigger a_t2 resources [a_t2] }
 }
 
 route up re1 entry signal s1 exit signal sf {
   length 2930.0 tvds [a_sw2, a_out]
   switches [(sw2, left)]
-  release { trigger a_sw2 resources [a_sw2, sw2] }
-  release { trigger a_out resources [a_out] }
+  release { length 50.0 trigger a_sw2 resources [a_sw2, sw2] }
+  release { length 2880.0 trigger a_out resources [a_out] }
 }
 
 route up re2 entry signal s2 exit signal sf {
   length 2915.0 tvds [a_sw2, a_out]
   switches [(sw2, right)]
-  release { trigger a_sw2 resources [a_sw2, sw2] }
-  release { trigger a_out resources [a_out] }
+  release { length 65.0 trigger a_sw2 resources [a_sw2, sw2] }
+  release { length 2850.0 trigger a_out resources [a_out] }
 }
 
 route up rf entry signal sf exit boundary b2 { length 100.0 }
