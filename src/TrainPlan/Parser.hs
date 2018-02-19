@@ -228,14 +228,15 @@ movementStmt = do
   symbol "}"
   return (MovementStmt (MovementSpec vehicle enter visits exit))
 
-enterExit :: String -> Parser ([NodeRef], Maybe ConstVelocity)
+enterExit :: String -> Parser (Maybe String, [NodeRef], Maybe ConstVelocity)
 enterExit n = do
   symbol n
+  name <- optname
   locations <- list identifier
   velocity <- optional $ do
     symbol "velocity"
     number
-  return (locations, velocity)
+  return (name, locations, velocity)
 
 timingStmt :: Parser Statement
 timingStmt = do

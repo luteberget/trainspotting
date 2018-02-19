@@ -40,8 +40,8 @@ convert is up = (reverse outRoutes, outTrains)
         length = head [ UP.vehicleLength v | v <- UP.vehicles up
                                            , UP.vehicleName v == UP.vehicleRef m]
         visits = [enter] ++ internal ++ [exit]
-        enterBoundary = head (fst (UP.enter m))
-        exitBoundary = head (fst (UP.exit m))
+        enterBoundary = head ((\(_,nodes,_) -> nodes) (UP.enter m))
+        exitBoundary  = head ((\(_,nodes,_) -> nodes) (UP.exit m))
         enter = head [ i | (RouteResources i _ _ _ _ b) <- routesByResource
                          , b == Just enterBoundary]
         exit = head [ i | (RouteResources i _ _ _ _ b) <- routesByResource

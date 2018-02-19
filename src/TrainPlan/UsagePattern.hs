@@ -17,9 +17,9 @@ data UsagePattern = UsagePattern {
 
 data MovementSpec = MovementSpec {
   vehicleRef :: VehicleRef,
-  enter :: ([NodeRef], Maybe ConstVelocity),
+  enter :: (Maybe String, [NodeRef], Maybe ConstVelocity),
   visits :: [(Maybe String, [DirectionalLocation], Maybe WaitTime)],
-  exit :: ([NodeRef], Maybe ConstVelocity)
+  exit :: (Maybe String, [NodeRef], Maybe ConstVelocity)
 }
     deriving (Show)
 
