@@ -70,13 +70,18 @@ route up re2 entry signal s2 exit signal sf {
 route up rf entry signal sf exit boundary b2 { length 100.0 }
 
 movement goodstrain {
-  enter [b1]
+  enter #g_in [b1]
   visit [(t1-1,220.0,up)]
-  exit [b2]
+  exit #g_out [b2]
 }
 
 movement passengertrain {
-  enter [b1]
+  enter #p_in [b1]
   visit [(t1-1,220.0,up)]
-  exit [b2]
+  exit #p_out [b2]
 }
+
+// Overtaking
+timing p_in  g_in  // Passenger enters first
+timing g_out p_out // Goods exits first
+

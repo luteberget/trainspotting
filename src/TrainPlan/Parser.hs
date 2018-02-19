@@ -243,8 +243,9 @@ timingStmt = do
   symbol "timing"
   refA <- identifier
   refB <- identifier
-  timeDiff <- number
-  return (TimingStmt (TimingSpec refA refB timeDiff))
+  timeDiff <- optional number
+  let dt = fromMaybe 0.0 timeDiff
+  return (TimingStmt (TimingSpec refA refB dt))
 
 coords :: Parser (Double, Double)
 coords = do

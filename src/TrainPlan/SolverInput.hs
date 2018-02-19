@@ -25,7 +25,7 @@ data Train
   , trainVisits :: [RouteId]
   } deriving (Eq, Ord, Show)
 
-type OrderingConstraint = ((TrainId, Int),(TrainId,Int))
+type OrderingConstraint = ((TrainId,RouteId),(TrainId,RouteId))
 type Problem = ([Route],[Train],[Ordering])
 
 type RoutePlan = [[(RouteId, Maybe TrainId)]]

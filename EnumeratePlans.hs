@@ -22,6 +22,7 @@ main = do
       exitFailure
     Right (infrastructure,usagepattern,_) -> do
       logmsg (show infrastructure)
+      logmsg (show usagepattern)
       let (planRoutes,planTrains) = TrainPlan.Convert.convert infrastructure usagepattern
       logmsg "*-> ROUTES"
       sequence_ [ logmsg $ show r | r <- planRoutes ]
