@@ -1,4 +1,4 @@
-module TrainPlan.Solver (
+module PlanDynamic.Solver (
    SegmentId, TrainId, RouteId,
    Route(..),
    Segment(..),
