@@ -158,12 +158,13 @@ allocateAhead s routes route train (prevState,state) progressBefore = case route
     addClause s ([neg isAllocated, progressFuture] ++ progressNow)
 
     forM_ prevState $ \prev -> do 
-        let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
-                              state .! (rId nextRoute) .= Just (tId train) ]
-                          | nextRoute <- routes `startingIn` (Just signal) 
-                          , conflicting <- ( (rId nextRoute) : (routeConflicts nextRoute)) ]
-        conflictResolved <- mapM (andl s) hadConflict
-        addClause s ([progressBefore, progressFuture] ++ conflictResolved)
+      let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
+                            neg (prev .! (rId nextRoute) .= Just (tId train)),
+                            state .! (rId nextRoute) .= Just (tId train) ]
+                        | nextRoute <- nextRs
+                        , conflicting <- ( (rId nextRoute) : (routeConflicts nextRoute)) ]
+      conflictResolved <- mapM (andl s) hadConflict
+      addClause s ([progressBefore, progressFuture] ++ conflictResolved)
     return (neg progressFuture)
 
 bornCondition :: Solver -> [Route] -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
@@ -181,6 +182,7 @@ bornCondition s routes train (prevState,state) bornBefore = do
        -- If train is not born in the first step,
        -- then it must be after a conflict has been resolved.
        let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
+                             neg (prev .! (rId trainBirthPlace) .= Just (tId train)),
                              state .! (rId trainBirthPlace) .= Just (tId train) ]
                          | conflicting <- ((rId trainBirthPlace):
                               (routeConflicts trainBirthPlace)) ]
