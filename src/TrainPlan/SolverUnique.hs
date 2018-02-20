@@ -6,11 +6,15 @@ module TrainPlan.SolverUnique (
 --   * incremental bound on number of transitions 
 --   * maximal progress, which should ensure unique solutions.
 --   * maximal progress on boundary
+--   * Partial release (done in the route converter)
+--   * Timing (ordering) constraints between visits on different trains
 --
 -- TODOs:
---  * Partial release (done in the route converter)
---  * Timing (ordering) constraints between visits on different trains
---  * Repeated visits? How to handle ordering.
+--   * internal visits 
+--     - find route and direction(?) which covers specified point
+--     - total length until stops for simulator input
+--   * Repeated visits? How to handle ordering.
+--   * trains turning directions up/down -- is it always allowed? how to communicate to solver.
 
 
 import Data.Maybe
@@ -55,7 +59,6 @@ exactlyOne s xs = do
 
 newState :: Solver -> Problem -> Maybe State -> IO State
 newState s (routes,partialroutes,trains,ords) prevState = do
-  -- putStrLn $ "NEWSTATE " ++ (show prevState)
   routeStates <- sequence [ newVal s (Nothing :  [ Just (tId t) | t <- trains ])
                           | _ <- routes ]
   let occ = [(rId r, occ) | (r,occ) <- zip routes routeStates ]
