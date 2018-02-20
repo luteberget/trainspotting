@@ -23,14 +23,16 @@ main = do
     Right (infrastructure,usagepattern,_) -> do
       logmsg (show infrastructure)
       logmsg (show usagepattern)
-      let (routes,part,trains) = TrainPlan.Convert.convert infrastructure usagepattern
+      let (routes,part,trains,ords) = TrainPlan.Convert.convert infrastructure usagepattern
       logmsg "*-> ROUTES"
       sequence_ [ logmsg $ show r | r <- routes ]
       logmsg "*-> PARTIAL routes"
       logmsg $ show part
       logmsg "*-> TRAINS"
       logmsg $ show trains
-      final <- TrainPlan.SolverUnique.plan 8 (routes,part,trains,[]) $ \plan -> do
+      logmsg "*-> TRAINS ORDERING"
+      logmsg $ show ords
+      final <- TrainPlan.SolverUnique.plan 8 (routes,part,trains,ords) $ \plan -> do
         return False
       exitSuccess
         

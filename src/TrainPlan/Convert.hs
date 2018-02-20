@@ -27,17 +27,22 @@ data RouteResources
   , rrBoundary :: Maybe String
   } deriving (Ord, Eq, Show)
 
-convert :: IS.Infrastructure -> UP.UsagePattern -> ([S.Route], S.PartialRoutes, [S.Train])
-convert is up = (reverse outRoutes, partialRoutes, outTrains)
+convert :: IS.Infrastructure -> UP.UsagePattern -> ([S.Route], S.PartialRoutes, [S.Train], [S.TrainOrd])
+convert is up = (reverse outRoutes, partialRoutes, outTrains, outOrd)
   where
     routesByResource = fmap convertRoute (zip [0..] (IS.routes is))
-    outRoutes = resolveConflicts (join routesByResource)
-    outTrains = fmap convertTrain (zip [0..] (UP.movements up))
+    convertedTrains = fmap convertTrain (zip [0..] (UP.movements up))
     partialRoutes = (fmap.fmap) rrId routesByResource
+    outTrains = fmap fst convertedTrains
+    outRoutes = resolveConflicts (join routesByResource)
+    outOrd = trainInternalOrd ++ timingOrd
+    timingOrd = []
+    trainInternalOrd = join (fmap snd convertedTrains)
 
-    convertTrain :: (Int, UP.MovementSpec) -> S.Train
-    convertTrain (i,m) = S.Train i length visits
+    convertTrain :: (Int, UP.MovementSpec) -> (S.Train, [S.TrainOrd])
+    convertTrain (i,m) = (S.Train i length visits, ords)
       where
+        ords = fmap (\(v1,v2) -> ((i,v1),(i,v2))) (succPairs (fmap fst (zip [0..] visits)))
         length = head [ UP.vehicleLength v | v <- UP.vehicles up
                                            , UP.vehicleName v == UP.vehicleRef m]
         visits = [enter] ++ internal ++ [exit]

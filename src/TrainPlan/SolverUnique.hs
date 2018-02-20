@@ -25,8 +25,6 @@ import qualified Data.Set as Set
 import Control.Monad (join)
 forM_ = flip mapM_
 
---type State    = [(RouteId, Val (Maybe TrainId))]
---
 type Occupation = [(RouteId, Val (Maybe TrainId))]
 data State
   = State
@@ -56,7 +54,7 @@ exactlyOne s xs = do
   addClause s xs
 
 newState :: Solver -> Problem -> Maybe State -> IO State
-newState s (routes,partialroutes,trains,orderings) prevState = do
+newState s (routes,partialroutes,trains,ords) prevState = do
   -- putStrLn $ "NEWSTATE " ++ (show prevState)
   routeStates <- sequence [ newVal s (Nothing :  [ Just (tId t) | t <- trains ])
                           | _ <- routes ]
@@ -119,13 +117,29 @@ newState s (routes,partialroutes,trains,orderings) prevState = do
   let visit = fromMaybe allFalseVisit (fmap visitBefore prevState)
   visitFuture <- sequence [ do
         v <- sequence [ do
-                let prevVisit = fmap (\(r,l) -> (tId train, r, l)) prev
-                let thisVisit = (tId train, route, lit)
-                v <- visitConstraint s occ prevVisit thisVisit
+                v <- visitConstraint s occ train route visitBefore
                 return (route, v)
-              | (prev, (route, lit)) <- zip (Nothing:(fmap Just visits)) visits ]
+              | (route, visitBefore) <- trainVisitsBefore ]
         return (train, v)
-    | (train,visits) <- visit  ]
+    | (train,trainVisitsBefore) <- visit  ]
+
+  -- putStrLn $ "ORDS: " ++ (show ords)
+  sequence_ [ do
+      let (r1,before1) = head [ (route,visitBefore) 
+            | (train, (_,trainVisitsBefore)) <- zip trains visit 
+            , (tId train) == t1
+            , (route, visitBefore) <- trainVisitsBefore
+            , route == (trainVisits train) !! v1 ]
+ 
+      let (r2,after2) = head [ (route,neg visitBefore) 
+            | (train, (_,trainVisitsFuture)) <- zip trains visitFuture
+            , (tId train) == t2
+            , (route, visitBefore) <- trainVisitsFuture
+            , route == (trainVisits train) !! v2 ]
+
+      --putStrLn $ "SEQ " ++ (show (t1,r1,before1)) ++ "----" ++ (show (t2,r2,after2))
+      visitOrd s occ (t1,r1,before1) (t2,r2,after2)
+    | ((t1,v1),(t2,v2)) <- ords]
 
   --return (State occ progressFuture bornFuture visitFuture)
   return (State occ progressFuture bornFuture visitFuture)
@@ -204,20 +218,24 @@ bornCondition s routes train (prevState,state) bornBefore = do
        addClause s ([neg bornNow] ++ conflictResolved)
    return (neg bornFuture)
 
-visitConstraint :: Solver -> Occupation -> Maybe (TrainId,RouteId,Lit) -> (TrainId, RouteId,Lit) -> IO Lit
-visitConstraint s occ precedingVisit (train,route,visitBefore) = do
+visitConstraint :: Solver -> Occupation -> Train -> RouteId -> Lit -> IO Lit
+visitConstraint s occ train route visitBefore = do
   -- Visits must happen
-  let visitNow = occ .! route .= Just train
+  let visitNow = occ .! route .= Just (tId train)
   visitFuture <- newLit s
   addClause s [visitBefore, visitNow, visitFuture]
-
-  -- ... and in the given order
-  sequence [ do
-      let precedingVisitNow = occ .! precedingRoute .= Just precedingTrain
-      addClause s [precedingVisitBefore, precedingVisitNow, visitFuture]
-    | Just (precedingTrain,precedingRoute,precedingVisitBefore) <- [precedingVisit] ]
-
   return (neg visitFuture)
+
+visitOrd :: Solver -> Occupation -> (TrainId,RouteId,Lit) -> (TrainId,RouteId,Lit) -> IO ()
+visitOrd s occ (t1,r1,before1) (t2,r2,future2) = do
+  let precVisitNow = occ .! r1 .= Just t1
+  addClause s [before1, precVisitNow, future2]
+
+--   sequence [ do
+--       let precedingVisitNow = occ .! precedingRoute .= Just precedingTrain
+--       addClause s [precedingVisitBefore, precedingVisitNow, visitFuture]
+--     | Just (precedingTrain,precedingRoute,precedingVisitBefore) <- [precedingVisit] ]
+
 
 endStateCond :: State -> [Lit]
 endStateCond s = [ l | (_, l) <- bornBefore s] ++

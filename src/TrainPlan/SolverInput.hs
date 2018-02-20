@@ -5,6 +5,7 @@ import SAT.Val
 type SignalId = String 
 type RouteId = Int 
 type TrainId = Int 
+type VisitId = Int
  
  -- data RouteEntry = NoEntry | SourceNode | SignalEntry SignalId 
  -- data RouteExit  = NoExit  | SinkNode   | SignalExit  SignalId 
@@ -27,8 +28,8 @@ data Train
   , trainVisits :: [RouteId]
   } deriving (Eq, Ord, Show)
 
-type OrderingConstraint = ((TrainId,RouteId),(TrainId,RouteId))
-type Problem = ([Route],PartialRoutes,[Train],[Ordering])
+type TrainOrd = ((TrainId,VisitId),(TrainId,VisitId))
+type Problem = ([Route],PartialRoutes,[Train],[TrainOrd])
 
 type RoutePlan = [[(RouteId, Maybe TrainId)]]
 
