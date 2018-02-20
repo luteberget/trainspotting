@@ -14,6 +14,7 @@ import qualified Data.Set as Set
 
 import Control.Monad (join)
 import Data.List (find)
+import Data.Maybe (catMaybes)
 
 succPairs x = zip x (tail x)
 
@@ -36,8 +37,24 @@ convert is up = (reverse outRoutes, partialRoutes, outTrains, outOrd)
     outTrains = fmap fst convertedTrains
     outRoutes = resolveConflicts (join routesByResource)
     outOrd = trainInternalOrd ++ timingOrd
-    timingOrd = []
+    timingOrd = fmap convertTiming (UP.timings up)
     trainInternalOrd = join (fmap snd convertedTrains)
+
+    namedVisits :: Map String (S.TrainId, S.VisitId)
+    namedVisits = Map.fromList (join (fmap trainNamedVisits (zip [0..] (UP.movements up))))
+
+    trainNamedVisits :: (Int, UP.MovementSpec) -> [(String,(S.TrainId,S.VisitId))]
+    trainNamedVisits (i,movement) = catMaybes maybeNamedVisits
+      where
+        maybeNamedVisits = fmap (\(j,s) -> fmap (\s -> (s,(i,j))) s) numberedVisits
+        numberedVisits = zip [0..] names
+        names = [fst3 (UP.enter movement)] ++
+                [] ++ -- (fmap fst3 (UP.visits movement)) ++ -- TODO
+                [(fst3 (UP.exit movement))]
+        fst3 (x,_,_) = x
+
+    convertTiming :: UP.TimingSpec -> S.TrainOrd
+    convertTiming (UP.TimingSpec a b _dt) = (namedVisits Map.! a, namedVisits Map.! b)
 
     convertTrain :: (Int, UP.MovementSpec) -> (S.Train, [S.TrainOrd])
     convertTrain (i,m) = (S.Train i length visits, ords)
