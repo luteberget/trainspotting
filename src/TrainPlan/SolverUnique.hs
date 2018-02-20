@@ -56,7 +56,7 @@ exactlyOne s xs = do
   addClause s xs
 
 newState :: Solver -> Problem -> Maybe State -> IO State
-newState s (routes,trains,orderings) prevState = do
+newState s (routes,partialroutes,trains,orderings) prevState = do
   -- putStrLn $ "NEWSTATE " ++ (show prevState)
   routeStates <- sequence [ newVal s (Nothing :  [ Just (tId t) | t <- trains ])
                           | _ <- routes ]
@@ -73,6 +73,20 @@ newState s (routes,trains,orderings) prevState = do
   sequence_ [ atMostOne s [ occ .! (rId route) .= Just (tId train)
                           | route <- routes `startingIn` entry ]
             | train <- trains, entry <- startPts ]
+
+  -- Partial routes are allocated together
+  sequence_ [ do
+      sequence_ [ do
+          sequence_ [ do
+              let activated r = andl s [ occ .! r .= Just (tId train),
+                    fromMaybe true $ fmap (\s -> neg ((occupation s) .! r 
+                                             .= Just (tId train))) prevState ]
+              r1a <- activated r1
+              r2a <- activated r2
+              equal s r1a r2a
+            | (r1,r2) <- succPairs routeSet ]
+        | routeSet <- partialroutes ]
+    | train <- trains ]
   
   -- Allocate route constraints
   sequence_ [ allocateRoute s routes route train (fmap occupation prevState, occ)
@@ -211,7 +225,7 @@ endStateCond s = [ l | (_, l) <- bornBefore s] ++
                  [ l | (_, ls) <- visitBefore s, (_, l) <- ls ]
 
 plan :: Int -> Problem -> (RoutePlan -> IO Bool) -> IO (Maybe RoutePlan)
-plan maxN problem@(routes,trains,orderings) test = withNewSolver $ \s -> do
+plan maxN problem@(routes,partialroutes,trains,orderings) test = withNewSolver $ \s -> do
   solveNewState s 0 []
 
   where

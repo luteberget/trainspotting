@@ -17,6 +17,8 @@ data Route
   , routeConflicts :: [RouteId] 
   , routeLength    :: Double
   } deriving (Eq, Ord, Show)
+
+type PartialRoutes = [[RouteId]]
   
 data Train
   = Train 
@@ -26,7 +28,7 @@ data Train
   } deriving (Eq, Ord, Show)
 
 type OrderingConstraint = ((TrainId,RouteId),(TrainId,RouteId))
-type Problem = ([Route],[Train],[Ordering])
+type Problem = ([Route],PartialRoutes,[Train],[Ordering])
 
 type RoutePlan = [[(RouteId, Maybe TrainId)]]
 

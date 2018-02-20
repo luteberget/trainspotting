@@ -27,12 +27,13 @@ data RouteResources
   , rrBoundary :: Maybe String
   } deriving (Ord, Eq, Show)
 
-convert :: IS.Infrastructure -> UP.UsagePattern -> ([S.Route], [S.Train])
-convert is up = (reverse outRoutes, outTrains)
+convert :: IS.Infrastructure -> UP.UsagePattern -> ([S.Route], S.PartialRoutes, [S.Train])
+convert is up = (reverse outRoutes, partialRoutes, outTrains)
   where
-    routesByResource = join $ fmap convertRoute (zip [0..] (IS.routes is))
-    outRoutes = resolveConflicts routesByResource
+    routesByResource = fmap convertRoute (zip [0..] (IS.routes is))
+    outRoutes = resolveConflicts (join routesByResource)
     outTrains = fmap convertTrain (zip [0..] (UP.movements up))
+    partialRoutes = (fmap.fmap) rrId routesByResource
 
     convertTrain :: (Int, UP.MovementSpec) -> S.Train
     convertTrain (i,m) = S.Train i length visits
@@ -42,9 +43,9 @@ convert is up = (reverse outRoutes, outTrains)
         visits = [enter] ++ internal ++ [exit]
         enterBoundary = head ((\(_,nodes,_) -> nodes) (UP.enter m))
         exitBoundary  = head ((\(_,nodes,_) -> nodes) (UP.exit m))
-        enter = head [ i | (RouteResources i _ _ _ _ b) <- routesByResource
+        enter = head [ i | (RouteResources i _ _ _ _ b) <- join routesByResource
                          , b == Just enterBoundary]
-        exit = head [ i | (RouteResources i _ _ _ _ b) <- routesByResource
+        exit = head [ i | (RouteResources i _ _ _ _ b) <- join routesByResource
                          , b == Just exitBoundary]
         internal = [] -- TODO
 
