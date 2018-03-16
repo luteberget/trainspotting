@@ -5,3 +5,11 @@ authors = ["Bjørnar Luteberget <luteberget@gmail.com>"]
 
 [dependencies]
 ordered-float="*"
+smallvec="*"
+
+[[bin]]
+name="main"
+path="src/main.rs"
+[[bin]]
+name="railtest"
+path="src/railtest.rs"
