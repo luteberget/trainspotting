@@ -13,6 +13,7 @@ impl<T :Clone> Observable<T> {
         Observable { event_id, value }
     }
     
+    pub fn event(&self) -> EventId { self.event_id }
     pub fn get(&self) -> &T { &self.value }
     pub fn set<X>(&mut self, sim: &mut Simulation<X>, x :T) { 
         self.value = x;

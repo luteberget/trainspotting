@@ -1,5 +1,6 @@
 use smallvec::SmallVec;
 use simulation::*;
+use observable::Observable;
 
 pub type NodeId = usize;
 pub type ObjectId = usize;
@@ -10,6 +11,7 @@ pub trait TrainVisitable {
     fn arrive_back(&self, object :ObjectId, train :TrainId) -> Option<Box<Process<Railway>>> { None }
 }
 
+#[derive(Copy, Clone)]
 pub struct TrainParams {
     pub len :f64,
     pub max_acc: f64,
@@ -23,10 +25,13 @@ pub struct Train {
     pub velocity: f64,
     pub params: TrainParams,
     pub under_train: SmallVec<[(ObjectId, f64); 4]>,
-    pub connected_signals: SmallVec<[(ObjectId, f64); 4]>,
 }
 
-pub struct Object {}
+//pub struct Object {}
+pub enum Object {
+    Sight { distance: f64, signal: ObjectId } ,
+    Signal { authority: Observable<Option<f64>> },
+}
 
 impl TrainVisitable for Object {}
 
@@ -37,15 +42,15 @@ pub struct Railway {
 }
 
 pub struct Node {
-    other_node :usize,
-    edges: Edges,
-    objects: SmallVec<[ObjectId;2]>,
+    pub other_node :NodeId,
+    pub edges: Edges,
+    pub objects: SmallVec<[ObjectId;2]>,
 }
 
 pub enum Edges {
     Nothing,
     ModelBoundary,
-    Single((usize,f64)),
+    Single((NodeId,f64)),
     Switchable(ObjectId),
 }
 
