@@ -11,14 +11,6 @@ pub trait TrainVisitable {
     fn arrive_back(&self, object :ObjectId, train :TrainId) -> Option<Box<Process<Railway>>> { None }
 }
 
-#[derive(Copy, Clone)]
-pub struct TrainParams {
-    pub len :f64,
-    pub max_acc: f64,
-    pub max_brk: f64,
-    pub max_vel: f64,
-}
-
 // State of the train, NOT the driver
 pub struct Train {
     pub location: ((NodeId,NodeId), f64),

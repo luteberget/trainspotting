@@ -3,9 +3,6 @@ use railway::{Railway, TrainId, NodeId, Train, ObjectId, TrainParams, TrainVisit
 use smallvec::SmallVec;
 
 
-#[derive(Copy,Clone)]
-pub enum DriverAction { Accel, Brake, Coast }
-
 pub struct Driver {
     train_id: TrainId,
     authority: f64,
@@ -57,10 +54,10 @@ impl Driver {
         }
     }
 
-    pub fn move_train(&mut self, sim :&mut Simulation<Railway>) {
+    pub fn move_train(&mut self, sim :&mut Simulation<Railway>) -> ModelContainment {
         let (action, action_time) = self.step;
         let dt = *sim.time - action_time;
-        if dt <= 1e-4 { return }
+        if dt <= 1e-4 { return ModelContainment::Inside; }
 
         let mut procs = Vec::new();
         let mut containment = ModelContainment::Inside;
@@ -135,16 +132,6 @@ pub fn train_update(params :&TrainParams, velocity :f64, (action,dt) :(DriverAct
     TrainUpdate{ dx:0.0, v:0.0 }
 }
 
-pub struct TrainUpdate {
-    dx :f64,
-    v :f64,
-}
-
-pub struct DriverPlan {
-    // action
-    // max-time
-    max_t  :f64,
-}
 
 impl Process<Railway> for Driver {
     fn resume(&mut self, sim :&mut Simulation<Railway>) -> ProcessState {
