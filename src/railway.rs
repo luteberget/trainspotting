@@ -2,6 +2,7 @@ use smallvec::SmallVec;
 use simulation::*;
 use observable::Observable;
 use dynamics::TrainParams;
+use std::f64::INFINITY;
 
 pub type NodeId = usize;
 pub type ObjectId = usize;
@@ -16,9 +17,12 @@ pub trait TrainVisitable {
     }
 }
 
+#[derive(Copy, Clone)]
+pub enum SwitchPosition { Left, Right }
+
 // State of the train, NOT the driver
 pub struct Train {
-    pub location: ((NodeId, NodeId), f64),
+    pub location: (NodeId, (Option<NodeId>, f64)),
     pub velocity: f64,
     pub params: TrainParams,
     pub under_train: SmallVec<[(ObjectId, f64); 4]>,
@@ -28,6 +32,11 @@ pub struct Train {
 pub enum Object {
     Sight { distance: f64, signal: ObjectId },
     Signal { authority: Observable<Option<f64>> },
+    Switch { position: Observable<Option<SwitchPosition>>, 
+             left_link: (NodeId, f64), right_link: (NodeId, f64),
+             throwing: Option<ProcessId>, reserved: Observable<bool> },
+    TVDSection { reserved: Observable<bool> },
+    TVDLimit   { enter: ObjectId, exit: ObjectId },
 }
 
 impl TrainVisitable for Object {}
@@ -47,24 +56,28 @@ pub struct Node {
 pub enum Edges {
     Nothing,
     ModelBoundary,
-    Single((NodeId, f64)),
+    Single(NodeId, f64),
     Switchable(ObjectId),
 }
 
 
-impl Railway {
-    pub fn next_from(&self, n: usize) -> Option<usize> {
-        let node = &self.nodes[n];
-        use self::Edges::*;
-        match node.edges {
-            Nothing => None,
-            ModelBoundary => None,
-            Single((other, ref _data)) => Some(other),
-            Switchable(obj) => None,
+pub fn next_node(objects: &Vec<Object>, nodes: &Vec<Node>, n :NodeId) -> Option<(Option<NodeId>, f64)> {
+    let new_start_node = nodes[n].other_node;
+    match nodes[new_start_node].edges {
+        Edges::Nothing => None,
+        Edges::ModelBoundary => Some((None, 1000.0)),
+        Edges::Single(node, dist) => Some((Some(node), dist)),
+        Edges::Switchable(sw) => {
+            match objects[sw] {
+                Object::Switch { ref position, ref left_link, ref right_link, .. } => {
+                    match position.get() {
+                        &Some(SwitchPosition::Left) => Some((Some(left_link.0), left_link.1)),
+                        &Some(SwitchPosition::Right) => Some((Some(right_link.0), right_link.1)),
+                        &None => None,
+                    }
+                },
+                _ => panic!("Not a switch")
+            }
         }
-    }
-
-    pub fn objects_at(&self, n: usize) -> SmallVec<[ObjectId; 2]> {
-        self.nodes[n].objects.clone()
     }
 }

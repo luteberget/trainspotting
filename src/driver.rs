@@ -1,7 +1,9 @@
 use simulation::{Simulation, Process, ProcessState};
-use railway::{Railway, TrainId, NodeId, Train, ObjectId, TrainVisitable, Object};
+use railway::{Railway, TrainId, NodeId, Train, ObjectId, TrainVisitable, Object, SwitchPosition, next_node};
 use smallvec::SmallVec;
 use dynamics::*;
+use std::f64::INFINITY;
+
 
 pub enum ModelContainment {
     Inside,
@@ -22,10 +24,14 @@ impl Driver {
                params: TrainParams)
                -> Self {
         let train_id = sim.world.trains.len();
-        let target_node = sim.world.next_from(node).unwrap();
+        let next = match next_node(&sim.world.objects, &sim.world.nodes, node) {
+            Some(x) => x,
+            None => panic!("Derailed in first node"),
+        };
+
         sim.world.trains.push(Train {
             params: params,
-            location: ((node, target_node), 0.0),
+            location: (node, next),
             velocity: 0.0,
             under_train: SmallVec::new(),
         });
@@ -41,7 +47,7 @@ impl Driver {
     }
 
     pub fn goto_node(&mut self, sim: &mut Simulation<Railway>, node: NodeId) {
-        for obj in sim.world.objects_at(node) {
+        for obj in sim.world.nodes[node].objects.clone() {
             for p in sim.world.objects[obj].arrive_front(obj, self.train_id) {
                 sim.start_process(p);
             }
@@ -60,6 +66,7 @@ impl Driver {
             Signal { .. } => {
                 self.connected_signals.retain(|&mut (s, d)| s != obj);
             }
+            _ => {}
         }
     }
 
@@ -86,7 +93,7 @@ impl Driver {
                                                             
 
             t.velocity = v;
-            t.location.1 -= dx;
+            (t.location.1).1 -= dx;
 
             t.under_train.retain(|&mut (obj, ref mut dist)| {
                 *dist -= dx;
@@ -106,21 +113,20 @@ impl Driver {
                 *dist < 1e-4
             });
 
-            let ((start_node, end_node), dist) = t.location;
-            if dist < 1e-4 {
-                use railway::Edges::*;
-                new_start_node = Some(nodes[end_node].other_node);
-                match nodes[new_start_node.unwrap()].edges {
-                    Nothing => panic!("Ran off end of track."),
-                    ModelBoundary => {
+            let (start_node, (end_node, dist)) = t.location;
+            if dist < 1e-4 && end_node.is_some() {
+                let new_start = nodes[end_node.unwrap()].other_node;
+                new_start_node = Some(new_start); // TODO clean up
+                match next_node(objects, nodes, new_start) {
+                    Some((Some(new_end_node), d)) => {
+                        t.location = (new_start, (Some(new_end_node), d));
+                    },
+                    Some((None, d)) => {
+                        t.location = (new_start, (None, d));
                         containment = ModelContainment::Exiting;
-                        t.location = ((new_start_node.unwrap(), 0), 1e100);
-                    }
-                    Single((new_end_node, new_dist)) => {
-                        t.location = ((new_start_node.unwrap(), new_end_node), new_dist);
-                    }
-                    Switchable(sw_id) => unimplemented!(),
-                };
+                    },
+                    None => panic!("Derailed"),
+                }
             }
         }
 
@@ -139,7 +145,7 @@ impl Driver {
         let train = &sim.world.trains[self.train_id];
 
         // Travel distance is limited by next node
-        let mut max_dist = train.location.1;
+        let mut max_dist = (train.location.1).1;
 
         // Travel distance is limited by nodes under train
         for &(n,d) in train.under_train.iter() {
