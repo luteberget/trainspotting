@@ -18,7 +18,10 @@ pub trait TrainVisitable {
 }
 
 #[derive(Copy, Clone)]
-pub enum SwitchPosition { Left, Right }
+pub enum SwitchPosition {
+    Left,
+    Right,
+}
 
 // State of the train, NOT the driver
 pub struct Train {
@@ -32,14 +35,76 @@ pub struct Train {
 pub enum Object {
     Sight { distance: f64, signal: ObjectId },
     Signal { authority: Observable<Option<f64>> },
-    Switch { position: Observable<Option<SwitchPosition>>, 
-             left_link: (NodeId, f64), right_link: (NodeId, f64),
-             throwing: Option<ProcessId>, reserved: Observable<bool> },
-    TVDSection { reserved: Observable<bool> },
-    TVDLimit   { enter: ObjectId, exit: ObjectId },
+    Switch {
+        position: Observable<Option<SwitchPosition>>,
+        left_link: (NodeId, f64),
+        right_link: (NodeId, f64),
+        throwing: Option<ProcessId>,
+        reserved: Observable<bool>,
+    },
+    TVDSection {
+        reserved: Observable<bool>,
+        occupied: Observable<bool>,
+    },
+    TVDLimit {
+        enter: Option<ObjectId>,
+        exit: Option<ObjectId>,
+    },
 }
 
-impl TrainVisitable for Object {}
+#[derive(Copy, Clone)]
+enum Detect {
+    Enter(ObjectId),
+    Exit(ObjectId),
+}
+
+impl Process<Railway> for Detect {
+    fn resume(&mut self, sim: &mut Simulation<Railway>) -> ProcessState {
+        let ref mut objects = sim.world.objects;
+        let ref mut scheduler = sim.scheduler;
+        match self.clone() {
+            Detect::Enter(obj) => {
+                match objects[obj] {
+                    Object::TVDSection { ref mut occupied, .. } => occupied.set(scheduler, true),
+                    _ => panic!("Not a TVD section"),
+                }
+            }
+            Detect::Exit(obj) => {
+                match objects[obj] {
+                    Object::TVDSection { ref mut occupied, .. } => occupied.set(scheduler, false),
+                    _ => panic!("Not a TVD section"),
+                }
+            }
+        };
+        ProcessState::Finished
+    }
+}
+
+impl TrainVisitable for Object {
+    fn arrive_front(&self, object: ObjectId, train: TrainId) -> Option<Box<Process<Railway>>> {
+        match self {
+            &Object::TVDLimit { enter, .. } => {
+                match enter {
+                    Some(tvd) => Some(Box::new(Detect::Enter(tvd))),
+                    _ => None,
+                }
+            }
+            _ => None,
+        }
+    }
+
+    fn arrive_back(&self, object: ObjectId, train: TrainId) -> Option<Box<Process<Railway>>> {
+        match self {
+            &Object::TVDLimit { exit, .. } => {
+                match exit {
+                    Some(tvd) => Some(Box::new(Detect::Exit(tvd))),
+                    _ => None,
+                }
+            }
+            _ => None,
+        }
+    }
+}
 
 pub struct Railway {
     pub nodes: Vec<Node>,
@@ -61,7 +126,10 @@ pub enum Edges {
 }
 
 
-pub fn next_node(objects: &Vec<Object>, nodes: &Vec<Node>, n :NodeId) -> Option<(Option<NodeId>, f64)> {
+pub fn next_node(objects: &Vec<Object>,
+                 nodes: &Vec<Node>,
+                 n: NodeId)
+                 -> Option<(Option<NodeId>, f64)> {
     let new_start_node = nodes[n].other_node;
     match nodes[new_start_node].edges {
         Edges::Nothing => None,
@@ -75,8 +143,8 @@ pub fn next_node(objects: &Vec<Object>, nodes: &Vec<Node>, n :NodeId) -> Option<
                         &Some(SwitchPosition::Right) => Some((Some(right_link.0), right_link.1)),
                         &None => None,
                     }
-                },
-                _ => panic!("Not a switch")
+                }
+                _ => panic!("Not a switch"),
             }
         }
     }

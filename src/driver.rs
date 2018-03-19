@@ -1,5 +1,6 @@
 use simulation::{Simulation, Process, ProcessState};
-use railway::{Railway, TrainId, NodeId, Train, ObjectId, TrainVisitable, Object, SwitchPosition, next_node};
+use railway::{Railway, TrainId, NodeId, Train, ObjectId, TrainVisitable, Object, SwitchPosition,
+              next_node};
 use smallvec::SmallVec;
 use dynamics::*;
 use std::f64::INFINITY;
@@ -87,10 +88,13 @@ impl Driver {
             let ref nodes = sim.world.nodes;
 
             let ref mut t = trains[self.train_id];
-            let DistanceVelocity { dx, v } = 
-                dynamic_update(&t.params, t.velocity, 
-                               DriverPlan { action, dt });
-                                                            
+            let DistanceVelocity { dx, v } = dynamic_update(&t.params,
+                                                            t.velocity,
+                                                            DriverPlan {
+                                                                action: action,
+                                                                dt: dt,
+                                                            });
+
 
             t.velocity = v;
             (t.location.1).1 -= dx;
@@ -120,11 +124,11 @@ impl Driver {
                 match next_node(objects, nodes, new_start) {
                     Some((Some(new_end_node), d)) => {
                         t.location = (new_start, (Some(new_end_node), d));
-                    },
+                    }
                     Some((None, d)) => {
                         t.location = (new_start, (None, d));
                         containment = ModelContainment::Exiting;
-                    },
+                    }
                     None => panic!("Derailed"),
                 }
             }
@@ -148,12 +152,12 @@ impl Driver {
         let mut max_dist = (train.location.1).1;
 
         // Travel distance is limited by nodes under train
-        for &(n,d) in train.under_train.iter() {
+        for &(n, d) in train.under_train.iter() {
             max_dist = max_dist.min(d);
         }
 
         // Travel distance is limited by sight distances
-        for &(n,d) in self.connected_signals.iter() {
+        for &(n, d) in self.connected_signals.iter() {
             max_dist = max_dist.min(d);
         }
 
@@ -164,14 +168,14 @@ impl Driver {
                     match authority.get() {
                         &Some(d) => {
                             self.authority = dist + d;
-                        } 
+                        }
                         &None => {
                             self.authority = dist - 20.0;
                             break;
                         }
                     }
                 }
-                _ => panic!("Not a signal")
+                _ => panic!("Not a signal"),
             }
         }
 
@@ -179,12 +183,16 @@ impl Driver {
         // TODO: other speed limitations
         let static_speed_profile = StaticMaximumVelocityProfile {
             local_max_velocity: 100.0,
-            max_velocity_ahead: SmallVec::from_slice(&[
-               DistanceVelocity { dx: self.authority, v: 0.0 }]),
+            max_velocity_ahead: SmallVec::from_slice(&[DistanceVelocity {
+                                                           dx: self.authority,
+                                                           v: 0.0,
+                                                       }]),
         };
 
-        dynamic_plan_step(&train.params, max_dist, 
-                          train.velocity, &static_speed_profile)
+        dynamic_plan_step(&train.params,
+                          max_dist,
+                          train.velocity,
+                          &static_speed_profile)
     }
 }
 
