@@ -28,8 +28,8 @@ pub struct DriverPlan {
 }
 
 pub struct StaticMaximumVelocityProfile {
-    local_max_velocity: f64,
-    max_velocity_ahead: SmallVec<[DistanceVelocity; 4]>,
+    pub local_max_velocity: f64,
+    pub max_velocity_ahead: SmallVec<[DistanceVelocity; 4]>,
 }
 
 pub fn dynamic_update(train: &TrainParams,

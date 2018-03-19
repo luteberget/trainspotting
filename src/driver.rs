@@ -1,8 +1,12 @@
 use simulation::{Simulation, Process, ProcessState};
-use railway::{Railway, TrainId, NodeId, Train, ObjectId, TrainVisitable};
+use railway::{Railway, TrainId, NodeId, Train, ObjectId, TrainVisitable, Object};
 use smallvec::SmallVec;
 use dynamics::*;
 
+pub enum ModelContainment {
+    Inside,
+    Exiting,
+}
 
 pub struct Driver {
     train_id: TrainId,
@@ -76,7 +80,10 @@ impl Driver {
             let ref nodes = sim.world.nodes;
 
             let ref mut t = trains[self.train_id];
-            let DistanceVelocity { dx, v } = dynamic_update(&t.params, t.velocity, (action, dt));
+            let DistanceVelocity { dx, v } = 
+                dynamic_update(&t.params, t.velocity, 
+                               DriverPlan { action, dt });
+                                                            
 
             t.velocity = v;
             t.location.1 -= dx;
@@ -128,9 +135,50 @@ impl Driver {
         containment
     }
 
-    pub fn plan_ahead(&mut self) -> DriverPlan {
-        unimplemented!()
-        // DriverPlan { max_t: 0.0 }
+    pub fn plan_ahead(&mut self, sim: &Simulation<Railway>) -> DriverPlan {
+        let train = &sim.world.trains[self.train_id];
+
+        // Travel distance is limited by next node
+        let mut max_dist = train.location.1;
+
+        // Travel distance is limited by nodes under train
+        for &(n,d) in train.under_train.iter() {
+            max_dist = max_dist.min(d);
+        }
+
+        // Travel distance is limited by sight distances
+        for &(n,d) in self.connected_signals.iter() {
+            max_dist = max_dist.min(d);
+        }
+
+        // Authority is updated by signals
+        for &(sig, dist) in self.connected_signals.iter() {
+            match sim.world.objects[sig] {
+                Object::Signal { ref authority } => {
+                    match authority.get() {
+                        &Some(d) => {
+                            self.authority = dist + d;
+                        } 
+                        &None => {
+                            self.authority = dist - 20.0;
+                            break;
+                        }
+                    }
+                }
+                _ => panic!("Not a signal")
+            }
+        }
+
+        // Static maximum speed profile ahead from current position
+        // TODO: other speed limitations
+        let static_speed_profile = StaticMaximumVelocityProfile {
+            local_max_velocity: 100.0,
+            max_velocity_ahead: SmallVec::from_slice(&[
+               DistanceVelocity { dx: self.authority, v: 0.0 }]),
+        };
+
+        dynamic_plan_step(&train.params, max_dist, 
+                          train.velocity, &static_speed_profile)
     }
 }
 
@@ -140,8 +188,7 @@ impl Process<Railway> for Driver {
         match modelcontainment {
             ModelContainment::Exiting => ProcessState::Finished,
             ModelContainment::Inside => {
-                let auth = calc_authority(&sim, self.train_id, &self.connected_signals);
-                let plan = self.plan_ahead();
+                let plan = self.plan_ahead(sim);
 
                 let mut events = SmallVec::new();
                 if plan.dt > 1e-4 {
@@ -158,14 +205,4 @@ impl Process<Railway> for Driver {
             }
         }
     }
-}
-
-pub enum ModelContainment {
-    Inside,
-    Exiting,
-}
-
-
-fn calc_authority(sim: &Simulation<Railway>, train_id: TrainId, conn: &[(ObjectId, f64)]) -> () {
-    ()
 }
