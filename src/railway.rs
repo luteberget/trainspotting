@@ -42,16 +42,17 @@ pub struct InfrastructureState {
 }
 
 pub struct Route {
-    signal :ObjectId,
-    sections: SmallVec<[ObjectId; 4]>,
-    switch_positions: SmallVec<[(ObjectId, SwitchPosition);2]>,
-    length: f64,
-    releases: SmallVec<[Release;2]>,
+    pub signal :ObjectId,
+    pub first_trigger :ObjectId,
+    pub sections: SmallVec<[ObjectId; 4]>,
+    pub switch_positions: SmallVec<[(ObjectId, SwitchPosition);2]>,
+    pub length: f64,
+    pub releases: SmallVec<[Release;2]>,
 }
 
 pub struct Release {
-    trigger :ObjectId,
-    resources :SmallVec<[ObjectId; 4]>,
+    pub trigger :ObjectId,
+    pub resources :SmallVec<[ObjectId; 4]>,
 }
 
 // pub struct Object {}
