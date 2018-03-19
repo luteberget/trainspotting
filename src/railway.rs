@@ -31,6 +31,29 @@ pub struct Train {
     pub under_train: SmallVec<[(ObjectId, f64); 4]>,
 }
 
+pub struct Infrastructure {
+    nodes :Vec<Node>,
+    //sight  :Vec<Sight>,
+    //switch :Vec<Switch>,
+    //limits: Vec<Limit>,
+}
+
+pub struct InfrastructureState {
+}
+
+pub struct Route {
+    signal :ObjectId,
+    sections: SmallVec<[ObjectId; 4]>,
+    switch_positions: SmallVec<[(ObjectId, SwitchPosition);2]>,
+    length: f64,
+    releases: SmallVec<[Release;2]>,
+}
+
+pub struct Release {
+    trigger :ObjectId,
+    resources :SmallVec<[ObjectId; 4]>,
+}
+
 // pub struct Object {}
 pub enum Object {
     Sight { distance: f64, signal: ObjectId },
@@ -50,6 +73,7 @@ pub enum Object {
         enter: Option<ObjectId>,
         exit: Option<ObjectId>,
     },
+    Other(Box<TrainVisitable>),
 }
 
 #[derive(Copy, Clone)]
@@ -89,6 +113,7 @@ impl TrainVisitable for Object {
                     _ => None,
                 }
             }
+            &Object::Other(ref obj) => obj.arrive_front(object, train),
             _ => None,
         }
     }
@@ -101,6 +126,7 @@ impl TrainVisitable for Object {
                     _ => None,
                 }
             }
+            &Object::Other(ref obj) => obj.arrive_back(object, train),
             _ => None,
         }
     }
