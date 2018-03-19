@@ -1,6 +1,7 @@
 use smallvec::SmallVec;
 use simulation::*;
 use observable::Observable;
+use dynamics::TrainParams;
 
 pub type NodeId = usize;
 pub type ObjectId = usize;

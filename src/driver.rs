@@ -1,6 +1,7 @@
 use simulation::{Simulation, Process, ProcessState};
-use railway::{Railway, TrainId, NodeId, Train, ObjectId, TrainParams, TrainVisitable};
+use railway::{Railway, TrainId, NodeId, Train, ObjectId, TrainVisitable};
 use smallvec::SmallVec;
+use dynamics::*;
 
 
 pub struct Driver {
@@ -69,8 +70,8 @@ impl Driver {
           let ref nodes = sim.world.nodes;
 
           let ref mut t = trains[self.train_id];
-          let TrainUpdate { dx, v } = train_update( &t.params, t.velocity,
-                                                     (action, dt));
+          let DistanceVelocity { dx, v } = dynamic_update( &t.params, t.velocity,
+                                                           (action, dt));
 
           t.velocity    = v;
           t.location.1 -= dx;
@@ -123,15 +124,11 @@ impl Driver {
     }
 
     pub fn plan_ahead(&mut self) -> DriverPlan { 
-        DriverPlan { max_t: 0.0 }
+        unimplemented!()
+        //DriverPlan { max_t: 0.0 }
     }
 
 }
-
-pub fn train_update(params :&TrainParams, velocity :f64, (action,dt) :(DriverAction, f64)) -> TrainUpdate {
-    TrainUpdate{ dx:0.0, v:0.0 }
-}
-
 
 impl Process<Railway> for Driver {
     fn resume(&mut self, sim :&mut Simulation<Railway>) -> ProcessState {
@@ -143,8 +140,8 @@ impl Process<Railway> for Driver {
               let plan = self.plan_ahead();
 
               let mut events = SmallVec::new();
-              if plan.max_t > 1e-4 {
-                  events.push(sim.create_timeout(plan.max_t));
+              if plan.dt > 1e-4 {
+                  events.push(sim.create_timeout(plan.dt));
               }
               for &(ref sig,_) in self.connected_signals.iter() {
                   use railway::Object::*;
