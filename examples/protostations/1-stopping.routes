@@ -1,0 +1,5 @@
+sections "a1", "a2"
+route rb1 entry boundary b1 exit signal s1 { length 250.0 }
+route r1 entry signal s1 exit signal s2 { length 1750.0 tvds [a1] switches [] contains [t1stop] }
+route r2 entry signal s2 exit signal s3 { length 1000.0 tvds [a2] switches [] }
+route rb2 entry signal s3 exit boundary b2 { length 500.0 }
