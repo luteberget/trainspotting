@@ -1,0 +1,51 @@
+section "t1", "t2", "t3", "t4"
+
+node
+  boundary
+  named "B"
+
+linear "B" "C" 100.0
+
+node
+  named "C"
+    limit exit "t1"
+  named "D"
+    signal "Sig 1"
+    limit enter "t1"
+
+linear "D" "E" 200.0
+
+node
+  named "E"
+  named "F"
+
+switch "F"
+  leg "G" 200.0,
+  leg "I" 203.0
+
+node
+  named "G"
+  stop
+
+node
+  named "I"
+  boundary
+
+route "X"
+  entrysignal "Sig 1"
+  section "t1", "t2"
+  switch "F":0
+  length 123.00
+  release
+    trigger "t1"
+    resources "t1", "F"
+  release (..)
+
+plan "A"
+  wait 10.0
+  route "X"
+  wait 123.123
+  train "T1"
+    length 200.0 accel 1.0 brake 1.0
+    location "B" velocity 0.0 authority 100.0
+    stop (100.0,0.0),(200.0,0.0)

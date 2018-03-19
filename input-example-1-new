@@ -1,0 +1,16 @@
+node
+  boundary
+  named "B"
+
+linear "B" "C" 100.0
+
+node
+  named "C"
+  named "D"
+    signal "Sig 1"
+
+linear "D" "E" 200.0
+
+node
+  named "E"
+  boundary
