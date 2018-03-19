@@ -3,19 +3,22 @@
 
 
 pub type ObjectId = usize;
-pub enum Direction { Up, Down }
+pub enum Direction {
+    Up,
+    Down,
+}
 
 pub struct Node {
     upnode: usize,
     downnode: usize,
-    x :Box<NodeTrait>,
+    x: Box<NodeTrait>,
 }
 
 pub struct Train {}
 
 pub trait NodeTrait {
-    fn arrive_front(&self, train :&Train) {}
-    fn arrive_back(&self, train :&Train) {}
+    fn arrive_front(&self, train: &Train) {}
+    fn arrive_back(&self, train: &Train) {}
 }
 
 pub struct Signal {
@@ -27,12 +30,12 @@ impl NodeTrait for Signal {}
 
 pub struct Detector {
     touched: Observable<()>,
-    up_tvd :ObjectId,
-    down_tvd :ObjectId,
+    up_tvd: ObjectId,
+    down_tvd: ObjectId,
 }
 
 pub struct TVD {
-    occupied :Observable<bool>,
+    occupied: Observable<bool>,
 }
 
 
@@ -42,12 +45,11 @@ pub struct Railway {
 }
 
 impl NodeTrait for Detector {
-    fn arrive_front(&self, sim :&mut Simulation<Railway>) {
+    fn arrive_front(&self, sim: &mut Simulation<Railway>) {
         if train.get_dir() == Direction::Up {
             match world.objects.get_mut(self.down_tvd) {
-                Some(tvd) => tvd.occupied.set(sim, true);
+                Some(tvd) => tvd.occupied.set(sim, true),
             }
         }
     }
 }
-

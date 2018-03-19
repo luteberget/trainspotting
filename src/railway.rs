@@ -8,48 +8,52 @@ pub type ObjectId = usize;
 pub type TrainId = usize;
 
 pub trait TrainVisitable {
-    fn arrive_front(&self, object :ObjectId, train :TrainId) -> Option<Box<Process<Railway>>> { None }
-    fn arrive_back(&self, object :ObjectId, train :TrainId) -> Option<Box<Process<Railway>>> { None }
+    fn arrive_front(&self, object: ObjectId, train: TrainId) -> Option<Box<Process<Railway>>> {
+        None
+    }
+    fn arrive_back(&self, object: ObjectId, train: TrainId) -> Option<Box<Process<Railway>>> {
+        None
+    }
 }
 
 // State of the train, NOT the driver
 pub struct Train {
-    pub location: ((NodeId,NodeId), f64),
+    pub location: ((NodeId, NodeId), f64),
     pub velocity: f64,
     pub params: TrainParams,
     pub under_train: SmallVec<[(ObjectId, f64); 4]>,
 }
 
-//pub struct Object {}
+// pub struct Object {}
 pub enum Object {
-    Sight { distance: f64, signal: ObjectId } ,
+    Sight { distance: f64, signal: ObjectId },
     Signal { authority: Observable<Option<f64>> },
 }
 
 impl TrainVisitable for Object {}
 
 pub struct Railway {
-    pub nodes :Vec<Node>,
-    pub objects :Vec<Object>,
-    pub trains :Vec<Train>,
+    pub nodes: Vec<Node>,
+    pub objects: Vec<Object>,
+    pub trains: Vec<Train>,
 }
 
 pub struct Node {
-    pub other_node :NodeId,
+    pub other_node: NodeId,
     pub edges: Edges,
-    pub objects: SmallVec<[ObjectId;2]>,
+    pub objects: SmallVec<[ObjectId; 2]>,
 }
 
 pub enum Edges {
     Nothing,
     ModelBoundary,
-    Single((NodeId,f64)),
+    Single((NodeId, f64)),
     Switchable(ObjectId),
 }
 
 
 impl Railway {
-    pub fn next_from(&self, n :usize) -> Option<usize> {
+    pub fn next_from(&self, n: usize) -> Option<usize> {
         let node = &self.nodes[n];
         use self::Edges::*;
         match node.edges {

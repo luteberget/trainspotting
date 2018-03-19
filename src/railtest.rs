@@ -8,6 +8,6 @@ mod railway;
 mod driver;
 
 fn main() {
-    let x : Option<railway::Railway> = None;
+    let x: Option<railway::Railway> = None;
     println!("railway");
 }
