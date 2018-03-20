@@ -1,13 +1,14 @@
 use simulation::{Scheduler, EventId};
+use std::fmt::Debug;
 
 
-#[derive(Clone)]
-pub struct Observable<T: Clone> {
+#[derive(Clone, Debug)]
+pub struct Observable<T: Clone + Debug> {
     event_id: EventId,
     value: T,
 }
 
-impl<T: Clone> Observable<T> {
+impl<T: Clone + Debug> Observable<T> {
     pub fn new(scheduler: &mut Scheduler, value: T) -> Observable<T> {
         let event_id = scheduler.new_event();
         Observable {

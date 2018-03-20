@@ -1,4 +1,5 @@
-node b1(boundary)-n1
+boundary b1
+node b1-n1
 linear n1-n2 1.0
 node n2-n3(sight s1 249.0)
 linear n3-n4 249.0
@@ -9,8 +10,8 @@ linear n7-n8 600.0
 node n8(exit a2, enter a1)-n9(signal s2, exit a1, enter a2)
 linear n9-n10 800.0
 node n10-n11(sight s3 200.0)
-linear n11-n12
+linear n11-n12 200.0
 node n12(enter a2)-n13(signal s3, exit a2)
 linear n13-n14 500.0
-node n14-b2(boundary)
-switch sw1 n90-(n17 500.0, n18 502.0)
+node n14-b2
+boundary b2

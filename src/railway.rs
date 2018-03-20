@@ -17,13 +17,14 @@ pub trait TrainVisitable {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum SwitchPosition {
     Left,
     Right,
 }
 
 // State of the train, NOT the driver
+#[derive(Debug)]
 pub struct Train {
     pub location: (NodeId, (Option<NodeId>, f64)),
     pub velocity: f64,
@@ -56,6 +57,23 @@ pub struct Release {
 }
 
 // pub struct Object {}
+
+#[derive(Debug)]
+pub enum StaticObject {
+    Sight { distance: f64, signal: ObjectId },
+    Signal, 
+    Switch {
+        left_link: (NodeId, f64),
+        right_link: (NodeId, f64),
+    },
+    TVDLimit {
+        enter: Option<ObjectId>,
+        exit: Option<ObjectId>,
+    },
+    TVDSection,
+}
+
+#[derive(Debug)]
 pub enum Object {
     Sight { distance: f64, signal: ObjectId },
     Signal { authority: Observable<Option<f64>> },
@@ -74,7 +92,7 @@ pub enum Object {
         enter: Option<ObjectId>,
         exit: Option<ObjectId>,
     },
-    Other(Box<TrainVisitable>),
+    //Other(Box<TrainVisitable>),
 }
 
 #[derive(Copy, Clone)]
@@ -114,7 +132,7 @@ impl TrainVisitable for Object {
                     _ => None,
                 }
             }
-            &Object::Other(ref obj) => obj.arrive_front(object, train),
+            //&Object::Other(ref obj) => obj.arrive_front(object, train),
             _ => None,
         }
     }
@@ -127,24 +145,33 @@ impl TrainVisitable for Object {
                     _ => None,
                 }
             }
-            &Object::Other(ref obj) => obj.arrive_back(object, train),
+            //&Object::Other(ref obj) => obj.arrive_back(object, train),
             _ => None,
         }
     }
 }
 
+#[derive(Debug)]
+pub struct StaticInfrastructure {
+    pub nodes :Vec<Node>,
+    pub objects :Vec<StaticObject>,
+}
+
+#[derive(Debug)]
 pub struct Railway {
     pub nodes: Vec<Node>,
     pub objects: Vec<Object>,
     pub trains: Vec<Train>,
 }
 
+#[derive(Debug)]
 pub struct Node {
     pub other_node: NodeId,
     pub edges: Edges,
     pub objects: SmallVec<[ObjectId; 2]>,
 }
 
+#[derive(Debug)]
 pub enum Edges {
     Nothing,
     ModelBoundary,

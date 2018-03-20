@@ -1,6 +1,6 @@
 use smallvec::SmallVec;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct TrainParams {
     pub len: f64,
     pub max_acc: f64,

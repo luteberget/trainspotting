@@ -13,3 +13,7 @@ path="src/main.rs"
 [[bin]]
 name="railtest"
 path="src/railtest.rs"
+
+[[bin]]
+name="parsetest"
+path="src/parsetest.rs"
