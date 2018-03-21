@@ -1,16 +1,12 @@
 extern crate smallvec;
 extern crate ordered_float;
 
-mod simulation;
-mod observable;
-mod dynamics;
-
-mod railway;
-mod parser;
-use parser::*;
+mod staticinfrastructure;
+mod staticinfrastructure_parser;
+use staticinfrastructure_parser::*;
 
 use std::path::Path;
-pub fn parse_file(f :&Path) -> Result<railway::StaticInfrastructure,String> {
+pub fn parse_file(f :&Path) -> Result<staticinfrastructure::StaticInfrastructure,String> {
   use std::fs::File;
   use std::io::prelude::*;
 use std::io::BufReader;
