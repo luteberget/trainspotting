@@ -1,4 +1,5 @@
 use smallvec::SmallVec;
+use staticinfrastructure;
 // AST
 //
 //
@@ -319,7 +320,6 @@ pub fn matches(i: &mut usize, tokens: &[Token], tok: Token) -> bool {
 //
 
 
-use staticinfrastructure;
 
 #[derive(Debug,Clone)]
 pub enum ModelError {
@@ -379,7 +379,7 @@ pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::Stati
     let mut nodes: HashMap<String, usize> = HashMap::new();
     let mut objects: HashMap<String, usize> = HashMap::new();
     for s in stmts {
-        use Statement::*;
+        use self::Statement::*;
         match s {
             &Boundary(ref name) => {
                 let node_idx = get_or_create_node(&mut model.nodes, &mut nodes, name);

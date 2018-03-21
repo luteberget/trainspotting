@@ -11,8 +11,8 @@ smallvec="*"
 name="main"
 path="src/main.rs"
 [[bin]]
-name="railtest"
-path="src/railtest.rs"
+name="simulator"
+path="src/simulator.rs"
 
 [[bin]]
 name="parsetest"

@@ -13,6 +13,7 @@ enum ModelContainment {
 
 #[derive(Debug)]
 struct Train {
+    name: String,
     location: (NodeId, (Option<NodeId>, f64)),
     velocity: f64,
     params: TrainParams,
@@ -28,6 +29,7 @@ pub struct Driver {
 
 impl Driver {
     pub fn new(sim: &mut Simulation<Infrastructure>,
+               name: String,
                node: NodeId,
                auth: f64,
                params: TrainParams)
@@ -38,6 +40,7 @@ impl Driver {
         };
 
         let train = Train {
+            name: name,
             params: params,
             location: (node, next),
             velocity: 0.0,
