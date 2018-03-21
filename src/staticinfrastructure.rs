@@ -39,3 +39,22 @@ pub enum StaticObject {
     TVDSection,
 }
 
+#[derive(Copy, Clone, Debug)]
+pub enum SwitchPosition {
+    Left,
+    Right,
+}
+
+pub struct Route {
+    pub signal :ObjectId,
+    pub first_trigger :ObjectId,
+    pub sections: SmallVec<[ObjectId; 4]>,
+    pub switch_positions: SmallVec<[(ObjectId, SwitchPosition);2]>,
+    pub length: f64,
+    pub releases: SmallVec<[Release;2]>,
+}
+
+pub struct Release {
+    pub trigger :ObjectId,
+    pub resources :SmallVec<[ObjectId; 4]>,
+}

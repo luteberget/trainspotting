@@ -2,71 +2,26 @@ use smallvec::SmallVec;
 use simulation::*;
 use observable::Observable;
 use dynamics::TrainParams;
+use staticinfrastructure::*;
 use std::f64::INFINITY;
 
-pub type NodeId = usize;
-pub type ObjectId = usize;
 pub type TrainId = usize;
 
 pub trait TrainVisitable {
-    fn arrive_front(&self, object: ObjectId, train: TrainId) -> Option<Box<Process<Railway>>> {
+    fn arrive_front(&self, object: ObjectId) -> Option<Box<Process<Infrastructure>>> {
         None
     }
-    fn arrive_back(&self, object: ObjectId, train: TrainId) -> Option<Box<Process<Railway>>> {
+    fn arrive_back(&self, object: ObjectId) -> Option<Box<Process<Infrastructure>>> {
         None
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-pub enum SwitchPosition {
-    Left,
-    Right,
-}
-
-// State of the train, NOT the driver
 #[derive(Debug)]
-pub struct Train {
-    pub location: (NodeId, (Option<NodeId>, f64)),
-    pub velocity: f64,
-    pub params: TrainParams,
-    pub under_train: SmallVec<[(ObjectId, f64); 4]>,
-}
-
-pub struct Infrastructure {
-    nodes :Vec<Node>,
-    //sight  :Vec<Sight>,
-    //switch :Vec<Switch>,
-    //limits: Vec<Limit>,
-}
-
-pub struct InfrastructureState {
-}
-
-pub struct Route {
-    pub signal :ObjectId,
-    pub first_trigger :ObjectId,
-    pub sections: SmallVec<[ObjectId; 4]>,
-    pub switch_positions: SmallVec<[(ObjectId, SwitchPosition);2]>,
-    pub length: f64,
-    pub releases: SmallVec<[Release;2]>,
-}
-
-pub struct Release {
-    pub trigger :ObjectId,
-    pub resources :SmallVec<[ObjectId; 4]>,
-}
-
-// pub struct Object {}
-
-
-#[derive(Debug)]
-pub enum Object {
-    Sight { distance: f64, signal: ObjectId },
+pub enum ObjectState {
+    Sight ,
     Signal { authority: Observable<Option<f64>> },
     Switch {
         position: Observable<Option<SwitchPosition>>,
-        left_link: (NodeId, f64),
-        right_link: (NodeId, f64),
         throwing: Option<ProcessId>,
         reserved: Observable<bool>,
     },
@@ -74,33 +29,29 @@ pub enum Object {
         reserved: Observable<bool>,
         occupied: Observable<bool>,
     },
-    TVDLimit {
-        enter: Option<ObjectId>,
-        exit: Option<ObjectId>,
-    },
-    //Other(Box<TrainVisitable>),
+    TVDLimit,
 }
 
 #[derive(Copy, Clone)]
-enum Detect {
+enum DetectEvent {
     Enter(ObjectId),
     Exit(ObjectId),
 }
 
-impl Process<Railway> for Detect {
-    fn resume(&mut self, sim: &mut Simulation<Railway>) -> ProcessState {
-        let ref mut objects = sim.world.objects;
+impl Process<Infrastructure> for DetectEvent {
+    fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
+        let ref mut infstate = sim.world.state;
         let ref mut scheduler = sim.scheduler;
         match self.clone() {
-            Detect::Enter(obj) => {
-                match objects[obj] {
-                    Object::TVDSection { ref mut occupied, .. } => occupied.set(scheduler, true),
+            DetectEvent::Enter(obj) => {
+                match infstate[obj] {
+                    ObjectState::TVDSection { ref mut occupied, .. } => occupied.set(scheduler, true),
                     _ => panic!("Not a TVD section"),
                 }
             }
-            Detect::Exit(obj) => {
-                match objects[obj] {
-                    Object::TVDSection { ref mut occupied, .. } => occupied.set(scheduler, false),
+            DetectEvent::Exit(obj) => {
+                match infstate[obj] {
+                    ObjectState::TVDSection { ref mut occupied, .. } => occupied.set(scheduler, false),
                     _ => panic!("Not a TVD section"),
                 }
             }
@@ -109,12 +60,12 @@ impl Process<Railway> for Detect {
     }
 }
 
-impl TrainVisitable for Object {
-    fn arrive_front(&self, object: ObjectId, train: TrainId) -> Option<Box<Process<Railway>>> {
+impl TrainVisitable for StaticObject {
+    fn arrive_front(&self, object: ObjectId) -> Option<Box<Process<Infrastructure>>> {
         match self {
-            &Object::TVDLimit { enter, .. } => {
+            &StaticObject::TVDLimit { enter, .. } => {
                 match enter {
-                    Some(tvd) => Some(Box::new(Detect::Enter(tvd))),
+                    Some(tvd) => Some(Box::new(DetectEvent::Enter(tvd))),
                     _ => None,
                 }
             }
@@ -123,11 +74,11 @@ impl TrainVisitable for Object {
         }
     }
 
-    fn arrive_back(&self, object: ObjectId, train: TrainId) -> Option<Box<Process<Railway>>> {
+    fn arrive_back(&self, object: ObjectId) -> Option<Box<Process<Infrastructure>>> {
         match self {
-            &Object::TVDLimit { exit, .. } => {
+            &StaticObject::TVDLimit { exit, .. } => {
                 match exit {
-                    Some(tvd) => Some(Box::new(Detect::Exit(tvd))),
+                    Some(tvd) => Some(Box::new(DetectEvent::Exit(tvd))),
                     _ => None,
                 }
             }
@@ -139,33 +90,57 @@ impl TrainVisitable for Object {
 
 
 #[derive(Debug)]
-pub struct Railway {
-    pub nodes: Vec<Node>,
-    pub objects: Vec<Object>,
-    pub trains: Vec<Train>,
+pub struct Infrastructure {
+    pub statics :StaticInfrastructure,
+    pub state :Vec<ObjectState>,
 }
 
+impl Infrastructure {
+    pub fn new(scheduler :&mut Scheduler, 
+               infrastructure :StaticInfrastructure) -> Infrastructure {
+        use staticinfrastructure::StaticObject::*;
+        let state = infrastructure.objects.iter().map(|o| match o {
+            &Sight { .. } => ObjectState::Sight,
+            &Signal { .. } => ObjectState::Signal { 
+                authority: Observable::new(scheduler, None) },
+            &TVDLimit { .. } => ObjectState::TVDLimit,
+            &TVDSection => ObjectState::TVDSection {
+                reserved: Observable::new(scheduler, false),
+                occupied: Observable::new(scheduler, false),
+            },
+            &Switch {..}=> ObjectState::Switch {
+                position: Observable::new(scheduler, None),
+                throwing: None,
+                reserved: Observable::new(scheduler, false),
+            }
+        }).collect();
+        Infrastructure {
+            statics: infrastructure,
+            state: state,
+        }
+    }
 
-pub fn next_node(objects: &Vec<Object>,
-                 nodes: &Vec<Node>,
-                 n: NodeId)
-                 -> Option<(Option<NodeId>, f64)> {
-    let new_start_node = nodes[n].other_node;
-    match nodes[new_start_node].edges {
-        Edges::Nothing => None,
-        Edges::ModelBoundary => Some((None, 1000.0)),
-        Edges::Single(node, dist) => Some((Some(node), dist)),
-        Edges::Switchable(sw) => {
-            match objects[sw] {
-                Object::Switch { ref position, ref left_link, ref right_link, .. } => {
-                    match position.get() {
-                        &Some(SwitchPosition::Left) => Some((Some(left_link.0), left_link.1)),
-                        &Some(SwitchPosition::Right) => Some((Some(right_link.0), right_link.1)),
-                        &None => None,
-                    }
+    pub fn next_node(&self, node: NodeId)
+                     -> Option<(Option<NodeId>, f64)> {
+        let new_start_node = self.statics.nodes[node].other_node;
+        match self.statics.nodes[new_start_node].edges {
+            Edges::Nothing => None,
+            Edges::ModelBoundary => Some((None, 1000.0)),
+            Edges::Single(next_node, dist) => Some((Some(next_node), dist)),
+            Edges::Switchable(sw) => {
+                match (&self.statics.objects[sw], &self.state[sw]) {
+                    (&StaticObject::Switch { ref left_link, ref right_link, .. },
+                     &ObjectState::Switch { ref position, .. } ) => {
+                        match position.get() {
+                            &Some(SwitchPosition::Left) => Some((Some(left_link.0), left_link.1)),
+                            &Some(SwitchPosition::Right) => Some((Some(right_link.0), right_link.1)),
+                            &None => None,
+                        }
+                    },
+                    _ => panic!("Not a switch"),
                 }
-                _ => panic!("Not a switch"),
             }
         }
     }
 }
+

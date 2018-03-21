@@ -2,7 +2,7 @@ use smallvec::SmallVec;
 
 #[derive(Copy, Clone, Debug)]
 pub struct TrainParams {
-    pub len: f64,
+    pub length: f64,
     pub max_acc: f64,
     pub max_brk: f64,
     pub max_vel: f64,

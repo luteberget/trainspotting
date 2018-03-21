@@ -1,44 +1,51 @@
 use simulation::{Simulation, Process, ProcessState};
-use railway::{Railway, TrainId, NodeId, Train, ObjectId, TrainVisitable, Object, SwitchPosition,
-              next_node};
+use railway::*;
+use staticinfrastructure::*;
 use smallvec::SmallVec;
 use dynamics::*;
 use std::f64::INFINITY;
 
 
-pub enum ModelContainment {
+enum ModelContainment {
     Inside,
     Exiting,
 }
 
+#[derive(Debug)]
+struct Train {
+    location: (NodeId, (Option<NodeId>, f64)),
+    velocity: f64,
+    params: TrainParams,
+    under_train: SmallVec<[(ObjectId, f64); 4]>,
+}
+
 pub struct Driver {
-    train_id: TrainId,
+    train: Train,
     authority: f64,
     step: (DriverAction, f64),
     connected_signals: SmallVec<[(ObjectId, f64); 4]>,
 }
 
 impl Driver {
-    pub fn new(sim: &mut Simulation<Railway>,
+    pub fn new(sim: &mut Simulation<Infrastructure>,
                node: NodeId,
                auth: f64,
                params: TrainParams)
                -> Self {
-        let train_id = sim.world.trains.len();
-        let next = match next_node(&sim.world.objects, &sim.world.nodes, node) {
+        let next = match sim.world.next_node(node) {
             Some(x) => x,
             None => panic!("Derailed in first node"),
         };
 
-        sim.world.trains.push(Train {
+        let train = Train {
             params: params,
             location: (node, next),
             velocity: 0.0,
             under_train: SmallVec::new(),
-        });
+        };
 
         let mut d = Driver {
-            train_id: train_id,
+            train: train,
             authority: auth,
             step: (DriverAction::Coast, *sim.time),
             connected_signals: SmallVec::new(),
@@ -47,112 +54,90 @@ impl Driver {
         d
     }
 
-    pub fn goto_node(&mut self, sim: &mut Simulation<Railway>, node: NodeId) {
-        for obj in sim.world.nodes[node].objects.clone() {
-            for p in sim.world.objects[obj].arrive_front(obj, self.train_id) {
+    fn goto_node(&mut self, sim: &mut Simulation<Infrastructure>, node: NodeId) {
+        for obj in sim.world.statics.nodes[node].objects.clone() {
+            for p in sim.world.statics.objects[obj].arrive_front(obj) {
                 sim.start_process(p);
             }
             self.arrive_front(sim, obj);
-            let length = sim.world.trains[self.train_id].params.len;
-            sim.world.trains[self.train_id].under_train.push((obj, length));
+            self.train.under_train.push((obj, self.train.params.length));
         }
     }
 
-    pub fn arrive_front(&mut self, sim: &Simulation<Railway>, obj: ObjectId) {
-        use railway::Object::*;
-        match sim.world.objects[obj] {
-            Sight { distance, signal } => {
+    fn arrive_front(&mut self, sim: &Simulation<Infrastructure>, obj: ObjectId) {
+        match sim.world.statics.objects[obj] {
+            StaticObject::Sight { distance, signal } => {
                 self.connected_signals.push((signal, distance));
             }
-            Signal { .. } => {
+            StaticObject::Signal { .. } => {
                 self.connected_signals.retain(|&mut (s, d)| s != obj);
             }
             _ => {}
         }
     }
 
-    pub fn move_train(&mut self, sim: &mut Simulation<Railway>) -> ModelContainment {
+    fn move_train(&mut self, sim: &mut Simulation<Infrastructure>) -> ModelContainment {
         let (action, action_time) = self.step;
         let dt = *sim.time - action_time;
+
         if dt <= 1e-4 {
             return ModelContainment::Inside;
         }
 
-        let mut procs = Vec::new();
-        let mut containment = ModelContainment::Inside;
-        let mut new_start_node = None;
+        let DistanceVelocity { dx, v } = dynamic_update(&self.train.params,
+                                                        self.train.velocity,
+                                                        DriverPlan {
+                                                            action: action,
+                                                            dt: dt,
+                                                        });
 
-        {
-            let ref mut trains = sim.world.trains;
-            let ref mut objects = sim.world.objects;
-            let ref nodes = sim.world.nodes;
+        self.train.velocity = v;
+        (self.train.location.1).1 -= dx;
 
-            let ref mut t = trains[self.train_id];
-            let DistanceVelocity { dx, v } = dynamic_update(&t.params,
-                                                            t.velocity,
-                                                            DriverPlan {
-                                                                action: action,
-                                                                dt: dt,
-                                                            });
-
-
-            t.velocity = v;
-            (t.location.1).1 -= dx;
-
-            t.under_train.retain(|&mut (obj, ref mut dist)| {
-                *dist -= dx;
-                if *dist < 1e-4 {
-                    // Cleared a node.
-                    for p in objects[obj].arrive_back(obj, self.train_id) {
-                        procs.push(p);
-                    }
-                    false
-                } else {
-                    true
+        self.train.under_train.retain(|&mut (obj, ref mut dist)| {
+            *dist -= dx;
+            if *dist < 1e-4 {
+                // Cleared a node.
+                for p in sim.world.statics.objects[obj].arrive_back(obj) {
+                    sim.start_process(p);
                 }
-            });
-
-            self.connected_signals.retain(|&mut (obj, ref mut dist)| {
-                *dist -= dx;
-                *dist < 1e-4
-            });
-
-            let (start_node, (end_node, dist)) = t.location;
-            if dist < 1e-4 && end_node.is_some() {
-                let new_start = nodes[end_node.unwrap()].other_node;
-                new_start_node = Some(new_start); // TODO clean up
-                match next_node(objects, nodes, new_start) {
-                    Some((Some(new_end_node), d)) => {
-                        t.location = (new_start, (Some(new_end_node), d));
-                    }
-                    Some((None, d)) => {
-                        t.location = (new_start, (None, d));
-                        containment = ModelContainment::Exiting;
-                    }
-                    None => panic!("Derailed"),
-                }
+                false
+            } else {
+                true
             }
-        }
+        });
 
-        for p in procs {
-            sim.start_process(p);
-        }
+        self.connected_signals.retain(|&mut (obj, ref mut dist)| {
+            *dist -= dx;
+            *dist < 1e-4
+        });
 
-        for new_start_node in new_start_node {
-            self.goto_node(sim, new_start_node);
+        let (start_node, (end_node, dist)) = self.train.location;
+        if dist < 1e-4 && end_node.is_some() {
+            let new_start = sim.world.statics.nodes[end_node.unwrap()].other_node;
+            self.goto_node(sim, new_start);
+            match sim.world.next_node(new_start) {
+                Some((Some(new_end_node), d)) => {
+                    self.train.location = (new_start, (Some(new_end_node), d));
+                    ModelContainment::Inside
+                }
+                Some((None, d)) => {
+                    self.train.location = (new_start, (None, d));
+                    ModelContainment::Exiting
+                }
+                None => panic!("Derailed"),
+            }
+        } else {
+            ModelContainment::Inside
         }
-
-        containment
     }
 
-    pub fn plan_ahead(&mut self, sim: &Simulation<Railway>) -> DriverPlan {
-        let train = &sim.world.trains[self.train_id];
-
+    fn plan_ahead(&mut self, sim: &Simulation<Infrastructure>) -> DriverPlan {
         // Travel distance is limited by next node
-        let mut max_dist = (train.location.1).1;
+        let mut max_dist = (self.train.location.1).1;
 
         // Travel distance is limited by nodes under train
-        for &(n, d) in train.under_train.iter() {
+        for &(n, d) in self.train.under_train.iter() {
             max_dist = max_dist.min(d);
         }
 
@@ -163,8 +148,8 @@ impl Driver {
 
         // Authority is updated by signals
         for &(sig, dist) in self.connected_signals.iter() {
-            match sim.world.objects[sig] {
-                Object::Signal { ref authority } => {
+            match sim.world.state[sig] {
+                ObjectState::Signal { ref authority } => {
                     match authority.get() {
                         &Some(d) => {
                             self.authority = dist + d;
@@ -189,15 +174,15 @@ impl Driver {
                                                        }]),
         };
 
-        dynamic_plan_step(&train.params,
+        dynamic_plan_step(&self.train.params,
                           max_dist,
-                          train.velocity,
+                          self.train.velocity,
                           &static_speed_profile)
     }
 }
 
-impl Process<Railway> for Driver {
-    fn resume(&mut self, sim: &mut Simulation<Railway>) -> ProcessState {
+impl Process<Infrastructure> for Driver {
+    fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
         let modelcontainment = self.move_train(sim);
         match modelcontainment {
             ModelContainment::Exiting => ProcessState::Finished,
@@ -209,9 +194,8 @@ impl Process<Railway> for Driver {
                     events.push(sim.create_timeout(plan.dt));
                 }
                 for &(ref sig, _) in self.connected_signals.iter() {
-                    use railway::Object::*;
-                    match sim.world.objects[*sig] {
-                        Signal { ref authority } => events.push(authority.event()),
+                    match sim.world.state[*sig] {
+                        ObjectState::Signal { ref authority } => events.push(authority.event()),
                         _ => panic!("Object is not a signal"),
                     }
                 }
