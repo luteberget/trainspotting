@@ -4,13 +4,13 @@ extern crate ordered_float;
 mod simulation;
 mod observable;
 mod dynamics;
-mod railway;
+mod infrastructure;
 mod staticinfrastructure;
 
 mod driver;
 //mod route;
 
 fn main() {
-    let x: Option<railway::Infrastructure> = None;
-    println!("railway");
+    let x: Option<infrastructure::Infrastructure> = None;
+    println!("infrastructure");
 }

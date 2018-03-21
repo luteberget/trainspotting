@@ -1,7 +1,7 @@
 use simulation::{Simulation, Process, ProcessState};
-use railway::*;
 use smallvec::SmallVec;
 use staticinfrastructure::*;
+use railway::*;
 
 enum ActivateRouteState {
     Allocate, // Allocate resources
