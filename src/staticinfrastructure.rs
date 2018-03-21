@@ -39,7 +39,7 @@ pub enum StaticObject {
     TVDSection,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum SwitchPosition {
     Left,
     Right,

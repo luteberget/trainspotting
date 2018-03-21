@@ -1,4 +1,4 @@
-use simulation::{Simulation, Process, ProcessState};
+use simulation::{Simulation, Process, ProcessState, EventId, Scheduler};
 use smallvec::SmallVec;
 use staticinfrastructure::*;
 use infrastructure::*;
@@ -13,21 +13,86 @@ struct ActivateRoute {
     state :ActivateRouteState,
 }
 
-fn resources_available(r :&Route, infrastructure :&Infrastructure) -> bool {
-    false
+fn unavailable_resource(r :&Route, infrastructure :&Infrastructure) -> Option<EventId> {
+    for s in r.sections.iter() {
+        match infrastructure.state[*s] {
+            ObjectState::TVDSection { ref reserved, .. } => {
+                if *reserved.get() { return Some(reserved.event()); }
+            },
+            _ => panic!("Not a TVD"),
+        };
+    }
+
+    for &(sw,_pos) in r.switch_positions.iter() {
+        match infrastructure.state[sw] {
+            ObjectState::Switch { ref reserved, .. } => {
+                if *reserved.get() { return Some(reserved.event()); }
+            },
+            _ => panic!("Not a switch"),
+        }
+    }
+
+    return None;
+}
+
+fn allocate_resources(r :&Route, infrastructure :&mut Infrastructure, scheduler :&mut Scheduler) {
+    for s in r.sections.iter() {
+        match infrastructure.state[*s] {
+            ObjectState::TVDSection { ref mut reserved, .. } => reserved.set(scheduler, true),
+            _ => panic!("Not a TVD"),
+        };
+    }
+
+    for &(sw,_pos) in r.switch_positions.iter() {
+        match infrastructure.state[sw] {
+            ObjectState::Switch { ref mut reserved, .. } => reserved.set(scheduler, true),
+            _ => panic!("Not a switch"),
+        }
+    }
+}
+
+
+fn movable_events(r :&Route, sim :&mut Simulation<Infrastructure>) -> Vec<EventId> {
+    let throw = r.switch_positions.iter().filter_map(|&(sw,pos)| {
+        match sim.world.state[sw] {
+            ObjectState::Switch { ref position, ref mut throwing, .. } => {
+                if position.get() != &Some(pos) && !throwing.is_some() {
+                    Some((sw,pos))
+                } else { None }
+            },
+            _ => panic!("Not a switch"),
+        }
+    }).collect::<Vec<_>>();
+
+    for (sw,pos) in throw { 
+        sim.start_process(Box::new(MoveSwitch { sw: sw, pos: pos, state: false }));
+    }
+
+    r.switch_positions.iter().filter_map(|&(sw,pos)| {
+        match sim.world.state[sw] {
+            ObjectState::Switch { ref throwing, .. } => *throwing,
+            _ => panic!("Not a switch"),
+        }
+    }).collect::<Vec<_>>()
+
 }
 
 impl Process<Infrastructure> for ActivateRoute {
     fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
         if let ActivateRouteState::Allocate = self.state {
-            if resources_available(&self.route, &sim.world) {
-                self.state = ActivateRouteState::Move;
-            } else {
-                return ProcessState::Wait(SmallVec::new());
+            match unavailable_resource(&self.route, &sim.world) {
+                Some(ev) => return ProcessState::Wait(SmallVec::from_slice(&[ev])),
+                None => {
+                    allocate_resources(&self.route, &mut sim.world, &mut sim.scheduler);
+                    self.state = ActivateRouteState::Move;
+                }
             }
         }
 
-        if let ActivateRouteState::Move = self.state {
+        // TODO smallvec
+        let wait_move = movable_events(&self.route, sim);
+        if wait_move.len() > 0 {
+            return ProcessState::Wait(wait_move.into());
         }
 
         // Set the signal to green

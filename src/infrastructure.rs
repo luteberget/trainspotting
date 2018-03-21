@@ -32,6 +32,28 @@ pub enum ObjectState {
     TVDLimit,
 }
 
+pub struct MoveSwitch {
+    pub sw :ObjectId,
+    pub pos :SwitchPosition,
+    pub state: bool,
+}
+
+impl Process<Infrastructure> for MoveSwitch {
+    fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
+        if !self.state {
+            self.state = true;
+            ProcessState::Wait(SmallVec::from_slice(&[sim.create_timeout(5.0)]))
+        } else {
+            match sim.world.state[self.sw] {
+                ObjectState::Switch { ref mut position, .. } => position.set(&mut sim.scheduler, Some(self.pos)),
+                _ => panic!("Not a switch"),
+            }
+            ProcessState::Finished
+        }
+    }
+}
+
+
 #[derive(Copy, Clone)]
 enum DetectEvent {
     Enter(ObjectId),
