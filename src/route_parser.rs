@@ -12,11 +12,11 @@ type Map = HashMap<String,usize>;
 //
 //
 
-pub fn parse(t: &[Token], names :&Map) -> Result<Vec<Route>, ParseError> {
+pub fn parse(t: &[Token], objnames :&Map, nodenames:&Map) -> Result<Vec<Route>, ParseError> {
     let mut i = 0;
     let mut statements = Vec::new();
     while t[i] != Token::EOF {
-        match parse_route(&mut i, t, names)? {
+        match parse_route(&mut i, t, objnames, nodenames)? {
             Some(x) => statements.push(x),
             _ => {},
         }
@@ -28,7 +28,7 @@ fn lookup(names :&HashMap<String,usize>, name :&str) -> Result<usize, ParseError
     names.get(name).cloned().ok_or(ParseError::UnknownName(name.to_string(), "infrastructure".to_string()))
 }
 
-pub fn parse_route(i :&mut usize, t:&[Token], names:&Map) -> Result<Option<Route>, ParseError> {
+pub fn parse_route(i :&mut usize, t:&[Token], objnames:&Map, nodenames:&Map) -> Result<Option<Route>, ParseError> {
     alt(i,t,&[
         &|i,t| {
             symbol(i,t,"modelentry")?;
@@ -49,19 +49,19 @@ pub fn parse_route(i :&mut usize, t:&[Token], names:&Map) -> Result<Option<Route
             let route_name = identifier(i,t)?;
             must_match(i,t,Token::BraceOpen)?;
             symbol(i,t,"entry")?;
-            let entry = lookup(names, &identifier(i,t)?)?;
+            let entry = lookup(objnames, &identifier(i,t)?)?;
             symbol(i,t,"exit")?;
             let _exit = identifier(i,t)?;
             symbol(i,t,"entrysection")?;
-            let entrysection = lookup(names, &identifier(i,t)?)?;
+            let entrysection = lookup(objnames, &identifier(i,t)?)?;
             symbol(i,t,"length")?;
             let length = number(i,t)?;
             symbol(i,t,"sections")?;
-            let sections = list(i,t,|i,t| lookup(names,&identifier(i,t)?))?;
+            let sections = list(i,t,|i,t| lookup(objnames,&identifier(i,t)?))?;
             symbol(i,t,"switches")?;
             let switches = list(i,t,|i,t| {
                 must_match(i,t,Token::ParensOpen)?;
-                let sw = lookup(names, &identifier(i,t)?)?;
+                let sw = lookup(objnames, &identifier(i,t)?)?;
                 let pos = alt(i,t,&[
                               &|i,t| { symbol(i,t,"left")?; Ok(SwitchPosition::Left) },
                               &|i,t| { symbol(i,t,"right")?; Ok(SwitchPosition::Right) },
@@ -70,15 +70,15 @@ pub fn parse_route(i :&mut usize, t:&[Token], names:&Map) -> Result<Option<Route
                 Ok((sw,pos))
             })?;
             symbol(i,t,"contains")?;
-            let contains = list(i,t,|i,t| lookup(names, &identifier(i,t)?))?;
+            let contains = list(i,t,|i,t| lookup(nodenames, &identifier(i,t)?))?;
             must_match(i,t,Token::BraceClose)?;
             let mut releases = Vec::new();
             while matches(i,t,Token::Identifier("release".to_string())) {
                 must_match(i,t,Token::BraceOpen)?;
                 symbol(i,t,"trigger")?;
-                let trigger = lookup(names, &identifier(i,t)?)?;
+                let trigger = lookup(objnames, &identifier(i,t)?)?;
                 symbol(i,t,"resources")?;
-                let resources = list(i,t,|i,t| lookup(names, &identifier(i,t)?))?;
+                let resources = list(i,t,|i,t| lookup(objnames, &identifier(i,t)?))?;
                 releases.push(Release { trigger: trigger, resources: resources.into() });
             }
             Ok(Some(Route {
@@ -173,11 +173,11 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
                             .collect();
                         tokens.push(Token::Identifier(s));
                     }
-                    '(' => {
+                    '[' => {
                         input.next().unwrap();
                         tokens.push(Token::ListOpen);
                     }
-                    ')' => {
+                    ']' => {
                         input.next().unwrap();
                         tokens.push(Token::ListClose);
                     }
@@ -222,3 +222,28 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
     Ok(tokens)
 }
 
+
+use std::path::Path;
+pub fn parse_file(f :&Path, objnames:&Map, nodenames:&Map) -> Result<Vec<Route>,String> {
+  use std::fs::File;
+  use std::io::prelude::*;
+use std::io::BufReader;
+
+  let mut file = File::open(f).map_err(|e| format!("Could not open file: {}",e.to_string()))?;
+  let mut file = BufReader::new(&file);
+  let mut contents = String::new();
+  file.read_to_string(&mut contents).map_err(|e| format!("Invalid UTF8: {}", e.to_string()))?;
+
+  let lex = lexer(&mut contents.chars()).map_err(|e| format!("{:?}",e))?;
+  let mut i = 0;
+  for x in lex.iter() {
+      println!(" *RTk {}: {:?}", i, x);
+      i += 1;
+  }
+  let routes = parse(&lex, objnames, nodenames).map_err(|e| format!("{:?}",e))?;
+  for x in routes.iter() {
+      println!(" *R {}: {:?}", i, x);
+      i += 1;
+  }
+  Ok(routes)
+}

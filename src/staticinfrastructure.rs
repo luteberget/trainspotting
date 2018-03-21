@@ -46,6 +46,7 @@ pub enum SwitchPosition {
     Right,
 }
 
+#[derive(Debug)]
 pub struct Route {
     pub signal :ObjectId,
     pub signal_trigger :ObjectId,
@@ -55,6 +56,7 @@ pub struct Route {
     pub releases: SmallVec<[Release;2]>,
 }
 
+#[derive(Debug)]
 pub struct Release {
     pub trigger :ObjectId,
     pub resources :SmallVec<[ObjectId; 4]>,

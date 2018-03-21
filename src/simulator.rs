@@ -25,6 +25,8 @@ mod history;
 
 // fn simulate(inf :StaticInfrastructure, dis: Dispatch) -> History { ... }
 
+use std::collections::HashMap;
+
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;

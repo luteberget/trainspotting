@@ -8,7 +8,7 @@ route r1 {
   length 1750.0
   sections [a1]
   switches []
-  contains [t1stop]
+  contains []
 }
 
 route r2 {

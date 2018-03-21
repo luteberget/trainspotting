@@ -4,16 +4,19 @@ extern crate ordered_float;
 mod parser_utils;
 mod staticinfrastructure;
 mod staticinfrastructure_parser;
-use staticinfrastructure_parser::*;
+mod route_parser;
 
 use std::path::Path;
 
 pub fn main() {
-        use std::env;
-            let args: Vec<String> = env::args().collect();
+    use std::env;
+    let args: Vec<String> = env::args().collect();
+    let inffile = &args[1];
+    let routefile = &args[2];
+    let (inf,objnames,nodenames) = staticinfrastructure_parser::parse_file(
+        &Path::new(inffile)).unwrap();
+    let routes = route_parser::parse_file(&Path::new(routefile), 
+                                          &objnames, &nodenames).unwrap();
 
-                let filename = &args[1];
-                    //let filename = &args[2];
-                    let x = parse_file(&Path::new(filename));
+    println!("parse test ok ");
 }
-

@@ -326,7 +326,8 @@ fn get_or_create_node(mnodes: &mut Vec<staticinfrastructure::Node>,
     idx
 }
 
-pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::StaticInfrastructure, ModelError> {
+type Map = HashMap<String,usize>;
+pub fn model_from_ast(stmts: &[Statement]) -> Result<(staticinfrastructure::StaticInfrastructure, Map, Map), ModelError> {
     use staticinfrastructure::{StaticInfrastructure, Edges};
     let mut model = StaticInfrastructure {
         nodes: Vec::new(),
@@ -448,13 +449,11 @@ pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::Stati
             }
         }
     }
-    println!("Object names: {:?}", objects);
-    println!("Node names: {:?}", nodes);
-    Ok(model)
+    Ok((model, objects, nodes))
 }
 
 use std::path::Path;
-pub fn parse_file(f :&Path) -> Result<staticinfrastructure::StaticInfrastructure,String> {
+pub fn parse_file(f :&Path) -> Result<(staticinfrastructure::StaticInfrastructure, Map, Map),String> {
   use std::fs::File;
   use std::io::prelude::*;
 use std::io::BufReader;
@@ -475,7 +474,7 @@ use std::io::BufReader;
       println!(" * {}: {:?}", i, x);
       i += 1;
   }
-  let model = model_from_ast(&stmts).map_err(|e| format!("{:?}", e))?;
+  let (model,objnames,nodenames) = model_from_ast(&stmts).map_err(|e| format!("{:?}", e))?;
   let mut i = 0;
   for x in model.nodes.iter() {
       println!(" *n {}: {:?}", i, x);
@@ -486,5 +485,5 @@ use std::io::BufReader;
       println!(" *o {}: {:?}", i, x);
       i += 1;
   }
-  Ok(model)
+  Ok((model, objnames, nodenames))
 }
