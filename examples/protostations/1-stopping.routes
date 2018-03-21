@@ -4,6 +4,7 @@ modelexit  s3 b2 500.0
 
 route r1 {
   entry s1 exit s2
+  entrysection a1
   length 1750.0
   sections [a1]
   switches []
@@ -12,7 +13,9 @@ route r1 {
 
 route r2 {
   entry s2 exit s3
+  entrysection a2
   length 1000.0
-  tvds [a2] switches []
+  sections [a2] 
+  switches []
   contains []
 }

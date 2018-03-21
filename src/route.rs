@@ -103,7 +103,7 @@ impl Process<Infrastructure> for ActivateRoute {
 
         sim.start_process(Box::new(CatchSignal { 
             signal: self.route.signal,
-            tvd: self.route.first_trigger,
+            tvd: self.route.signal_trigger,
             state: CatchSignalState::Start }));
 
         for release in self.route.releases.iter() {

@@ -48,7 +48,7 @@ pub enum SwitchPosition {
 
 pub struct Route {
     pub signal :ObjectId,
-    pub first_trigger :ObjectId,
+    pub signal_trigger :ObjectId,
     pub sections: SmallVec<[ObjectId; 4]>,
     pub switch_positions: SmallVec<[(ObjectId, SwitchPosition);2]>,
     pub length: f64,

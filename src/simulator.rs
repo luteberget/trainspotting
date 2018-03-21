@@ -11,6 +11,8 @@ mod infrastructure;
 mod staticinfrastructure;
 mod staticinfrastructure_parser;
 
+mod route_parser;
+
 mod driver;
 mod route;
 

@@ -13,6 +13,7 @@ pub enum ParseError {
     UnexpectedToken(usize, String),
     UnexpectedEOF,
     Many(Vec<ParseError>),
+    UnknownName(String,String),
 }
 
 
@@ -48,7 +49,7 @@ pub fn matches<Token: PartialEq + Debug + Clone>(i: &mut usize, tokens: &[Token]
     r
 }
 
-fn consume_while<F>(it: &mut Peekable<&mut Iterator<Item = char>>, x: F) -> Vec<char>
+pub fn consume_while<F>(it: &mut Peekable<&mut Iterator<Item = char>>, x: F) -> Vec<char>
     where F: Fn(char) -> bool
 {
 

@@ -1,21 +1,134 @@
 use staticinfrastructure::*;
 use parser_utils::*;
+use std::collections::HashMap;
+
+type Map = HashMap<String,usize>;
 
 
 
-//pub struct Route {
-//    pub signal :ObjectId,
-//    pub first_trigger :ObjectId,
-//    pub sections: SmallVec<[ObjectId; 4]>,
-//    pub switch_positions: SmallVec<[(ObjectId, SwitchPosition);2]>,
-//    pub length: f64,
-//    pub releases: SmallVec<[Release;2]>,
-//}
+
 //
-//pub struct Release {
-//    pub trigger :ObjectId,
-//    pub resources :SmallVec<[ObjectId; 4]>,
-//}
+// PARSER
+//
+//
+
+pub fn parse(t: &[Token], names :&Map) -> Result<Vec<Route>, ParseError> {
+    let mut i = 0;
+    let mut statements = Vec::new();
+    while t[i] != Token::EOF {
+        match parse_route(&mut i, t, names)? {
+            Some(x) => statements.push(x),
+            _ => {},
+        }
+    }
+    Ok(statements)
+}
+
+fn lookup(names :&HashMap<String,usize>, name :&str) -> Result<usize, ParseError>{
+    names.get(name).cloned().ok_or(ParseError::UnknownName(name.to_string(), "infrastructure".to_string()))
+}
+
+pub fn parse_route(i :&mut usize, t:&[Token], names:&Map) -> Result<Option<Route>, ParseError> {
+    alt(i,t,&[
+        &|i,t| {
+            symbol(i,t,"modelentry")?;
+            let b = identifier(i,t)?;
+            let n = identifier(i,t)?;
+            let d = number(i,t)?;
+            Ok(None) // Ignoring model boundaries in this program
+        },
+        &|i,t| {
+            symbol(i,t,"modelexit")?;
+            let b = identifier(i,t)?;
+            let n = identifier(i,t)?;
+            let d = number(i,t)?;
+            Ok(None) // Ignoring model boundaries in this program
+        },
+        &|i,t| {
+            symbol(i,t,"route")?;
+            let route_name = identifier(i,t)?;
+            must_match(i,t,Token::BraceOpen)?;
+            symbol(i,t,"entry")?;
+            let entry = lookup(names, &identifier(i,t)?)?;
+            symbol(i,t,"exit")?;
+            let _exit = identifier(i,t)?;
+            symbol(i,t,"entrysection")?;
+            let entrysection = lookup(names, &identifier(i,t)?)?;
+            symbol(i,t,"length")?;
+            let length = number(i,t)?;
+            symbol(i,t,"sections")?;
+            let sections = list(i,t,|i,t| lookup(names,&identifier(i,t)?))?;
+            symbol(i,t,"switches")?;
+            let switches = list(i,t,|i,t| {
+                must_match(i,t,Token::ParensOpen)?;
+                let sw = lookup(names, &identifier(i,t)?)?;
+                let pos = alt(i,t,&[
+                              &|i,t| { symbol(i,t,"left")?; Ok(SwitchPosition::Left) },
+                              &|i,t| { symbol(i,t,"right")?; Ok(SwitchPosition::Right) },
+                ])?;
+                must_match(i,t,Token::ParensClose)?;
+                Ok((sw,pos))
+            })?;
+            symbol(i,t,"contains")?;
+            let contains = list(i,t,|i,t| lookup(names, &identifier(i,t)?))?;
+            must_match(i,t,Token::BraceClose)?;
+            let mut releases = Vec::new();
+            while matches(i,t,Token::Identifier("release".to_string())) {
+                must_match(i,t,Token::BraceOpen)?;
+                symbol(i,t,"trigger")?;
+                let trigger = lookup(names, &identifier(i,t)?)?;
+                symbol(i,t,"resources")?;
+                let resources = list(i,t,|i,t| lookup(names, &identifier(i,t)?))?;
+                releases.push(Release { trigger: trigger, resources: resources.into() });
+            }
+            Ok(Some(Route {
+                signal: entry,
+                signal_trigger: entrysection,
+                sections: sections.into(),
+                switch_positions: switches.into(),
+                length: length,
+                releases: releases.into(),
+            }))
+        },
+    ])
+}
+
+pub fn list<F,O>(i :&mut usize, t: &[Token], f:F) -> Result<Vec<O>, ParseError>
+  where F : Fn(&mut usize, &[Token]) -> Result<O, ParseError> {
+    must_match(i,t,Token::ListOpen)?;
+    let mut v = Vec::new();
+    if matches(i,t, Token::ListClose) { return Ok(v); }
+    loop {
+        v.push(f(i,t)?);
+        if !matches(i, t, Token::ListSep) {
+            break;
+        }
+    }
+    must_match(i,t,Token::ListClose)?;
+    Ok(v)
+  }
+
+pub fn symbol(i :&mut usize, t :&[Token], s:&str) -> Result<(), ParseError> {
+    if identifier(i,t)? != s { Err(ParseError::UnexpectedToken(*i, format!("{:?}",s))) } else {Ok(())}
+}
+
+pub fn identifier(i: &mut usize, tokens: &[Token]) -> Result<String, ParseError> {
+    let r = match tokens[*i] {
+        Token::Identifier(ref s) => s.clone(),
+        ref x => return Err(ParseError::UnexpectedToken(*i, format!("{:?}",x.clone()))),
+    };
+    *i += 1;
+    Ok(r)
+}
+
+pub fn number(i: &mut usize, tokens: &[Token]) -> Result<f64, ParseError> {
+    let r = match tokens[*i] {
+        Token::Number(x) => x.clone(),
+        ref x => return Err(ParseError::UnexpectedToken(*i, format!("{:?}",x.clone()))),
+    };
+    *i += 1;
+    Ok(r)
+}
 
 
 //
@@ -24,7 +137,7 @@ use parser_utils::*;
 //
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
-    BraceOpen, BraceClose, ListOpen, ListClose, ListSep,
+    BraceOpen, BraceClose, ListOpen, ListClose, ListSep, ParensOpen, ParensClose,
     Number(f64),
     Identifier(String),
     EOF,
@@ -71,6 +184,14 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
                     ',' => {
                         input.next().unwrap();
                         tokens.push(Token::ListSep);
+                    }
+                    '(' => {
+                        input.next().unwrap();
+                        tokens.push(Token::ParensOpen);
+                    }
+                    ')' => {
+                        input.next().unwrap();
+                        tokens.push(Token::ParensClose);
                     }
                     '{' => {
                         input.next().unwrap();
