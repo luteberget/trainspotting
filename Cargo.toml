@@ -6,6 +6,7 @@ authors = ["Bjørnar Luteberget <luteberget@gmail.com>"]
 [dependencies]
 ordered-float="*"
 smallvec="*"
+regex="*"
 
 [[bin]]
 name="main"

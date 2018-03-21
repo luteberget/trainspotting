@@ -1,10 +1,11 @@
 use smallvec::SmallVec;
 use staticinfrastructure;
+use staticinfrastructure::Dist;
+use parser_utils::*;
 // AST
 //
 //
 type NodeName = String;
-type Dist = f64;
 #[derive(Debug)]
 pub enum Statement {
     DoubleNode(PartNode, PartNode),
@@ -47,12 +48,6 @@ pub enum Token {
     Number(f64),
     Identifier(String),
     EOF,
-}
-
-#[derive(Debug,Clone)]
-pub enum LexerError {
-    UnexpectedChar(usize, String),
-    UnexpectedEOF,
 }
 
 
@@ -149,13 +144,6 @@ fn consume_while<F>(it: &mut Peekable<&mut Iterator<Item = char>>, x: F) -> Vec<
 //
 //
 
-#[derive(Debug,Clone)]
-pub enum ParseError {
-    UnexpectedToken(usize, Token),
-    UnexpectedEOF,
-    Many(Vec<ParseError>),
-}
-
 pub fn parse(t: &Vec<Token>) -> Result<Vec<Statement>, ParseError> {
     let mut i = 0;
     let mut statements = Vec::new();
@@ -168,7 +156,7 @@ pub fn parse(t: &Vec<Token>) -> Result<Vec<Statement>, ParseError> {
 pub fn identifier(i: &mut usize, tokens: &[Token]) -> Result<String, ParseError> {
     let r = match tokens[*i] {
         Token::Identifier(ref s) => s.clone(),
-        ref x => return Err(ParseError::UnexpectedToken(*i, x.clone())),
+        ref x => return Err(ParseError::UnexpectedToken(*i, format!("{:?}",x.clone()))),
     };
     *i += 1;
     Ok(r)
@@ -177,7 +165,7 @@ pub fn identifier(i: &mut usize, tokens: &[Token]) -> Result<String, ParseError>
 pub fn number(i: &mut usize, tokens: &[Token]) -> Result<f64, ParseError> {
     let r = match tokens[*i] {
         Token::Number(x) => x.clone(),
-        ref x => return Err(ParseError::UnexpectedToken(*i, x.clone())),
+        ref x => return Err(ParseError::UnexpectedToken(*i, format!("{:?}",x.clone()))),
     };
     *i += 1;
     Ok(r)
@@ -281,37 +269,6 @@ pub fn parse_object(i: &mut usize, t: &[Token]) -> Result<Object, ParseError> {
 }
 
 
-pub fn alt<T>(i: &mut usize,
-              tokens: &[Token],
-              alts: &[&Fn(&mut usize, &[Token]) -> Result<T, ParseError>])
-              -> Result<T, ParseError> {
-    let start = *i;
-    let mut errs = Vec::new();
-    for alt in alts {
-        *i = start;
-        match alt(i, tokens) {
-            Ok(x) => return Ok(x),
-            Err(y) => errs.push(y),
-        }
-    }
-    Err(ParseError::Many(errs))
-}
-
-pub fn must_match(i: &mut usize, tokens: &[Token], tok: Token) -> Result<(), ParseError> {
-    if matches(i, tokens, tok) {
-        Ok(())
-    } else {
-        Err(ParseError::UnexpectedToken(*i, tokens[*i].clone()))
-    }
-}
-
-pub fn matches(i: &mut usize, tokens: &[Token], tok: Token) -> bool {
-    let r = tokens[*i] == tok;
-    if r {
-        *i += 1;
-    }
-    r
-}
 
 
 
@@ -494,4 +451,40 @@ pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::Stati
     println!("Object names: {:?}", objects);
     println!("Node names: {:?}", nodes);
     Ok(model)
+}
+
+use std::path::Path;
+pub fn parse_file(f :&Path) -> Result<staticinfrastructure::StaticInfrastructure,String> {
+  use std::fs::File;
+  use std::io::prelude::*;
+use std::io::BufReader;
+
+  let mut file = File::open(f).map_err(|e| format!("Could not open file: {}",e.to_string()))?;
+  let mut file = BufReader::new(&file);
+  let mut contents = String::new();
+  file.read_to_string(&mut contents).map_err(|e| format!("Invalid UTF8: {}", e.to_string()))?;
+
+  let lex = lexer(&mut contents.chars()).map_err(|e| format!("{:?}",e))?;
+  let mut i = 0;
+  for x in lex.iter() {
+      println!(" * {}: {:?}", i, x);
+      i += 1;
+  }
+  let stmts = parse(&lex).map_err(|e| format!("{:?}",e))?;
+  for x in stmts.iter() {
+      println!(" * {}: {:?}", i, x);
+      i += 1;
+  }
+  let model = model_from_ast(&stmts).map_err(|e| format!("{:?}", e))?;
+  let mut i = 0;
+  for x in model.nodes.iter() {
+      println!(" *n {}: {:?}", i, x);
+      i += 1;
+  }
+  let mut i = 0;
+  for x in model.objects.iter() {
+      println!(" *o {}: {:?}", i, x);
+      i += 1;
+  }
+  Ok(model)
 }
