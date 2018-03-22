@@ -1,7 +1,9 @@
 use eventsim::{Simulation, Process, ProcessState, EventId, Scheduler};
+use super::{Sim, Proc};
 use smallvec::SmallVec;
 use input::staticinfrastructure::*;
 use super::infrastructure::*;
+use output::history::InfrastructureLogEvent;
 
 enum ActivateRouteState {
     Allocate, // Waiting for resources
@@ -52,7 +54,7 @@ fn allocate_resources(r :&Route, infrastructure :&mut Infrastructure, scheduler 
 }
 
 
-fn movable_events(r :&Route, sim :&mut Simulation<Infrastructure>) -> Vec<EventId> {
+fn movable_events(r :&Route, sim :&mut Sim) -> Vec<EventId> {
     let throw = r.switch_positions.iter().filter_map(|&(sw,pos)| {
         match sim.world.state[sw] {
             ObjectState::Switch { ref position, ref mut throwing, .. } => {
@@ -77,8 +79,8 @@ fn movable_events(r :&Route, sim :&mut Simulation<Infrastructure>) -> Vec<EventI
 
 }
 
-impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
-    fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
+impl<'a> Process<Infrastructure<'a>, InfrastructureLogEvent> for ActivateRoute {
+    fn resume(&mut self, sim: &mut Sim) -> ProcessState {
         if let ActivateRouteState::Allocate = self.state {
             match unavailable_resource(&self.route, &sim.world) {
                 Some(ev) => return ProcessState::Wait(SmallVec::from_slice(&[ev])),
@@ -126,8 +128,8 @@ struct CatchSignal {
     state: CatchSignalState,
 }
 
-impl<'a> Process<Infrastructure<'a>> for CatchSignal {
-    fn resume(&mut self, sim :&mut Simulation<Infrastructure>) -> ProcessState {
+impl<'a> Process<Infrastructure<'a>, InfrastructureLogEvent> for CatchSignal {
+    fn resume(&mut self, sim :&mut Sim) -> ProcessState {
         match self.state {
             CatchSignalState::Start => {
                 let event = match sim.world.state[self.tvd] {
@@ -156,8 +158,8 @@ struct ReleaseRoute {
     state: ReleaseRouteState,
 }
 
-impl<'a> Process<Infrastructure<'a>> for ReleaseRoute {
-    fn resume(&mut self, sim :&mut Simulation<Infrastructure>) -> ProcessState {
+impl<'a> Process<Infrastructure<'a>, InfrastructureLogEvent> for ReleaseRoute {
+    fn resume(&mut self, sim :&mut Sim) -> ProcessState {
         let event = match sim.world.state[self.trigger] {
             ObjectState::TVDSection { ref mut occupied, .. } => occupied.event(),
             _ => panic!("Not a TVD section"),

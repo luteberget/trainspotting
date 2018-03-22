@@ -2,11 +2,11 @@ use input::staticinfrastructure::{SwitchPosition};
 use railway::dynamics::{DriverAction, DistanceVelocity};
 
 pub struct History {
-    inf: Vec<InfrastructureEvent>,
-    trains: Vec<(String, Vec<TrainEvent>)>,
+    pub inf: Vec<InfrastructureLogEvent>,
+    pub trains: Vec<(String, Vec<TrainLogEvent>)>,
 }
 
-pub enum InfrastructureEvent {
+pub enum InfrastructureLogEvent {
     Wait(f64),
     
     // Routes
@@ -21,7 +21,7 @@ pub enum InfrastructureEvent {
     Position(usize, SwitchPosition),
 }
 
-pub enum TrainEvent {
+pub enum TrainLogEvent {
     Wait(f64),
     Node(usize),
     Sight(usize, bool),

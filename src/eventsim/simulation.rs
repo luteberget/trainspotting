@@ -3,6 +3,12 @@ use ordered_float::OrderedFloat;
 use std::collections::BinaryHeap;
 use std::mem;
 
+pub trait Logger<L> {
+    fn advance_time(&mut self, t :f64);
+    fn log(&mut self, msg: L);
+}
+
+
 pub type EventId = usize;
 pub type ProcessId = usize;
 
@@ -11,9 +17,9 @@ pub enum ProcessState {
     Wait(SmallVec<[EventId; 2]>),
 }
 
-pub trait Process<T> {
-    fn resume(&mut self, sim: &mut Simulation<T>) -> ProcessState;
-    fn abort(&mut self, sim: &mut Simulation<T>) {}
+pub trait Process<T,L> {
+    fn resume(&mut self, sim: &mut Simulation<T,L>) -> ProcessState;
+    fn abort(&mut self, sim: &mut Simulation<T,L>) {}
 }
 
 pub enum EventState {
@@ -35,11 +41,12 @@ pub struct Event {
     listeners: Vec<ProcessId>,
 }
 
-pub struct Simulation<T> {
+pub struct Simulation<T,L> {
     pub time: OrderedFloat<f64>,
     pub world: T,
-    procs: Vec<Option<(EventId, Box<Process<T>>)>>,
+    procs: Vec<Option<(EventId, Box<Process<T,L>>)>>,
     pub scheduler: Scheduler,
+    pub logger: Option<Box<Logger<L>>>,
 }
 
 pub struct Scheduler {
@@ -49,6 +56,13 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
+    pub fn new() -> Self {
+        Scheduler {
+            events: Vec::new(),
+            queue: BinaryHeap::new(),
+            id_counter: 0,
+        }
+    }
     pub fn new_event(&mut self) -> EventId {
         let event_id = self.events.len();
         self.events.push(Event {
@@ -78,15 +92,29 @@ impl Scheduler {
     }
 }
 
-impl<T> Simulation<T> {
+impl<T,L> Simulation<T,L> {
     pub fn create_timeout(&mut self, dt: f64) -> EventId {
         let id = self.scheduler.new_event();
         self.schedule(id, dt);
         id
     }
 
+    pub fn set_logger(&mut self, logger :Box<Logger<L>>) {
+        self.logger = Some(logger);
+    }
+
     pub fn schedule(&mut self, id: EventId, dt: f64) {
         self.scheduler.schedule(id, *self.time + dt)
+    }
+
+    pub fn new_with_scheduler(world: T, scheduler: Scheduler) -> Self {
+        Simulation {
+            time: OrderedFloat::from(0.0),
+            procs: Vec::new(),
+            scheduler: scheduler,
+            world: world,
+            logger: None,
+        }
     }
 
     pub fn new(world: T) -> Self {
@@ -99,10 +127,11 @@ impl<T> Simulation<T> {
                 id_counter: 0,
             },
             world: world,
+            logger: None,
         }
     }
 
-    pub fn start_process(&mut self, p: Box<Process<T>>) -> EventId {
+    pub fn start_process(&mut self, p: Box<Process<T,L>>) -> EventId {
         let eventid = self.scheduler.new_event();
         let process_id = self.procs.len();
         self.procs.push(Some((eventid, p)));
@@ -119,12 +148,16 @@ impl<T> Simulation<T> {
             }
             self.step();
         }
+        if let Some(ref mut logger) = self.logger { logger.advance_time(*target - *self.time) }
         self.time = OrderedFloat::from(target);
     }
 
     pub fn step(&mut self) -> bool {
         match self.scheduler.queue.pop() {
             Some(ev) => {
+                if let Some(ref mut logger) = self.logger { 
+                    logger.advance_time(*ev.time - *self.time) 
+                }
                 self.time = ev.time;
                 self.fire(ev.event);
                 true

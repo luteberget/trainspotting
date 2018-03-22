@@ -4,3 +4,5 @@ mod simulation;
 pub use self::simulation::*;
 
 pub mod observable;
+
+mod logger;

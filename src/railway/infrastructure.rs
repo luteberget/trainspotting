@@ -4,14 +4,17 @@ use eventsim::observable::Observable;
 use super::dynamics::TrainParams;
 use input::staticinfrastructure::*;
 use std::f64::INFINITY;
+use output::history::InfrastructureLogEvent;
 
 pub type TrainId = usize;
 
+use railway::{Sim, Proc};
+
 pub trait TrainVisitable {
-    fn arrive_front(&self, object: ObjectId) -> Option<Box<Process<Infrastructure>>> {
+    fn arrive_front(&self, object: ObjectId) -> Option<Box<Proc>> {
         None
     }
-    fn arrive_back(&self, object: ObjectId) -> Option<Box<Process<Infrastructure>>> {
+    fn arrive_back(&self, object: ObjectId) -> Option<Box<Proc>> {
         None
     }
 }
@@ -38,8 +41,8 @@ pub struct MoveSwitch {
     pub state: bool,
 }
 
-impl<'a> Process<Infrastructure<'a>> for MoveSwitch {
-    fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
+impl<'a> Process<Infrastructure<'a>, InfrastructureLogEvent> for MoveSwitch {
+    fn resume(&mut self, sim: &mut Sim) -> ProcessState {
         if !self.state {
             self.state = true;
             ProcessState::Wait(SmallVec::from_slice(&[sim.create_timeout(5.0)]))
@@ -60,8 +63,8 @@ enum DetectEvent {
     Exit(ObjectId),
 }
 
-impl<'a> Process<Infrastructure<'a>> for DetectEvent {
-    fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
+impl<'a> Process<Infrastructure<'a>,InfrastructureLogEvent> for DetectEvent {
+    fn resume(&mut self, sim: &mut Sim) -> ProcessState {
         let ref mut infstate = sim.world.state;
         let ref mut scheduler = sim.scheduler;
         match self.clone() {
@@ -83,7 +86,7 @@ impl<'a> Process<Infrastructure<'a>> for DetectEvent {
 }
 
 impl TrainVisitable for StaticObject {
-    fn arrive_front(&self, object: ObjectId) -> Option<Box<Process<Infrastructure>>> {
+    fn arrive_front(&self, object: ObjectId) -> Option<Box<Proc>> {
         match self {
             &StaticObject::TVDLimit { enter, .. } => {
                 match enter {
@@ -96,7 +99,7 @@ impl TrainVisitable for StaticObject {
         }
     }
 
-    fn arrive_back(&self, object: ObjectId) -> Option<Box<Process<Infrastructure>>> {
+    fn arrive_back(&self, object: ObjectId) -> Option<Box<Proc>> {
         match self {
             &StaticObject::TVDLimit { exit, .. } => {
                 match exit {
@@ -109,7 +112,6 @@ impl TrainVisitable for StaticObject {
         }
     }
 }
-
 
 #[derive(Debug)]
 pub struct Infrastructure<'a> {

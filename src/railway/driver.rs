@@ -4,7 +4,8 @@ use input::staticinfrastructure::*;
 use smallvec::SmallVec;
 use super::dynamics::*;
 use std::f64::INFINITY;
-
+use output::history::InfrastructureLogEvent;
+use super::{Sim, Proc};
 
 enum ModelContainment {
     Inside,
@@ -28,7 +29,7 @@ pub struct Driver {
 }
 
 impl Driver {
-    pub fn new(sim: &mut Simulation<Infrastructure>,
+    pub fn new(sim: &mut Sim,
                name: String,
                node: NodeId,
                auth: f64,
@@ -57,7 +58,7 @@ impl Driver {
         d
     }
 
-    fn goto_node(&mut self, sim: &mut Simulation<Infrastructure>, node: NodeId) {
+    fn goto_node(&mut self, sim: &mut Sim, node: NodeId) {
         for obj in sim.world.statics.nodes[node].objects.clone() {
             for p in sim.world.statics.objects[obj].arrive_front(obj) {
                 sim.start_process(p);
@@ -67,7 +68,7 @@ impl Driver {
         }
     }
 
-    fn arrive_front(&mut self, sim: &Simulation<Infrastructure>, obj: ObjectId) {
+    fn arrive_front(&mut self, sim: &Sim, obj: ObjectId) {
         match sim.world.statics.objects[obj] {
             StaticObject::Sight { distance, signal } => {
                 self.connected_signals.push((signal, distance));
@@ -79,7 +80,7 @@ impl Driver {
         }
     }
 
-    fn move_train(&mut self, sim: &mut Simulation<Infrastructure>) -> ModelContainment {
+    fn move_train(&mut self, sim: &mut Sim) -> ModelContainment {
         let (action, action_time) = self.step;
         let dt = *sim.time - action_time;
 
@@ -135,7 +136,7 @@ impl Driver {
         }
     }
 
-    fn plan_ahead(&mut self, sim: &Simulation<Infrastructure>) -> DriverPlan {
+    fn plan_ahead(&mut self, sim: &Sim) -> DriverPlan {
         // Travel distance is limited by next node
         let mut max_dist = (self.train.location.1).1;
 
@@ -184,8 +185,8 @@ impl Driver {
     }
 }
 
-impl<'a> Process<Infrastructure<'a>> for Driver {
-    fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
+impl<'a> Process<Infrastructure<'a>,InfrastructureLogEvent> for Driver {
+    fn resume(&mut self, sim: &mut Sim) -> ProcessState {
         let modelcontainment = self.move_train(sim);
         match modelcontainment {
             ModelContainment::Exiting => ProcessState::Finished,
