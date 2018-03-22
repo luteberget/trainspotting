@@ -7,7 +7,7 @@ type NodeName = Name;
 
 #[derive(Debug)]
 pub struct Dispatch {
-    actions :Vec<DispatchAction>
+    pub actions :Vec<DispatchAction>
 }
 
 #[derive(Debug)]

@@ -5,10 +5,15 @@ pub type Dist = f64;
 pub type NodeId = usize;
 pub type ObjectId = usize;
 
+use std::collections::HashMap;
+pub type NameMap = HashMap<String,usize>;
+
 #[derive(Debug)]
 pub struct StaticInfrastructure {
     pub nodes :Vec<Node>,
     pub objects :Vec<StaticObject>,
+    pub node_names: NameMap,
+    pub object_names: NameMap,
 }
 
 #[derive(Debug)]
@@ -47,7 +52,7 @@ pub enum SwitchPosition {
     Right,
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Route {
     pub signal :ObjectId,
     pub signal_trigger :ObjectId,
@@ -57,7 +62,7 @@ pub struct Route {
     pub releases: SmallVec<[Release;2]>,
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Release {
     pub trigger :ObjectId,
     pub resources :SmallVec<[ObjectId; 4]>,

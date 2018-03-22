@@ -11,7 +11,7 @@ pub extern fn parse_infrastructure_file(filename :*const c_char) -> *mut statici
     let filename = unsafe { CStr::from_ptr(filename) }.to_str().unwrap();
     match staticinfrastructure_parser::parse_file(Path::new(filename)) {
         // TODO manage namemaps
-        Ok((inf,_,_)) => Box::into_raw(Box::new(inf)),
+        Ok(inf) => Box::into_raw(Box::new(inf)),
         Err(e) => {
             println!("Error parsing infrastructure: {:?}", e);
             std::ptr::null_mut()

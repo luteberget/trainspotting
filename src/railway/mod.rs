@@ -7,7 +7,7 @@ pub mod route;
 
 use super::eventsim;
 use railway::infrastructure::Infrastructure;
-use output::history::InfrastructureLogEvent;
-type Sim<'a> = eventsim::Simulation<Infrastructure<'a>, InfrastructureLogEvent>;
-type Proc<'a> = eventsim::Process<Infrastructure<'a>, InfrastructureLogEvent>;
+use railway::infrastructure::Logger;
+type Sim<'a,L> = eventsim::Simulation<Infrastructure<'a>, L>;
+type Proc<'a,L> = eventsim::Process<Infrastructure<'a>, L>;
 

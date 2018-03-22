@@ -3,11 +3,9 @@ use ordered_float::OrderedFloat;
 use std::collections::BinaryHeap;
 use std::mem;
 
-pub trait Logger<L> {
+pub trait TimeLogger {
     fn advance_time(&mut self, t :f64);
-    fn log(&mut self, msg: L);
 }
-
 
 pub type EventId = usize;
 pub type ProcessId = usize;
@@ -17,7 +15,7 @@ pub enum ProcessState {
     Wait(SmallVec<[EventId; 2]>),
 }
 
-pub trait Process<T,L> {
+pub trait Process<T,L:TimeLogger> {
     fn resume(&mut self, sim: &mut Simulation<T,L>) -> ProcessState;
     fn abort(&mut self, sim: &mut Simulation<T,L>) {}
 }
@@ -41,12 +39,12 @@ pub struct Event {
     listeners: Vec<ProcessId>,
 }
 
-pub struct Simulation<T,L> {
+pub struct Simulation<T,L:TimeLogger> {
     pub time: OrderedFloat<f64>,
     pub world: T,
     procs: Vec<Option<(EventId, Box<Process<T,L>>)>>,
     pub scheduler: Scheduler,
-    pub logger: Option<Box<Logger<L>>>,
+    pub logger: Option<L>,
 }
 
 pub struct Scheduler {
@@ -92,15 +90,18 @@ impl Scheduler {
     }
 }
 
-impl<T,L> Simulation<T,L> {
+impl<T,L:TimeLogger> Simulation<T,L> {
     pub fn create_timeout(&mut self, dt: f64) -> EventId {
         let id = self.scheduler.new_event();
         self.schedule(id, dt);
         id
     }
 
-    pub fn set_logger(&mut self, logger :Box<Logger<L>>) {
+    pub fn set_logger(&mut self, logger :L) {
         self.logger = Some(logger);
+    }
+    pub fn take_logger(&mut self) -> Option<L>{
+        self.logger.take()
     }
 
     pub fn schedule(&mut self, id: EventId, dt: f64) {

@@ -4,8 +4,11 @@ use input::staticinfrastructure::*;
 use smallvec::SmallVec;
 use super::dynamics::*;
 use std::f64::INFINITY;
-use output::history::InfrastructureLogEvent;
+use output::history::{ InfrastructureLogEvent, TrainLogEvent};
 use super::{Sim, Proc};
+
+use std::rc::Rc;
+use std::cell::RefCell;
 
 enum ModelContainment {
     Inside,
@@ -14,7 +17,6 @@ enum ModelContainment {
 
 #[derive(Debug)]
 struct Train {
-    name: String,
     location: (NodeId, (Option<NodeId>, f64)),
     velocity: f64,
     params: TrainParams,
@@ -26,14 +28,15 @@ pub struct Driver {
     authority: f64,
     step: (DriverAction, f64),
     connected_signals: SmallVec<[(ObjectId, f64); 4]>,
+    history: Rc<RefCell<Vec<TrainLogEvent>>>,
 }
 
 impl Driver {
-    pub fn new(sim: &mut Sim,
-               name: String,
+    pub fn new<L:Logger>(sim: &mut Sim<L>,
                node: NodeId,
                auth: f64,
-               params: TrainParams)
+               params: TrainParams,
+               history: Rc<RefCell<Vec<TrainLogEvent>>>)
                -> Self {
         let next = match sim.world.next_node(node) {
             Some(x) => x,
@@ -41,7 +44,6 @@ impl Driver {
         };
 
         let train = Train {
-            name: name,
             params: params,
             location: (node, next),
             velocity: 0.0,
@@ -53,12 +55,13 @@ impl Driver {
             authority: auth,
             step: (DriverAction::Coast, *sim.time),
             connected_signals: SmallVec::new(),
+            history: history
         };
         d.goto_node(sim, node);
         d
     }
 
-    fn goto_node(&mut self, sim: &mut Sim, node: NodeId) {
+    fn goto_node<L:Logger>(&mut self, sim: &mut Sim<L>, node: NodeId) {
         for obj in sim.world.statics.nodes[node].objects.clone() {
             for p in sim.world.statics.objects[obj].arrive_front(obj) {
                 sim.start_process(p);
@@ -68,7 +71,7 @@ impl Driver {
         }
     }
 
-    fn arrive_front(&mut self, sim: &Sim, obj: ObjectId) {
+    fn arrive_front<L:Logger>(&mut self, sim: &Sim<L>, obj: ObjectId) {
         match sim.world.statics.objects[obj] {
             StaticObject::Sight { distance, signal } => {
                 self.connected_signals.push((signal, distance));
@@ -80,7 +83,7 @@ impl Driver {
         }
     }
 
-    fn move_train(&mut self, sim: &mut Sim) -> ModelContainment {
+    fn move_train<L:Logger>(&mut self, sim: &mut Sim<L>) -> ModelContainment {
         let (action, action_time) = self.step;
         let dt = *sim.time - action_time;
 
@@ -136,7 +139,7 @@ impl Driver {
         }
     }
 
-    fn plan_ahead(&mut self, sim: &Sim) -> DriverPlan {
+    fn plan_ahead<L:Logger>(&mut self, sim: &Sim<L>) -> DriverPlan {
         // Travel distance is limited by next node
         let mut max_dist = (self.train.location.1).1;
 
@@ -185,8 +188,8 @@ impl Driver {
     }
 }
 
-impl<'a> Process<Infrastructure<'a>,InfrastructureLogEvent> for Driver {
-    fn resume(&mut self, sim: &mut Sim) -> ProcessState {
+impl<'a,L:Logger> Process<Infrastructure<'a>,L> for Driver {
+    fn resume(&mut self, sim: &mut Sim<L>) -> ProcessState {
         let modelcontainment = self.move_train(sim);
         match modelcontainment {
             ModelContainment::Exiting => ProcessState::Finished,
