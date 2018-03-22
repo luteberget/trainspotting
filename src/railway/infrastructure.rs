@@ -1,8 +1,8 @@
 use smallvec::SmallVec;
-use simulation::*;
-use observable::Observable;
-use dynamics::TrainParams;
-use staticinfrastructure::*;
+use eventsim::*;
+use eventsim::observable::Observable;
+use super::dynamics::TrainParams;
+use input::staticinfrastructure::*;
 use std::f64::INFINITY;
 
 pub type TrainId = usize;
@@ -120,7 +120,7 @@ pub struct Infrastructure {
 impl Infrastructure {
     pub fn new(scheduler :&mut Scheduler, 
                infrastructure :StaticInfrastructure) -> Infrastructure {
-        use staticinfrastructure::StaticObject::*;
+        use input::staticinfrastructure::StaticObject::*;
         let state = infrastructure.objects.iter().map(|o| match o {
             &Sight { .. } => ObjectState::Sight,
             &Signal { .. } => ObjectState::Signal { 

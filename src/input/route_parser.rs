@@ -1,5 +1,6 @@
-use staticinfrastructure::*;
-use parser_utils::*;
+use super::staticinfrastructure::*;
+use super::parser_utils::*;
+
 use std::collections::HashMap;
 
 type Map = HashMap<String,usize>;
@@ -149,8 +150,6 @@ pub enum LexerError {
     UnexpectedEOF,
 }
 
-
-use std::iter::Peekable;
 pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
     let mut tokens = Vec::new();
     let mut input = x.peekable();

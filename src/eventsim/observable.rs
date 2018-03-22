@@ -1,4 +1,4 @@
-use simulation::{Scheduler, EventId};
+use super::simulation::{Scheduler, EventId};
 use std::fmt::Debug;
 
 

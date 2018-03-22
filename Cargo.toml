@@ -1,5 +1,5 @@
 [package]
-name = "simrust"
+name = "rolling"
 version = "0.1.0"
 authors = ["Bjørnar Luteberget <luteberget@gmail.com>"]
 
@@ -7,14 +7,3 @@ authors = ["Bjørnar Luteberget <luteberget@gmail.com>"]
 ordered-float="*"
 smallvec="*"
 regex="*"
-
-[[bin]]
-name="main"
-path="src/main.rs"
-[[bin]]
-name="simulator"
-path="src/simulator.rs"
-
-[[bin]]
-name="parsetest"
-path="src/parsetest.rs"

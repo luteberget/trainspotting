@@ -1,7 +1,10 @@
 use smallvec::SmallVec;
-use staticinfrastructure;
-use staticinfrastructure::Dist;
-use parser_utils::*;
+
+use super::staticinfrastructure;
+use super::staticinfrastructure::Dist;
+
+use super::parser_utils::*;
+
 // AST
 //
 //
@@ -328,7 +331,7 @@ fn get_or_create_node(mnodes: &mut Vec<staticinfrastructure::Node>,
 
 type Map = HashMap<String,usize>;
 pub fn model_from_ast(stmts: &[Statement]) -> Result<(staticinfrastructure::StaticInfrastructure, Map, Map), ModelError> {
-    use staticinfrastructure::{StaticInfrastructure, Edges};
+    use super::staticinfrastructure::{StaticInfrastructure, Edges};
     let mut model = StaticInfrastructure {
         nodes: Vec::new(),
         objects: Vec::new(),

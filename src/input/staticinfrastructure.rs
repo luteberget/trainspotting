@@ -1,4 +1,5 @@
 use smallvec::SmallVec;
+
 pub type Dist = f64;
 
 pub type NodeId = usize;

@@ -1,5 +1,5 @@
-use staticinfrastructure::*;
-use dynamics::TrainParams;
+use super::staticinfrastructure::*;
+use railway::dynamics::TrainParams;
 use regex::Regex;
 
 type Name = String;

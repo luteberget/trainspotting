@@ -1,5 +1,5 @@
-use staticinfrastructure::{SwitchPosition};
-use dynamics::{DriverAction, DistanceVelocity};
+use input::staticinfrastructure::{SwitchPosition};
+use railway::dynamics::{DriverAction, DistanceVelocity};
 
 pub struct History {
     inf: Vec<InfrastructureEvent>,

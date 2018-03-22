@@ -1,8 +1,8 @@
-use simulation::{Simulation, Process, ProcessState};
-use infrastructure::*;
-use staticinfrastructure::*;
+use eventsim::{Simulation, Process, ProcessState};
+use super::infrastructure::*;
+use input::staticinfrastructure::*;
 use smallvec::SmallVec;
-use dynamics::*;
+use super::dynamics::*;
 use std::f64::INFINITY;
 
 

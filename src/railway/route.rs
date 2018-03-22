@@ -1,7 +1,7 @@
-use simulation::{Simulation, Process, ProcessState, EventId, Scheduler};
+use eventsim::{Simulation, Process, ProcessState, EventId, Scheduler};
 use smallvec::SmallVec;
-use staticinfrastructure::*;
-use infrastructure::*;
+use input::staticinfrastructure::*;
+use super::infrastructure::*;
 
 enum ActivateRouteState {
     Allocate, // Waiting for resources

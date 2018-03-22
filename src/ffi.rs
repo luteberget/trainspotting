@@ -1,32 +1,6 @@
-extern crate smallvec;
-extern crate ordered_float;
-extern crate regex;
+use input::*;
 
-mod parser_utils;
-mod simulation;
-mod observable;
-mod dynamics;
-mod infrastructure;
-
-mod staticinfrastructure;
-mod staticinfrastructure_parser;
-
-mod route_parser;
-
-mod driver;
-mod route;
-
-mod dispatch;
-mod history;
-
-// INFRASTRUCTURE
-// DISPATCH
-// -> HISTORY
-
-// fn simulate(inf :StaticInfrastructure, dis: Dispatch) -> History { ... }
-
-use std::collections::HashMap;
-
+use std;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;
@@ -36,7 +10,8 @@ use std::path::Path;
 pub extern fn parse_infrastructure_file(filename :*const c_char) -> *mut staticinfrastructure::StaticInfrastructure {
     let filename = unsafe { CStr::from_ptr(filename) }.to_str().unwrap();
     match staticinfrastructure_parser::parse_file(Path::new(filename)) {
-        Ok(inf) => Box::into_raw(Box::new(inf)),
+        // TODO manage namemaps
+        Ok((inf,_,_)) => Box::into_raw(Box::new(inf)),
         Err(e) => {
             println!("Error parsing infrastructure: {:?}", e);
             std::ptr::null_mut()
@@ -45,10 +20,11 @@ pub extern fn parse_infrastructure_file(filename :*const c_char) -> *mut statici
 }
 
 #[no_mangle]
-pub extern fn parse_routes_file(filename :*const c_char) -> *mut staticinfrastructure::StaticInfrastructure {
+pub extern fn parse_routes_file(filename :*const c_char) -> *mut Vec<staticinfrastructure::Route> {
     let filename = unsafe { CStr::from_ptr(filename) }.to_str().unwrap();
-    match staticinfrastructure_parser::parse_file(Path::new(filename)) {
-        Ok(inf) => Box::into_raw(Box::new(inf)),
+                                                        // TODO mangage name maps
+    match route_parser::parse_file(Path::new(filename), panic!(), panic!()) {
+        Ok(routes) => Box::into_raw(Box::new(routes)),
         Err(e) => {
             println!("Error parsing infrastructure: {:?}", e);
             std::ptr::null_mut()
@@ -91,10 +67,3 @@ pub extern fn free_history(s :*mut c_char) {
     unsafe { CString::from_raw(s); }
 }
 
-
-fn main() {
-    let x: Option<infrastructure::Infrastructure> = None;
-    println!("infrastructure");
-
-    println!("{:?}", dispatch::parse_dispatch("route rx1\n wait 20.0\n train t1 (b1 -> 200.0) l=1.0 a =1.0 b= 1.0 v    = 10.0"));
-}
