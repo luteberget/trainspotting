@@ -77,7 +77,7 @@ fn movable_events(r :&Route, sim :&mut Simulation<Infrastructure>) -> Vec<EventI
 
 }
 
-impl Process<Infrastructure> for ActivateRoute {
+impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
     fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
         if let ActivateRouteState::Allocate = self.state {
             match unavailable_resource(&self.route, &sim.world) {
@@ -126,7 +126,7 @@ struct CatchSignal {
     state: CatchSignalState,
 }
 
-impl Process<Infrastructure> for CatchSignal {
+impl<'a> Process<Infrastructure<'a>> for CatchSignal {
     fn resume(&mut self, sim :&mut Simulation<Infrastructure>) -> ProcessState {
         match self.state {
             CatchSignalState::Start => {
@@ -156,7 +156,7 @@ struct ReleaseRoute {
     state: ReleaseRouteState,
 }
 
-impl Process<Infrastructure> for ReleaseRoute {
+impl<'a> Process<Infrastructure<'a>> for ReleaseRoute {
     fn resume(&mut self, sim :&mut Simulation<Infrastructure>) -> ProcessState {
         let event = match sim.world.state[self.trigger] {
             ObjectState::TVDSection { ref mut occupied, .. } => occupied.event(),

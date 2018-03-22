@@ -38,7 +38,7 @@ pub struct MoveSwitch {
     pub state: bool,
 }
 
-impl Process<Infrastructure> for MoveSwitch {
+impl<'a> Process<Infrastructure<'a>> for MoveSwitch {
     fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
         if !self.state {
             self.state = true;
@@ -60,7 +60,7 @@ enum DetectEvent {
     Exit(ObjectId),
 }
 
-impl Process<Infrastructure> for DetectEvent {
+impl<'a> Process<Infrastructure<'a>> for DetectEvent {
     fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
         let ref mut infstate = sim.world.state;
         let ref mut scheduler = sim.scheduler;
@@ -112,14 +112,14 @@ impl TrainVisitable for StaticObject {
 
 
 #[derive(Debug)]
-pub struct Infrastructure {
-    pub statics :StaticInfrastructure,
+pub struct Infrastructure<'a> {
+    pub statics :&'a StaticInfrastructure,
     pub state :Vec<ObjectState>,
 }
 
-impl Infrastructure {
+impl<'a> Infrastructure<'a> {
     pub fn new(scheduler :&mut Scheduler, 
-               infrastructure :StaticInfrastructure) -> Infrastructure {
+               infrastructure :&'a StaticInfrastructure) -> Infrastructure<'a> {
         use input::staticinfrastructure::StaticObject::*;
         let state = infrastructure.objects.iter().map(|o| match o {
             &Sight { .. } => ObjectState::Sight,

@@ -9,3 +9,9 @@ pub mod railway;
 
 pub mod ffi;
 
+pub fn evaluate_plan(infrastructure: &input::staticinfrastructure::StaticInfrastructure,
+                     routes: &Vec<input::staticinfrastructure::Route>,
+                     dispatch: &input::dispatch::Dispatch) -> output::history::History {
+    unimplemented!()
+
+}

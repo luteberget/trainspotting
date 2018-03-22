@@ -184,7 +184,7 @@ impl Driver {
     }
 }
 
-impl Process<Infrastructure> for Driver {
+impl<'a> Process<Infrastructure<'a>> for Driver {
     fn resume(&mut self, sim: &mut Simulation<Infrastructure>) -> ProcessState {
         let modelcontainment = self.move_train(sim);
         match modelcontainment {
