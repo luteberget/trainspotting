@@ -7,7 +7,7 @@ type NodeName = Name;
 
 #[derive(Debug)]
 pub struct Dispatch {
-    pub actions :Vec<DispatchAction>
+    pub actions: Vec<DispatchAction>,
 }
 
 #[derive(Debug)]
@@ -28,12 +28,12 @@ pub enum ParseError {
     Unrecognized(String),
 }
 
-// Parses dispatch plan format
-// wait 10.0
-// route rb1
-// train t1 (b1 -> 200.0) l=200.0 a=1.0 b=0.5 v=10.0
-//
-pub fn parse_dispatch(input :&str) -> Result<Dispatch, ParseError> {
+/// Parses dispatch plan format
+/// wait 10.0
+/// route rb1
+/// train t1 (b1 -> 200.0) l=200.0 a=1.0 b=0.5 v=10.0
+///
+pub fn parse_dispatch(input: &str) -> Result<Dispatch, ParseError> {
     let mut actions = Vec::new();
     let wait_re = Regex::new(r"^\s*wait\s*([\d\.]+)\s*$")
         .map_err(|e| ParseError::RegexError(format!("{:?}",e)))?;
@@ -45,7 +45,7 @@ pub fn parse_dispatch(input :&str) -> Result<Dispatch, ParseError> {
             a \s* = \s* (?P<acc>[\d\.]+) \s*
             b \s* = \s* (?P<brk>[\d\.]+) \s*
             v \s* = \s* (?P<vel>[\d\.]+) \s*
-            $").map_err(|e| ParseError::RegexError(format!("{:?}",e)))?;
+            $").map_err(|e| ParseError::RegexError(format!("{:?}", e)))?;
     for line in input.lines() {
         if let Some(groups) = wait_re.captures(line) {
             let time = groups[1].parse::<f64>().map_err(|_e| ParseError::NumberError)?;
@@ -58,19 +58,23 @@ pub fn parse_dispatch(input :&str) -> Result<Dispatch, ParseError> {
         }
         if let Some(groups) = train_re.captures(line) {
             actions.push(DispatchAction::Train(groups["name"].to_string(),
-                TrainParams {
-                    length: groups["len"].parse::<f64>().map_err( |_e| ParseError::NumberError)?,
-                    max_acc: groups["acc"].parse::<f64>().map_err(|_e| ParseError::NumberError)?,
-                    max_brk: groups["brk"].parse::<f64>().map_err(|_e| ParseError::NumberError)?,
-                    max_vel: groups["vel"].parse::<f64>().map_err(|_e| ParseError::NumberError)?,
-                },
-                (groups["node"].to_string(), 
-                groups["auth"].parse::<f64>().map_err(|_e| ParseError::NumberError)?)
-                ));
+                                               TrainParams {
+                                                   length: groups["len"].parse::<f64>()
+                                                       .map_err(|_e| ParseError::NumberError)?,
+                                                   max_acc: groups["acc"].parse::<f64>()
+                                                       .map_err(|_e| ParseError::NumberError)?,
+                                                   max_brk: groups["brk"].parse::<f64>()
+                                                       .map_err(|_e| ParseError::NumberError)?,
+                                                   max_vel: groups["vel"].parse::<f64>()
+                                                       .map_err(|_e| ParseError::NumberError)?,
+                                               },
+                                               (groups["node"].to_string(),
+                                                groups["auth"].parse::<f64>()
+                                                    .map_err(|_e| ParseError::NumberError)?)));
             continue;
         }
         return Err(ParseError::Unrecognized(line.to_string()));
     }
 
-    Ok(Dispatch {actions})
+    Ok(Dispatch { actions: actions })
 }

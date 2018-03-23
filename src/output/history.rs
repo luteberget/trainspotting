@@ -1,4 +1,4 @@
-use input::staticinfrastructure::{SwitchPosition};
+use input::staticinfrastructure::SwitchPosition;
 use railway::dynamics::{DriverAction, DistanceVelocity};
 
 #[derive(Debug)]
@@ -10,7 +10,7 @@ pub struct History {
 #[derive(Debug)]
 pub enum InfrastructureLogEvent {
     Wait(f64),
-    
+
     // Routes
     RoutePending(usize),
     RouteActive(usize),
@@ -26,7 +26,7 @@ pub enum InfrastructureLogEvent {
 #[derive(Debug)]
 pub enum TrainLogEvent {
     Wait(f64),
-    Node(usize,Option<usize>),
+    Node(usize, Option<usize>),
     Sight(usize, bool),
-    Move(f64,DriverAction, DistanceVelocity),
+    Move(f64, DriverAction, DistanceVelocity),
 }

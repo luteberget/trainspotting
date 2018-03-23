@@ -60,58 +60,61 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
     let mut input = x.peekable();
     let mut line = 0;
     while let Some(&ch) = input.peek() {
-                match ch {
-                    x if x.is_numeric() => {
-                        let num: String = consume_while(&mut input, |a| {
-                                a.is_numeric() || a == '-' || a == 'e' || a == 'E' || a == '.'
-                            })
-                            .into_iter()
-                            .collect();
-                        tokens.push(Token::Number(num.parse::<f64>().unwrap()));
-                    }
-                    x if x.is_alphabetic() => {
-                        let s: String = consume_while(&mut input, |a| a.is_alphanumeric())
-                            .into_iter()
-                            .collect();
-                        tokens.push(match s.as_ref() {
-                            "node" => Token::Node,
-                            "linear" => Token::Linear,
-                            "switch" => Token::Switch,
-                            "boundary" => Token::Boundary,
-                            "signal" => Token::Signal,
-                            "sight" => Token::Sight,
-                            "exit" => Token::Exit,
-                            "enter" => Token::Enter,
-                            _ => Token::Identifier(s),
-                        });
-                    }
-                    '(' => {
-                        input.next().unwrap();
-                        tokens.push(Token::OpenList);
-                    }
-                    ')' => {
-                        input.next().unwrap();
-                        tokens.push(Token::CloseList);
-                    }
-                    ',' => {
-                        input.next().unwrap();
-                        tokens.push(Token::ListSep);
-                    }
-                    '-' => {
-                        input.next().unwrap();
-                        tokens.push(Token::Arrow);
-                    }
-                    ' ' | '\r' | '\t' => {
-                        input.next().unwrap();
-                    }
-                    '\n' => {
-                        input.next().unwrap();
-                        line += 1;
-                    }
-                    c => {
-                        return Err(LexerError::UnexpectedChar { i: line, c: c.to_string() } );
-                    }
-                }
+        match ch {
+            x if x.is_numeric() => {
+                let num: String = consume_while(&mut input, |a| {
+                        a.is_numeric() || a == '-' || a == 'e' || a == 'E' || a == '.'
+                    })
+                    .into_iter()
+                    .collect();
+                tokens.push(Token::Number(num.parse::<f64>().unwrap()));
+            }
+            x if x.is_alphabetic() => {
+                let s: String = consume_while(&mut input, |a| a.is_alphanumeric())
+                    .into_iter()
+                    .collect();
+                tokens.push(match s.as_ref() {
+                    "node" => Token::Node,
+                    "linear" => Token::Linear,
+                    "switch" => Token::Switch,
+                    "boundary" => Token::Boundary,
+                    "signal" => Token::Signal,
+                    "sight" => Token::Sight,
+                    "exit" => Token::Exit,
+                    "enter" => Token::Enter,
+                    _ => Token::Identifier(s),
+                });
+            }
+            '(' => {
+                input.next().unwrap();
+                tokens.push(Token::OpenList);
+            }
+            ')' => {
+                input.next().unwrap();
+                tokens.push(Token::CloseList);
+            }
+            ',' => {
+                input.next().unwrap();
+                tokens.push(Token::ListSep);
+            }
+            '-' => {
+                input.next().unwrap();
+                tokens.push(Token::Arrow);
+            }
+            ' ' | '\r' | '\t' => {
+                input.next().unwrap();
+            }
+            '\n' => {
+                input.next().unwrap();
+                line += 1;
+            }
+            c => {
+                return Err(LexerError::UnexpectedChar {
+                    i: line,
+                    c: c.to_string(),
+                });
+            }
+        }
     }
     tokens.push(Token::EOF);
     Ok(tokens)
@@ -152,7 +155,7 @@ pub fn parse(t: &[Token]) -> Result<Vec<Statement>, ParseError> {
 pub fn identifier(i: &mut usize, tokens: &[Token]) -> Result<String, ParseError> {
     let r = match tokens[*i] {
         Token::Identifier(ref s) => s.clone(),
-        ref x => return Err(ParseError::UnexpectedToken(*i, format!("{:?}",x.clone()))),
+        ref x => return Err(ParseError::UnexpectedToken(*i, format!("{:?}", x.clone()))),
     };
     *i += 1;
     Ok(r)
@@ -161,7 +164,7 @@ pub fn identifier(i: &mut usize, tokens: &[Token]) -> Result<String, ParseError>
 pub fn number(i: &mut usize, tokens: &[Token]) -> Result<f64, ParseError> {
     let r = match tokens[*i] {
         Token::Number(x) => x,
-        ref x => return Err(ParseError::UnexpectedToken(*i, format!("{:?}",x))),
+        ref x => return Err(ParseError::UnexpectedToken(*i, format!("{:?}", x))),
     };
     *i += 1;
     Ok(r)
@@ -324,7 +327,8 @@ fn get_or_create_node(mnodes: &mut Vec<staticinfrastructure::Node>,
     idx
 }
 
-pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::StaticInfrastructure, ModelError> {
+pub fn model_from_ast(stmts: &[Statement])
+                      -> Result<staticinfrastructure::StaticInfrastructure, ModelError> {
     use super::staticinfrastructure::{StaticInfrastructure, Edges};
     let mut model = StaticInfrastructure {
         nodes: Vec::new(),
@@ -359,7 +363,8 @@ pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::Stati
                     left_link: (l1idx, l1dist),
                     right_link: (l2idx, l2dist),
                 };
-                let sw_idx = insert_object(&mut model.objects, &mut model.object_names, switch, name);
+                let sw_idx =
+                    insert_object(&mut model.objects, &mut model.object_names, switch, name);
                 model.nodes[node_idx].edges = Edges::Switchable(sw_idx);
             }
             DoubleNode(ref n1, ref n2) => {
@@ -380,10 +385,10 @@ pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::Stati
                                     let names = &mut model.object_names;
                                     let objs = &mut model.objects;
                                     *names.entry(name.to_string()).or_insert_with(|| {
-                                    let idx = objs.len();
-                                    objs.push(staticinfrastructure::StaticObject::Signal);
-                                    idx
-                                })
+                                        let idx = objs.len();
+                                        objs.push(staticinfrastructure::StaticObject::Signal);
+                                        idx
+                                    })
                                 };
 
                                 let object = staticinfrastructure::StaticObject::Sight {
@@ -409,12 +414,12 @@ pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::Stati
                                 // Create TVD if necessary
                                 let tvd = {
                                     let names = &mut model.object_names;
-                                    let objs =&mut model.objects;
+                                    let objs = &mut model.objects;
                                     *names.entry(name.to_string()).or_insert_with(|| {
-                                    let idx = objs.len();
-                                    objs.push(staticinfrastructure::StaticObject::TVDSection);
-                                    idx
-                                })
+                                        let idx = objs.len();
+                                        objs.push(staticinfrastructure::StaticObject::TVDSection);
+                                        idx
+                                    })
                                 };
 
                                 let idx = model.objects.len();
@@ -430,12 +435,12 @@ pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::Stati
                                 // Create TVD if necessary
                                 let tvd = {
                                     let names = &mut model.object_names;
-                                    let objs =&mut model.objects;
+                                    let objs = &mut model.objects;
                                     *names.entry(name.to_string()).or_insert_with(|| {
-                                    let idx = objs.len();
-                                    objs.push(staticinfrastructure::StaticObject::TVDSection);
-                                    idx
-                                })
+                                        let idx = objs.len();
+                                        objs.push(staticinfrastructure::StaticObject::TVDSection);
+                                        idx
+                                    })
                                 };
 
                                 let idx = model.objects.len();

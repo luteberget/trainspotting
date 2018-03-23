@@ -51,7 +51,9 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
-    pub fn new() -> Self { Default::default() }
+    pub fn new() -> Self {
+        Default::default()
+    }
     pub fn new_event(&mut self) -> EventId {
         let event_id = self.events.len();
         self.events.push(Event {
@@ -88,7 +90,7 @@ impl<T> Simulation<T> {
         id
     }
 
-    pub fn set_time_log(&mut self, logger :Box<Fn(f64)>) {
+    pub fn set_time_log(&mut self, logger: Box<Fn(f64)>) {
         self.logger = Some(logger);
     }
 
@@ -137,14 +139,16 @@ impl<T> Simulation<T> {
             }
             self.step();
         }
-        if let Some(ref mut logger) = self.logger { logger(*target - *self.time); }
+        if let Some(ref mut logger) = self.logger {
+            logger(*target - *self.time);
+        }
         self.time = target;
     }
 
     pub fn step(&mut self) -> bool {
         match self.scheduler.queue.pop() {
             Some(ev) => {
-                if let Some(ref mut logger) = self.logger { 
+                if let Some(ref mut logger) = self.logger {
                     logger(*ev.time - *self.time);
                 }
                 self.time = ev.time;

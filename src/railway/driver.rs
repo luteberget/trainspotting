@@ -3,8 +3,8 @@ use super::infrastructure::*;
 use input::staticinfrastructure::*;
 use smallvec::SmallVec;
 use super::dynamics::*;
-use output::history::{TrainLogEvent};
-use super::{Sim};
+use output::history::TrainLogEvent;
+use super::Sim;
 
 enum ModelContainment {
     Inside,
@@ -35,7 +35,7 @@ impl Driver {
                logger: Box<Fn(TrainLogEvent)>)
                -> Self {
 
-        // The starting node is actually the opposite node of the 
+        // The starting node is actually the opposite node of the
         // boundary node given as input here.
         let node = sim.world.statics.nodes[node].other_node;
         let next = match sim.world.edge_from(node) {
@@ -67,7 +67,7 @@ impl Driver {
     }
 
     fn goto_node(&mut self, sim: &mut Sim, node: NodeId) {
-        println!("TRAIN goto node {}",node);
+        println!("TRAIN goto node {}", node);
         for obj in sim.world.statics.nodes[node].objects.clone() {
             if let Some(p) = sim.world.statics.objects[obj].arrive_front() {
                 sim.start_process(p);

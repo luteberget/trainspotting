@@ -9,9 +9,9 @@ pub type InfLogger = Box<Fn(InfrastructureLogEvent)>;
 
 use railway::{Sim, Proc};
 
-//pub trait Logger {
+// pub trait Logger {
 //    fn output(&mut self, msg: InfrastructureLogEvent);
-//}
+//
 
 pub trait TrainVisitable {
     fn arrive_front(&self) -> Option<Box<Proc>> {
@@ -24,7 +24,7 @@ pub trait TrainVisitable {
 
 #[derive(Debug)]
 pub enum ObjectState {
-    Sight ,
+    Sight,
     Signal { authority: Observable<Option<f64>> },
     Switch {
         position: Observable<Option<SwitchPosition>>,
@@ -39,8 +39,8 @@ pub enum ObjectState {
 }
 
 pub struct MoveSwitch {
-    pub sw :ObjectId,
-    pub pos :SwitchPosition,
+    pub sw: ObjectId,
+    pub pos: SwitchPosition,
     pub state: bool,
 }
 
@@ -51,7 +51,9 @@ impl<'a> Process<Infrastructure<'a>> for MoveSwitch {
             ProcessState::Wait(SmallVec::from_slice(&[sim.create_timeout(5.0)]))
         } else {
             match sim.world.state[self.sw] {
-                ObjectState::Switch { ref mut position, .. } => position.set(&mut sim.scheduler, Some(self.pos)),
+                ObjectState::Switch { ref mut position, .. } => {
+                    position.set(&mut sim.scheduler, Some(self.pos))
+                }
                 _ => panic!("Not a switch"),
             }
             ProcessState::Finished
@@ -73,13 +75,17 @@ impl<'a> Process<Infrastructure<'a>> for DetectEvent {
         match *self {
             DetectEvent::Enter(obj) => {
                 match infstate[obj] {
-                    ObjectState::TVDSection { ref mut occupied, .. } => occupied.set(scheduler, true),
+                    ObjectState::TVDSection { ref mut occupied, .. } => {
+                        occupied.set(scheduler, true)
+                    }
                     _ => panic!("Not a TVD section"),
                 }
             }
             DetectEvent::Exit(obj) => {
                 match infstate[obj] {
-                    ObjectState::TVDSection { ref mut occupied, .. } => occupied.set(scheduler, false),
+                    ObjectState::TVDSection { ref mut occupied, .. } => {
+                        occupied.set(scheduler, false)
+                    }
                     _ => panic!("Not a TVD section"),
                 }
             }
@@ -115,39 +121,51 @@ impl TrainVisitable for StaticObject {
 }
 
 pub struct Infrastructure<'a> {
-    pub statics :&'a StaticInfrastructure,
-    pub state :Vec<ObjectState>,
+    pub statics: &'a StaticInfrastructure,
+    pub state: Vec<ObjectState>,
     pub logger: InfLogger,
 }
 
 use std::fmt;
 impl<'a> fmt::Debug for Infrastructure<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Infrastructure {{ statics: {:?}, state: {:?} }}", self.statics, self.state)
+        write!(f,
+               "Infrastructure {{ statics: {:?}, state: {:?} }}",
+               self.statics,
+               self.state)
     }
 }
 
 
 impl<'a> Infrastructure<'a> {
-    pub fn new(scheduler :&mut Scheduler, 
-               infrastructure :&'a StaticInfrastructure,
-               logger: InfLogger) -> Infrastructure<'a> {
+    pub fn new(scheduler: &mut Scheduler,
+               infrastructure: &'a StaticInfrastructure,
+               logger: InfLogger)
+               -> Infrastructure<'a> {
         use input::staticinfrastructure::StaticObject::*;
-        let state = infrastructure.objects.iter().map(|o| match *o {
-            Sight { .. } => ObjectState::Sight,
-            Signal { .. } => ObjectState::Signal { 
-                authority: Observable::new(scheduler, None) },
-            TVDLimit { .. } => ObjectState::TVDLimit,
-            TVDSection => ObjectState::TVDSection {
-                reserved: Observable::new(scheduler, false),
-                occupied: Observable::new(scheduler, false),
-            },
-            Switch {..}=> ObjectState::Switch {
-                position: Observable::new(scheduler, None),
-                throwing: None,
-                reserved: Observable::new(scheduler, false),
-            }
-        }).collect();
+        let state = infrastructure.objects
+            .iter()
+            .map(|o| match *o {
+                Sight { .. } => ObjectState::Sight,
+                Signal { .. } => {
+                    ObjectState::Signal { authority: Observable::new(scheduler, None) }
+                }
+                TVDLimit { .. } => ObjectState::TVDLimit,
+                TVDSection => {
+                    ObjectState::TVDSection {
+                        reserved: Observable::new(scheduler, false),
+                        occupied: Observable::new(scheduler, false),
+                    }
+                }
+                Switch { .. } => {
+                    ObjectState::Switch {
+                        position: Observable::new(scheduler, None),
+                        throwing: None,
+                        reserved: Observable::new(scheduler, false),
+                    }
+                }
+            })
+            .collect();
         Infrastructure {
             statics: infrastructure,
             state: state,
@@ -155,8 +173,7 @@ impl<'a> Infrastructure<'a> {
         }
     }
 
-    pub fn edge_from(&self, node: NodeId)
-                     -> Option<(Option<NodeId>, f64)> {
+    pub fn edge_from(&self, node: NodeId) -> Option<(Option<NodeId>, f64)> {
         match self.statics.nodes[node].edges {
             Edges::Nothing => None,
             Edges::ModelBoundary => Some((None, 1000.0)),
@@ -164,17 +181,16 @@ impl<'a> Infrastructure<'a> {
             Edges::Switchable(sw) => {
                 match (&self.statics.objects[sw], &self.state[sw]) {
                     (&StaticObject::Switch { ref left_link, ref right_link, .. },
-                     &ObjectState::Switch { ref position, .. } ) => {
+                     &ObjectState::Switch { ref position, .. }) => {
                         match *position.get() {
                             Some(SwitchPosition::Left) => Some((Some(left_link.0), left_link.1)),
                             Some(SwitchPosition::Right) => Some((Some(right_link.0), right_link.1)),
                             None => None,
                         }
-                    },
+                    }
                     _ => panic!("Not a switch"),
                 }
             }
         }
     }
 }
-

@@ -6,7 +6,7 @@ pub enum LexerError {
     #[fail(display = "unexpected char at {}: {}", i, c)]
     UnexpectedChar { i: usize, c: String },
     #[fail(display = "unexpected EOF")]
-    UnexpectedEOF
+    UnexpectedEOF,
 }
 
 
@@ -19,14 +19,15 @@ pub enum ParseError {
     #[fail(display = "parse errors: {:?}", _0)]
     Many(Vec<ParseError>),
     #[fail(display = "unknown name: {},  {}", _0, _1)]
-    UnknownName(String,String),
+    UnknownName(String, String),
 }
 
 
-pub fn alt<T,Token: PartialEq + Debug + Clone>(i: &mut usize,
-              tokens: &[Token],
-              alts: &[&Fn(&mut usize, &[Token]) -> Result<T, ParseError>])
-              -> Result<T, ParseError> {
+pub fn alt<T, Token: PartialEq + Debug + Clone>(i: &mut usize,
+                                                tokens: &[Token],
+                                                alts: &[&Fn(&mut usize, &[Token])
+                                                            -> Result<T, ParseError>])
+                                                -> Result<T, ParseError> {
     let start = *i;
     let mut errs = Vec::new();
     for alt in alts {
@@ -39,7 +40,10 @@ pub fn alt<T,Token: PartialEq + Debug + Clone>(i: &mut usize,
     Err(ParseError::Many(errs))
 }
 
-pub fn must_match<Token: PartialEq + Debug + Clone>(i: &mut usize, tokens: &[Token], tok: Token) -> Result<(), ParseError> {
+pub fn must_match<Token: PartialEq + Debug + Clone>(i: &mut usize,
+                                                    tokens: &[Token],
+                                                    tok: Token)
+                                                    -> Result<(), ParseError> {
     if matches(i, tokens, tok) {
         Ok(())
     } else {
@@ -47,7 +51,10 @@ pub fn must_match<Token: PartialEq + Debug + Clone>(i: &mut usize, tokens: &[Tok
     }
 }
 
-pub fn matches<Token: PartialEq + Debug + Clone>(i: &mut usize, tokens: &[Token], tok: Token) -> bool {
+pub fn matches<Token: PartialEq + Debug + Clone>(i: &mut usize,
+                                                 tokens: &[Token],
+                                                 tok: Token)
+                                                 -> bool {
     let r = tokens[*i] == tok;
     if r {
         *i += 1;

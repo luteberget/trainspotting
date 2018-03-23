@@ -6,12 +6,12 @@ pub type NodeId = usize;
 pub type ObjectId = usize;
 
 use std::collections::HashMap;
-pub type NameMap = HashMap<String,usize>;
+pub type NameMap = HashMap<String, usize>;
 
 #[derive(Debug)]
 pub struct StaticInfrastructure {
-    pub nodes :Vec<Node>,
-    pub objects :Vec<StaticObject>,
+    pub nodes: Vec<Node>,
+    pub objects: Vec<StaticObject>,
     pub node_names: NameMap,
     pub object_names: NameMap,
 }
@@ -34,7 +34,7 @@ pub enum Edges {
 #[derive(Debug)]
 pub enum StaticObject {
     Sight { distance: f64, signal: ObjectId },
-    Signal, 
+    Signal,
     Switch {
         left_link: (NodeId, f64),
         right_link: (NodeId, f64),
@@ -56,16 +56,16 @@ pub type Routes = HashMap<String, Route>;
 
 #[derive(Debug,Clone)]
 pub struct Route {
-    pub signal :ObjectId,
-    pub signal_trigger :ObjectId,
+    pub signal: ObjectId,
+    pub signal_trigger: ObjectId,
     pub sections: SmallVec<[ObjectId; 4]>,
-    pub switch_positions: SmallVec<[(ObjectId, SwitchPosition);2]>,
+    pub switch_positions: SmallVec<[(ObjectId, SwitchPosition); 2]>,
     pub length: f64,
-    pub releases: SmallVec<[Release;2]>,
+    pub releases: SmallVec<[Release; 2]>,
 }
 
 #[derive(Debug,Clone)]
 pub struct Release {
-    pub trigger :ObjectId,
-    pub resources :SmallVec<[ObjectId; 4]>,
+    pub trigger: ObjectId,
+    pub resources: SmallVec<[ObjectId; 4]>,
 }

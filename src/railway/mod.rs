@@ -9,4 +9,3 @@ use super::eventsim;
 use railway::infrastructure::Infrastructure;
 type Sim<'a> = eventsim::Simulation<Infrastructure<'a>>;
 type Proc<'a> = eventsim::Process<Infrastructure<'a>>;
-
