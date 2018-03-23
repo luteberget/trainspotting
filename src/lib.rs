@@ -1,9 +1,9 @@
+#![allow(redundant_field_names)]
 extern crate smallvec;
 extern crate ordered_float;
 extern crate regex;
 extern crate failure;
 #[macro_use] extern crate failure_derive;
-
 
 pub mod input;
 pub mod output;
@@ -37,7 +37,7 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
     let mut sim = eventsim::Simulation::new_with_scheduler(world, scheduler);
     sim.set_time_log(time_log);
 
-    for action in dispatch.actions.iter() {
+    for action in &dispatch.actions {
         use input::dispatch::DispatchAction::*;
         match *action {
             Wait(t) => sim.advance_by(t),
@@ -55,7 +55,7 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
                 let logger = Box::new(move |i| train_log.borrow_mut().push(i));
                 let driver = Box::new(
                     railway::driver::Driver::new(&mut sim, node_idx, auth_dist, 
-                          params.clone(), logger));
+                          *params, logger));
                 sim.start_process(driver);
             }
         }

@@ -18,16 +18,15 @@ pub fn parse(t: &[Token], inf :&StaticInfrastructure) -> Result<Routes, ParseErr
     let mut i = 0;
     let mut routes = HashMap::new();
     while t[i] != Token::EOF {
-        match parse_route(&mut i, t, &inf.object_names, &inf.node_names)? {
-            Some((name,route)) => { routes.insert(name,route); },
-            _ => {},
+        if let Some((name,route)) = parse_route(&mut i, t, &inf.object_names, &inf.node_names)? {
+            routes.insert(name,route); 
         }
     }
     Ok(routes)
 }
 
 fn lookup(names :&HashMap<String,usize>, name :&str) -> Result<usize, ParseError>{
-    names.get(name).cloned().ok_or(ParseError::UnknownName(name.to_string(), "infrastructure".to_string()))
+    names.get(name).cloned().ok_or_else(|| ParseError::UnknownName(name.to_string(), "infrastructure".to_string()))
 }
 
 pub fn parse_route(i :&mut usize, t:&[Token], objnames:&Map, nodenames:&Map) -> Result<Option<(String,Route)>, ParseError> {
@@ -125,8 +124,8 @@ pub fn identifier(i: &mut usize, tokens: &[Token]) -> Result<String, ParseError>
 
 pub fn number(i: &mut usize, tokens: &[Token]) -> Result<f64, ParseError> {
     let r = match tokens[*i] {
-        Token::Number(x) => x.clone(),
-        ref x => return Err(ParseError::UnexpectedToken(*i, format!("{:?}",x.clone()))),
+        Token::Number(x) => x,
+        ref x => return Err(ParseError::UnexpectedToken(*i, format!("{:?}",x))),
     };
     *i += 1;
     Ok(r)
@@ -149,9 +148,7 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
     let mut tokens = Vec::new();
     let mut input = x.peekable();
     let mut line = 0;
-    loop {
-        match input.peek() {
-            Some(&ch) => {
+            while let Some(&ch)= input.peek() {
                 match ch {
                     x if x.is_numeric() => {
                         let num: String = consume_while(&mut input, |a| {
@@ -208,11 +205,6 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
                     }
                 }
             }
-            None => {
-                break;
-            }
-        }
-    }
     tokens.push(Token::EOF);
     Ok(tokens)
 }

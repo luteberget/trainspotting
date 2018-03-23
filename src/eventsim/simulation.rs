@@ -43,6 +43,7 @@ pub struct Simulation<T> {
     pub logger: Option<Box<Fn(f64)>>,
 }
 
+#[derive(Default)]
 pub struct Scheduler {
     events: Vec<Event>,
     pub queue: BinaryHeap<QueuedEvent>,
@@ -50,13 +51,7 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
-    pub fn new() -> Self {
-        Scheduler {
-            events: Vec::new(),
-            queue: BinaryHeap::new(),
-            id_counter: 0,
-        }
-    }
+    pub fn new() -> Self { Default::default() }
     pub fn new_event(&mut self) -> EventId {
         let event_id = self.events.len();
         self.events.push(Event {
@@ -143,7 +138,7 @@ impl<T> Simulation<T> {
             self.step();
         }
         if let Some(ref mut logger) = self.logger { logger(*target - *self.time); }
-        self.time = OrderedFloat::from(target);
+        self.time = target;
     }
 
     pub fn step(&mut self) -> bool {
@@ -171,7 +166,7 @@ impl<T> Simulation<T> {
 
     fn resume(&mut self, process_id: ProcessId) {
         let (event_id, mut process) = {
-            let a = self.procs.get_mut(process_id).unwrap();
+            let a = &mut self.procs[process_id];
             // We need to take the process out of the simulation
             // This creates safety againts the process
             // firing events that modify the process itself.

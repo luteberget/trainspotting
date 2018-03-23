@@ -69,7 +69,7 @@ impl Driver {
     fn goto_node(&mut self, sim: &mut Sim, node: NodeId) {
         println!("TRAIN goto node {}",node);
         for obj in sim.world.statics.nodes[node].objects.clone() {
-            for p in sim.world.statics.objects[obj].arrive_front() {
+            if let Some(p) = sim.world.statics.objects[obj].arrive_front() {
                 sim.start_process(p);
             }
             self.arrive_front(sim, obj);
@@ -111,7 +111,7 @@ impl Driver {
             *dist -= dx;
             if *dist < 1e-4 {
                 // Cleared a node.
-                for p in sim.world.statics.objects[obj].arrive_back() {
+                if let Some(p) = sim.world.statics.objects[obj].arrive_back() {
                     sim.start_process(p);
                 }
                 false
@@ -165,11 +165,11 @@ impl Driver {
         for &(sig, dist) in self.connected_signals.iter() {
             match sim.world.state[sig] {
                 ObjectState::Signal { ref authority } => {
-                    match authority.get() {
-                        &Some(d) => {
+                    match *authority.get() {
+                        Some(d) => {
                             self.authority = dist + d;
                         }
-                        &None => {
+                        None => {
                             self.authority = dist - 20.0;
                             break;
                         }

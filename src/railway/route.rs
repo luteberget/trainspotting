@@ -40,7 +40,7 @@ fn unavailable_resource(r :&Route, infrastructure :&Infrastructure) -> Option<Ev
         }
     }
 
-    return None;
+    None
 }
 
 fn allocate_resources(r :&Route, infrastructure :&mut Infrastructure, scheduler :&mut Scheduler) {
@@ -99,7 +99,7 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
 
         // TODO smallvec
         let wait_move = movable_events(&self.route, sim);
-        if wait_move.len() > 0 {
+        if !wait_move.is_empty() {
             return ProcessState::Wait(wait_move.into());
         }
 
@@ -181,10 +181,10 @@ impl<'a> Process<Infrastructure<'a>> for ReleaseRoute {
                 ProcessState::Wait(SmallVec::from_slice(&[event]))
             },
             ReleaseRouteState::AwaitExit => {
-                for obj in self.resources.iter() {
+                for obj in &self.resources {
                     match sim.world.state[*obj] {
-                       ObjectState:: TVDSection { ref mut reserved, .. } => reserved.set(&mut sim.scheduler, false),
-                        ObjectState::Switch { ref mut reserved, ..} => reserved.set(&mut sim.scheduler, false),
+                         ObjectState:: TVDSection { ref mut reserved, .. }
+                       | ObjectState::Switch { ref mut reserved, .. } => reserved.set(&mut sim.scheduler, false),
                         _ => panic!("Not a resource"),
                     };;
                 }

@@ -68,9 +68,9 @@ enum DetectEvent {
 
 impl<'a> Process<Infrastructure<'a>> for DetectEvent {
     fn resume(&mut self, sim: &mut Sim) -> ProcessState {
-        let ref mut infstate = sim.world.state;
-        let ref mut scheduler = sim.scheduler;
-        match self.clone() {
+        let infstate = &mut sim.world.state;
+        let scheduler = &mut sim.scheduler;
+        match *self {
             DetectEvent::Enter(obj) => {
                 match infstate[obj] {
                     ObjectState::TVDSection { ref mut occupied, .. } => occupied.set(scheduler, true),
@@ -90,8 +90,8 @@ impl<'a> Process<Infrastructure<'a>> for DetectEvent {
 
 impl TrainVisitable for StaticObject {
     fn arrive_front(&self) -> Option<Box<Proc>> {
-        match self {
-            &StaticObject::TVDLimit { enter, .. } => {
+        match *self {
+            StaticObject::TVDLimit { enter, .. } => {
                 match enter {
                     Some(tvd) => Some(Box::new(DetectEvent::Enter(tvd))),
                     _ => None,
@@ -102,8 +102,8 @@ impl TrainVisitable for StaticObject {
     }
 
     fn arrive_back(&self) -> Option<Box<Proc>> {
-        match self {
-            &StaticObject::TVDLimit { exit, .. } => {
+        match *self {
+            StaticObject::TVDLimit { exit, .. } => {
                 match exit {
                     Some(tvd) => Some(Box::new(DetectEvent::Exit(tvd))),
                     _ => None,
@@ -133,16 +133,16 @@ impl<'a> Infrastructure<'a> {
                infrastructure :&'a StaticInfrastructure,
                logger: InfLogger) -> Infrastructure<'a> {
         use input::staticinfrastructure::StaticObject::*;
-        let state = infrastructure.objects.iter().map(|o| match o {
-            &Sight { .. } => ObjectState::Sight,
-            &Signal { .. } => ObjectState::Signal { 
+        let state = infrastructure.objects.iter().map(|o| match *o {
+            Sight { .. } => ObjectState::Sight,
+            Signal { .. } => ObjectState::Signal { 
                 authority: Observable::new(scheduler, None) },
-            &TVDLimit { .. } => ObjectState::TVDLimit,
-            &TVDSection => ObjectState::TVDSection {
+            TVDLimit { .. } => ObjectState::TVDLimit,
+            TVDSection => ObjectState::TVDSection {
                 reserved: Observable::new(scheduler, false),
                 occupied: Observable::new(scheduler, false),
             },
-            &Switch {..}=> ObjectState::Switch {
+            Switch {..}=> ObjectState::Switch {
                 position: Observable::new(scheduler, None),
                 throwing: None,
                 reserved: Observable::new(scheduler, false),
@@ -165,10 +165,10 @@ impl<'a> Infrastructure<'a> {
                 match (&self.statics.objects[sw], &self.state[sw]) {
                     (&StaticObject::Switch { ref left_link, ref right_link, .. },
                      &ObjectState::Switch { ref position, .. } ) => {
-                        match position.get() {
-                            &Some(SwitchPosition::Left) => Some((Some(left_link.0), left_link.1)),
-                            &Some(SwitchPosition::Right) => Some((Some(right_link.0), right_link.1)),
-                            &None => None,
+                        match *position.get() {
+                            Some(SwitchPosition::Left) => Some((Some(left_link.0), left_link.1)),
+                            Some(SwitchPosition::Right) => Some((Some(right_link.0), right_link.1)),
+                            None => None,
                         }
                     },
                     _ => panic!("Not a switch"),
