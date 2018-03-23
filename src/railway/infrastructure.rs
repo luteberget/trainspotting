@@ -7,6 +7,7 @@ use std::f64::INFINITY;
 use output::history::InfrastructureLogEvent;
 
 pub type TrainId = usize;
+pub type InfLogger = Box<Fn(InfrastructureLogEvent)>;
 
 use railway::{Sim, Proc};
 
@@ -117,15 +118,24 @@ impl TrainVisitable for StaticObject {
     }
 }
 
-#[derive(Debug)]
 pub struct Infrastructure<'a> {
     pub statics :&'a StaticInfrastructure,
     pub state :Vec<ObjectState>,
+    pub logger: InfLogger,
 }
+
+use std::fmt;
+impl<'a> fmt::Debug for Infrastructure<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Infrastructure {{ statics: {:?}, state: {:?} }}", self.statics, self.state)
+    }
+}
+
 
 impl<'a> Infrastructure<'a> {
     pub fn new(scheduler :&mut Scheduler, 
-               infrastructure :&'a StaticInfrastructure) -> Infrastructure<'a> {
+               infrastructure :&'a StaticInfrastructure,
+               logger: InfLogger) -> Infrastructure<'a> {
         use input::staticinfrastructure::StaticObject::*;
         let state = infrastructure.objects.iter().map(|o| match o {
             &Sight { .. } => ObjectState::Sight,
@@ -145,6 +155,7 @@ impl<'a> Infrastructure<'a> {
         Infrastructure {
             statics: infrastructure,
             state: state,
+            logger: logger,
         }
     }
 

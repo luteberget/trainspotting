@@ -15,13 +15,11 @@ enum ActivateRouteState {
 pub struct ActivateRoute {
     route :Route,
     state :ActivateRouteState,
-    log: Rc<RefCell<Vec<InfrastructureLogEvent>>>,
 }
 
 impl ActivateRoute {
-    pub fn new(r :Route, log :Rc<RefCell<Vec<InfrastructureLogEvent>>>) -> Self { ActivateRoute {
+    pub fn new(r :Route) -> Self { ActivateRoute {
         route :r,
-        log:log,
         state: ActivateRouteState::Allocate }}
 
 }
