@@ -3,10 +3,6 @@ use ordered_float::OrderedFloat;
 use std::collections::BinaryHeap;
 use std::mem;
 
-pub trait TimeLogger {
-    fn advance_time(&mut self, t :f64);
-}
-
 pub type EventId = usize;
 pub type ProcessId = usize;
 
@@ -15,9 +11,9 @@ pub enum ProcessState {
     Wait(SmallVec<[EventId; 2]>),
 }
 
-pub trait Process<T,L:TimeLogger> {
-    fn resume(&mut self, sim: &mut Simulation<T,L>) -> ProcessState;
-    fn abort(&mut self, sim: &mut Simulation<T,L>) {}
+pub trait Process<T> {
+    fn resume(&mut self, sim: &mut Simulation<T>) -> ProcessState;
+    fn abort(&mut self, sim: &mut Simulation<T>) {}
 }
 
 pub enum EventState {
@@ -39,12 +35,12 @@ pub struct Event {
     listeners: Vec<ProcessId>,
 }
 
-pub struct Simulation<T,L:TimeLogger> {
+pub struct Simulation<T> {
     pub time: OrderedFloat<f64>,
     pub world: T,
-    procs: Vec<Option<(EventId, Box<Process<T,L>>)>>,
+    procs: Vec<Option<(EventId, Box<Process<T>>)>>,
     pub scheduler: Scheduler,
-    pub logger: Option<L>,
+    pub logger: Option<Box<Fn(f64)>>,
 }
 
 pub struct Scheduler {
@@ -90,18 +86,15 @@ impl Scheduler {
     }
 }
 
-impl<T,L:TimeLogger> Simulation<T,L> {
+impl<T> Simulation<T> {
     pub fn create_timeout(&mut self, dt: f64) -> EventId {
         let id = self.scheduler.new_event();
         self.schedule(id, dt);
         id
     }
 
-    pub fn set_logger(&mut self, logger :L) {
+    pub fn set_time_log(&mut self, logger :Box<Fn(f64)>) {
         self.logger = Some(logger);
-    }
-    pub fn take_logger(&mut self) -> Option<L>{
-        self.logger.take()
     }
 
     pub fn schedule(&mut self, id: EventId, dt: f64) {
@@ -132,7 +125,7 @@ impl<T,L:TimeLogger> Simulation<T,L> {
         }
     }
 
-    pub fn start_process(&mut self, p: Box<Process<T,L>>) -> EventId {
+    pub fn start_process(&mut self, p: Box<Process<T>>) -> EventId {
         let eventid = self.scheduler.new_event();
         let process_id = self.procs.len();
         self.procs.push(Some((eventid, p)));
@@ -149,7 +142,7 @@ impl<T,L:TimeLogger> Simulation<T,L> {
             }
             self.step();
         }
-        if let Some(ref mut logger) = self.logger { logger.advance_time(*target - *self.time) }
+        if let Some(ref mut logger) = self.logger { logger(*target - *self.time); }
         self.time = OrderedFloat::from(target);
     }
 
@@ -157,7 +150,7 @@ impl<T,L:TimeLogger> Simulation<T,L> {
         match self.scheduler.queue.pop() {
             Some(ev) => {
                 if let Some(ref mut logger) = self.logger { 
-                    logger.advance_time(*ev.time - *self.time) 
+                    logger(*ev.time - *self.time);
                 }
                 self.time = ev.time;
                 self.fire(ev.event);

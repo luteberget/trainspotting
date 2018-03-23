@@ -32,7 +32,7 @@ pub struct Driver {
 }
 
 impl Driver {
-    pub fn new<L:Logger>(sim: &mut Sim<L>,
+    pub fn new(sim: &mut Sim,
                node: NodeId,
                auth: f64,
                params: TrainParams,
@@ -65,7 +65,7 @@ impl Driver {
         d
     }
 
-    fn goto_node<L:Logger>(&mut self, sim: &mut Sim<L>, node: NodeId) {
+    fn goto_node(&mut self, sim: &mut Sim, node: NodeId) {
         for obj in sim.world.statics.nodes[node].objects.clone() {
             for p in sim.world.statics.objects[obj].arrive_front(obj) {
                 sim.start_process(p);
@@ -75,7 +75,7 @@ impl Driver {
         }
     }
 
-    fn arrive_front<L:Logger>(&mut self, sim: &Sim<L>, obj: ObjectId) {
+    fn arrive_front(&mut self, sim: &Sim, obj: ObjectId) {
         match sim.world.statics.objects[obj] {
             StaticObject::Sight { distance, signal } => {
                 self.connected_signals.push((signal, distance));
@@ -87,7 +87,7 @@ impl Driver {
         }
     }
 
-    fn move_train<L:Logger>(&mut self, sim: &mut Sim<L>) -> ModelContainment {
+    fn move_train(&mut self, sim: &mut Sim) -> ModelContainment {
         let (action, action_time) = self.step;
         let dt = *sim.time - action_time;
 
@@ -143,7 +143,7 @@ impl Driver {
         }
     }
 
-    fn plan_ahead<L:Logger>(&mut self, sim: &Sim<L>) -> DriverPlan {
+    fn plan_ahead(&mut self, sim: &Sim) -> DriverPlan {
         // Travel distance is limited by next node
         let mut max_dist = (self.train.location.1).1;
 
@@ -192,8 +192,8 @@ impl Driver {
     }
 }
 
-impl<'a,L:Logger> Process<Infrastructure<'a>,L> for Driver {
-    fn resume(&mut self, sim: &mut Sim<L>) -> ProcessState {
+impl<'a> Process<Infrastructure<'a>> for Driver {
+    fn resume(&mut self, sim: &mut Sim) -> ProcessState {
         let modelcontainment = self.move_train(sim);
         match modelcontainment {
             ModelContainment::Exiting => ProcessState::Finished,

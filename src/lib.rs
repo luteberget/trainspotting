@@ -17,18 +17,6 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 use output::history::InfrastructureLogEvent;
-pub struct Log(Rc<RefCell<Vec<InfrastructureLogEvent>>>);
-impl eventsim::TimeLogger for Log {
-    fn advance_time(&mut self, t: f64) { 
-        self.0.borrow_mut().push(InfrastructureLogEvent::Wait(t)); 
-    }
-}
-
-impl railway::infrastructure::Logger for Log {
-    fn output(&mut self, msg :InfrastructureLogEvent) {
-        self.0.borrow_mut().push(msg);
-    }
-}
 
 pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticInfrastructure,
                      routes: &HashMap<String,input::staticinfrastructure::Route>,
@@ -41,7 +29,11 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
 
     let mut train_logs = Vec::new();
     let inf_log = Rc::new(RefCell::new(Vec::new()));
-    sim.set_logger(Log(inf_log.clone()));
+    {
+        let log = inf_log.clone();
+        sim.set_time_log(Box::new(move
+                |t| log.borrow_mut().push(InfrastructureLogEvent::Wait(t))));
+    }
 
     for action in dispatch.actions.iter() {
         use input::dispatch::DispatchAction::*;
@@ -50,26 +42,24 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
             Route(ref route_name) => match routes.get(route_name) {
                 Some(route) => {
                     sim.start_process(Box::new(
-                            railway::route::ActivateRoute::new(route.clone(), inf_log.clone())));
+                        railway::route::ActivateRoute::new(route.clone(), inf_log.clone())));
                 },
                 None => panic!("Unknown route \"{}\"", route_name),
             },
             Train(ref name, ref params, (ref node, auth_dist)) =>  {
                 let node_idx = staticinfrastructure.node_names[node];
-                let log = Rc::new(RefCell::new(Vec::new()));
-                train_logs.push((name.clone(), log.clone()));
+                let train_log = Rc::new(RefCell::new(Vec::new()));
+                train_logs.push((name.clone(), train_log.clone()));
                 let driver = Box::new(
                     railway::driver::Driver::new(&mut sim, node_idx, auth_dist, 
-                                                          params.clone(), log));
+                          params.clone(), train_log));
                 sim.start_process(driver);
             }
         }
     }
 
-    let log = sim.take_logger().unwrap();
-
     output::history::History {
-        inf: log.0.replace(Vec::new()),
+        inf: inf_log.replace(Vec::new()),
         trains: train_logs.into_iter().map(|(n,v)| (n, v.replace(Vec::new()))).collect()
     }
 }
