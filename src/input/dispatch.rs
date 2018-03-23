@@ -48,7 +48,7 @@ pub fn parse_dispatch(input :&str) -> Result<Dispatch, ParseError> {
             $").map_err(|e| ParseError::RegexError(format!("{:?}",e)))?;
     for line in input.lines() {
         if let Some(groups) = wait_re.captures(line) {
-            let time = groups[1].parse::<f64>().map_err(|e| ParseError::NumberError)?;
+            let time = groups[1].parse::<f64>().map_err(|_e| ParseError::NumberError)?;
             actions.push(DispatchAction::Wait(time));
             continue;
         }
@@ -59,13 +59,13 @@ pub fn parse_dispatch(input :&str) -> Result<Dispatch, ParseError> {
         if let Some(groups) = train_re.captures(line) {
             actions.push(DispatchAction::Train(groups["name"].to_string(),
                 TrainParams {
-                    length: groups["len"].parse::<f64>().map_err(|e| ParseError::NumberError)?,
-                    max_acc: groups["acc"].parse::<f64>().map_err(|e| ParseError::NumberError)?,
-                    max_brk: groups["brk"].parse::<f64>().map_err(|e| ParseError::NumberError)?,
-                    max_vel: groups["vel"].parse::<f64>().map_err(|e| ParseError::NumberError)?,
+                    length: groups["len"].parse::<f64>().map_err( |_e| ParseError::NumberError)?,
+                    max_acc: groups["acc"].parse::<f64>().map_err(|_e| ParseError::NumberError)?,
+                    max_brk: groups["brk"].parse::<f64>().map_err(|_e| ParseError::NumberError)?,
+                    max_vel: groups["vel"].parse::<f64>().map_err(|_e| ParseError::NumberError)?,
                 },
                 (groups["node"].to_string(), 
-                groups["auth"].parse::<f64>().map_err(|e| ParseError::NumberError)?)
+                groups["auth"].parse::<f64>().map_err(|_e| ParseError::NumberError)?)
                 ));
             continue;
         }

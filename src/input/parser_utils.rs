@@ -1,6 +1,5 @@
 use std::iter::Peekable;
 use std::fmt::Debug;
-use failure::Error;
 
 #[derive(Debug,Clone,Fail)]
 pub enum LexerError {

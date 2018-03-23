@@ -13,7 +13,7 @@ pub enum ProcessState {
 
 pub trait Process<T> {
     fn resume(&mut self, sim: &mut Simulation<T>) -> ProcessState;
-    fn abort(&mut self, sim: &mut Simulation<T>) {}
+    fn abort(&mut self, _sim: &mut Simulation<T>) {}
 }
 
 pub enum EventState {

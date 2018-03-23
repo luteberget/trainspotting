@@ -1,9 +1,7 @@
 use smallvec::SmallVec;
 use eventsim::*;
 use eventsim::observable::Observable;
-use super::dynamics::TrainParams;
 use input::staticinfrastructure::*;
-use std::f64::INFINITY;
 use output::history::InfrastructureLogEvent;
 
 pub type TrainId = usize;

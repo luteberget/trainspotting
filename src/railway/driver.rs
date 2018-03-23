@@ -1,14 +1,10 @@
-use eventsim::{Simulation, Process, ProcessState};
+use eventsim::{Process, ProcessState};
 use super::infrastructure::*;
 use input::staticinfrastructure::*;
 use smallvec::SmallVec;
 use super::dynamics::*;
-use std::f64::INFINITY;
-use output::history::{ InfrastructureLogEvent, TrainLogEvent};
-use super::{Sim, Proc};
-
-use std::rc::Rc;
-use std::cell::RefCell;
+use output::history::{TrainLogEvent};
+use super::{Sim};
 
 enum ModelContainment {
     Inside,
@@ -87,7 +83,7 @@ impl Driver {
                 self.connected_signals.push((signal, distance));
             }
             StaticObject::Signal { .. } => {
-                self.connected_signals.retain(|&mut (s, d)| s != obj);
+                self.connected_signals.retain(|&mut (s, _d)| s != obj);
             }
             _ => {}
         }
@@ -124,12 +120,12 @@ impl Driver {
             }
         });
 
-        self.connected_signals.retain(|&mut (obj, ref mut dist)| {
+        self.connected_signals.retain(|&mut (_obj, ref mut dist)| {
             *dist -= dx;
             *dist < 1e-4
         });
 
-        let (start_node, (end_node, dist)) = self.train.location;
+        let (_, (end_node, dist)) = self.train.location;
         if dist < 1e-4 && end_node.is_some() {
             let new_start = sim.world.statics.nodes[end_node.unwrap()].other_node;
             self.goto_node(sim, new_start);
@@ -156,12 +152,12 @@ impl Driver {
         let mut max_dist = (self.train.location.1).1;
 
         // Travel distance is limited by nodes under train
-        for &(n, d) in self.train.under_train.iter() {
+        for &(_n, d) in self.train.under_train.iter() {
             max_dist = max_dist.min(d);
         }
 
         // Travel distance is limited by sight distances
-        for &(n, d) in self.connected_signals.iter() {
+        for &(_n, d) in self.connected_signals.iter() {
             max_dist = max_dist.min(d);
         }
 

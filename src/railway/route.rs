@@ -1,11 +1,8 @@
-use eventsim::{Simulation, Process, ProcessState, EventId, Scheduler};
-use super::{Sim, Proc};
+use eventsim::{Process, ProcessState, EventId, Scheduler};
+use super::{Sim};
 use smallvec::SmallVec;
 use input::staticinfrastructure::*;
 use super::infrastructure::*;
-use output::history::InfrastructureLogEvent;
-use std::rc::Rc;
-use std::cell::RefCell;
 
 enum ActivateRouteState {
     Allocate, // Waiting for resources
@@ -79,7 +76,7 @@ fn movable_events(r :&Route, sim :&mut Sim) -> Vec<EventId> {
         sim.start_process(Box::new(MoveSwitch { sw: sw, pos: pos, state: false }));
     }
 
-    r.switch_positions.iter().filter_map(|&(sw,pos)| {
+    r.switch_positions.iter().filter_map(|&(sw,_pos)| {
         match sim.world.state[sw] {
             ObjectState::Switch { ref throwing, .. } => *throwing,
             _ => panic!("Not a switch"),

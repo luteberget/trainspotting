@@ -34,16 +34,16 @@ pub fn parse_route(i :&mut usize, t:&[Token], objnames:&Map, nodenames:&Map) -> 
     alt(i,t,&[
         &|i,t| {
             symbol(i,t,"modelentry")?;
-            let b = identifier(i,t)?;
-            let n = identifier(i,t)?;
-            let d = number(i,t)?;
+            let _b = identifier(i,t)?;
+            let _n = identifier(i,t)?;
+            let _d = number(i,t)?;
             Ok(None) // Ignoring model boundaries in this program
         },
         &|i,t| {
             symbol(i,t,"modelexit")?;
-            let b = identifier(i,t)?;
-            let n = identifier(i,t)?;
-            let d = number(i,t)?;
+            let _b = identifier(i,t)?;
+            let _n = identifier(i,t)?;
+            let _d = number(i,t)?;
             Ok(None) // Ignoring model boundaries in this program
         },
         &|i,t| {
@@ -72,7 +72,7 @@ pub fn parse_route(i :&mut usize, t:&[Token], objnames:&Map, nodenames:&Map) -> 
                 Ok((sw,pos))
             })?;
             symbol(i,t,"contains")?;
-            let contains = list(i,t,|i,t| lookup(nodenames, &identifier(i,t)?))?;
+            let _contains = list(i,t,|i,t| lookup(nodenames, &identifier(i,t)?))?;
             must_match(i,t,Token::BraceClose)?;
             let mut releases = Vec::new();
             while matches(i,t,Token::Identifier("release".to_string())) {
