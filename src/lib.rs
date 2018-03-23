@@ -52,7 +52,10 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
                 let node_idx = staticinfrastructure.node_names[node];
                 let train_log = Rc::new(RefCell::new(Vec::new()));
                 train_logs.push((name.clone(), train_log.clone()));
-                let logger = Box::new(move |i| train_log.borrow_mut().push(i));
+                let logger = Box::new(move |i| {
+                    println!(" --- {:?}", i);
+                    train_log.borrow_mut().push(i);
+                });
                 let driver = Box::new(
                     railway::driver::Driver::new(&mut sim, node_idx, auth_dist, 
                           *params, logger));
@@ -60,6 +63,8 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
             }
         }
     }
+
+    sim.run();
 
     output::history::History {
         inf: inf_log.replace(Vec::new()),

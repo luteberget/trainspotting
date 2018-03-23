@@ -3,6 +3,7 @@ use super::Sim;
 use smallvec::SmallVec;
 use input::staticinfrastructure::*;
 use super::infrastructure::*;
+use output::history::InfrastructureLogEvent;
 
 enum ActivateRouteState {
     Allocate, // Waiting for resources
@@ -105,6 +106,7 @@ fn movable_events(r: &Route, sim: &mut Sim) -> Vec<EventId> {
 
 impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
     fn resume(&mut self, sim: &mut Sim) -> ProcessState {
+        (sim.world.logger)(InfrastructureLogEvent::RoutePending(0)); // TODO id from where?
         if let ActivateRouteState::Allocate = self.state {
             match unavailable_resource(&self.route, &sim.world) {
                 Some(ev) => return ProcessState::Wait(SmallVec::from_slice(&[ev])),
@@ -124,7 +126,9 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
         // Set the signal to green
         match sim.world.state[self.route.signal] {
             ObjectState::Signal { ref mut authority } => {
-                authority.set(&mut sim.scheduler, Some(self.route.length))
+                let l = Some(self.route.length);
+                authority.set(&mut sim.scheduler, l);
+                (sim.world.logger)(InfrastructureLogEvent::Authority(self.route.signal,l));
             }
             _ => panic!("Not a signal"),
         }
@@ -143,6 +147,7 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
             }));
         }
 
+        (sim.world.logger)(InfrastructureLogEvent::RouteActive(0)); // TODO id from where?
         ProcessState::Finished
     }
 }
@@ -172,7 +177,8 @@ impl<'a> Process<Infrastructure<'a>> for CatchSignal {
             CatchSignalState::AwaitTrigger => {
                 match sim.world.state[self.signal] {
                     ObjectState::Signal { ref mut authority } => {
-                        authority.set(&mut sim.scheduler, None)
+                        authority.set(&mut sim.scheduler, None);
+                        (sim.world.logger)(InfrastructureLogEvent::Authority(self.signal,None));
                     }
                     _ => panic!("Not a signal"),
                 };
@@ -215,11 +221,13 @@ impl<'a> Process<Infrastructure<'a>> for ReleaseRoute {
                     match sim.world.state[*obj] {
                         ObjectState::TVDSection { ref mut reserved, .. } |
                         ObjectState::Switch { ref mut reserved, .. } => {
-                            reserved.set(&mut sim.scheduler, false)
+                            reserved.set(&mut sim.scheduler, false);
+                            (sim.world.logger)(InfrastructureLogEvent::Reserved(*obj,false));
                         }
                         _ => panic!("Not a resource"),
                     };;
                 }
+                (sim.world.logger)(InfrastructureLogEvent::RouteReleased(0)); // TODO id from where? TODO partial 
                 ProcessState::Finished
             }
         }

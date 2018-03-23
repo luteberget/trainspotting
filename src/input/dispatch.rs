@@ -29,9 +29,10 @@ pub enum ParseError {
 }
 
 /// Parses dispatch plan format
-/// wait 10.0
-/// route rb1
-/// train t1 (b1 -> 200.0) l=200.0 a=1.0 b=0.5 v=10.0
+///
+/// * wait 10.0
+/// * route rb1
+/// * train t1 (b1 -> 200.0) l=200.0 a=1.0 b=0.5 v=10.0
 ///
 pub fn parse_dispatch(input: &str) -> Result<Dispatch, ParseError> {
     let mut actions = Vec::new();

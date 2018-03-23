@@ -50,15 +50,15 @@ impl Driver {
             under_train: SmallVec::new(),
         };
 
-        if *sim.time > 0.0 {
-            logger(TrainLogEvent::Wait(*sim.time));
+        if *sim.time() > 0.0 {
+            logger(TrainLogEvent::Wait(*sim.time()));
         }
         logger(TrainLogEvent::Node(node, next.0));
 
         let mut d = Driver {
             train: train,
             authority: auth,
-            step: (DriverAction::Coast, *sim.time),
+            step: (DriverAction::Coast, *sim.time()),
             connected_signals: SmallVec::new(),
             logger: logger,
         };
@@ -67,7 +67,7 @@ impl Driver {
     }
 
     fn goto_node(&mut self, sim: &mut Sim, node: NodeId) {
-        println!("TRAIN goto node {}", node);
+        //println!("TRAIN goto node {}", node);
         for obj in sim.world.statics.nodes[node].objects.clone() {
             if let Some(p) = sim.world.statics.objects[obj].arrive_front() {
                 sim.start_process(p);
@@ -81,9 +81,15 @@ impl Driver {
         match sim.world.statics.objects[obj] {
             StaticObject::Sight { distance, signal } => {
                 self.connected_signals.push((signal, distance));
+                (self.logger)(TrainLogEvent::Sight(signal,true));
             }
             StaticObject::Signal { .. } => {
-                self.connected_signals.retain(|&mut (s, _d)| s != obj);
+                let log = &mut self.logger;
+                self.connected_signals.retain(|&mut (s, _d)| {
+                    let lost = s == obj;
+                    if lost { log(TrainLogEvent::Sight(s,false)); }
+                    !lost
+                });
             }
             _ => {}
         }
@@ -91,24 +97,21 @@ impl Driver {
 
     fn move_train(&mut self, sim: &mut Sim) -> ModelContainment {
         let (action, action_time) = self.step;
-        let dt = *sim.time - action_time;
+        let dt = *sim.time() - action_time;
 
         if dt <= 1e-4 {
             return ModelContainment::Inside;
         }
 
-        let DistanceVelocity { dx, v } = dynamic_update(&self.train.params,
-                                                        self.train.velocity,
-                                                        DriverPlan {
-                                                            action: action,
-                                                            dt: dt,
-                                                        });
+        let update = dynamic_update(&self.train.params, self.train.velocity, 
+                                    DriverPlan { action: action, dt: dt, });
 
-        self.train.velocity = v;
-        (self.train.location.1).1 -= dx;
+        (self.logger)(TrainLogEvent::Move(dt, action, update));
+        self.train.velocity = update.v;
+        (self.train.location.1).1 -= update.dx;
 
         self.train.under_train.retain(|&mut (obj, ref mut dist)| {
-            *dist -= dx;
+            *dist -= update.dx;
             if *dist < 1e-4 {
                 // Cleared a node.
                 if let Some(p) = sim.world.statics.objects[obj].arrive_back() {
@@ -120,10 +123,15 @@ impl Driver {
             }
         });
 
-        self.connected_signals.retain(|&mut (_obj, ref mut dist)| {
-            *dist -= dx;
-            *dist < 1e-4
+        {
+        let log = &mut self.logger;
+        self.connected_signals.retain(|&mut (obj, ref mut dist)| {
+            *dist -= update.dx;
+            let lost = *dist < 1e-4;
+            if lost { log(TrainLogEvent::Sight(obj, false)); } 
+            !lost
         });
+        }
 
         let (_, (end_node, dist)) = self.train.location;
         if dist < 1e-4 && end_node.is_some() {
@@ -182,11 +190,9 @@ impl Driver {
         // Static maximum speed profile ahead from current position
         // TODO: other speed limitations
         let static_speed_profile = StaticMaximumVelocityProfile {
-            local_max_velocity: 100.0,
+            local_max_velocity: 20.0,
             max_velocity_ahead: SmallVec::from_slice(&[DistanceVelocity {
-                                                           dx: self.authority,
-                                                           v: 0.0,
-                                                       }]),
+               dx: self.authority, v: 0.0}]),
         };
 
         dynamic_plan_step(&self.train.params,
@@ -198,15 +204,21 @@ impl Driver {
 
 impl<'a> Process<Infrastructure<'a>> for Driver {
     fn resume(&mut self, sim: &mut Sim) -> ProcessState {
+        println!("resume train");
         let modelcontainment = self.move_train(sim);
         match modelcontainment {
             ModelContainment::Exiting => ProcessState::Finished,
             ModelContainment::Inside => {
                 let plan = self.plan_ahead(sim);
+                self.step = (plan.action, *sim.time());
 
                 let mut events = SmallVec::new();
                 if plan.dt > 1e-4 {
                     events.push(sim.create_timeout(plan.dt));
+                } else {
+                    if self.train.velocity > 1e-4 { panic!("Velocity, but no plan."); }
+                    self.train.velocity = 0.0;
+                    self.step.0 = DriverAction::Coast;
                 }
                 for &(ref sig, _) in self.connected_signals.iter() {
                     match sim.world.state[*sig] {

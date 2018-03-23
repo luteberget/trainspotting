@@ -21,7 +21,7 @@ pub struct DistanceVelocity {
     pub v: f64,
 }
 
-#[derive(Copy,Clone)]
+#[derive(Copy,Clone, Debug)]
 pub struct DriverPlan {
     pub action: DriverAction,
     pub dt: f64,

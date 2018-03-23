@@ -23,11 +23,51 @@ pub enum EventState {
     Failure,
 }
 
-#[derive(PartialOrd, Ord, Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub struct QueuedEvent {
     pub time: OrderedFloat<f64>,
     pub id: usize,
     pub event: EventId,
+}
+
+use std::cmp::Ordering;
+impl Ord for QueuedEvent {
+    fn cmp(&self, other :&QueuedEvent) -> Ordering {
+        // Note that the order is flipped on purpose -- to turn
+        // the (maximum) BinaryHeap into a minimum heap.
+        other.time.cmp(&self.time).
+            then_with(|| other.id.cmp(&self.id))
+    }
+}
+
+impl PartialOrd for QueuedEvent {
+    fn partial_cmp(&self,other :&QueuedEvent) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+#[test]
+fn test_ordering() {
+    println!("Test");
+    let mut p = BinaryHeap::new();
+    p.push(QueuedEvent { 
+        time: OrderedFloat::from(123.0),
+        id: 0,
+        event: 0
+    });
+    p.push(QueuedEvent { 
+        time: OrderedFloat::from(0.0),
+        id: 0,
+        event: 0
+    });
+    p.push(QueuedEvent { 
+        time: OrderedFloat::from(122.0),
+        id: 0,
+        event: 0
+    });
+    assert_eq!(*p.pop().unwrap().time, 0.0);
+    assert_eq!(*p.pop().unwrap().time, 122.0);
+    assert_eq!(*p.pop().unwrap().time, 123.0);
 }
 
 pub struct Event {
@@ -36,7 +76,6 @@ pub struct Event {
 }
 
 pub struct Simulation<T> {
-    pub time: OrderedFloat<f64>,
     pub world: T,
     procs: Vec<Option<(EventId, Box<Process<T>>)>>,
     pub scheduler: Scheduler,
@@ -45,6 +84,7 @@ pub struct Simulation<T> {
 
 #[derive(Default)]
 pub struct Scheduler {
+    pub time: OrderedFloat<f64>,
     events: Vec<Event>,
     pub queue: BinaryHeap<QueuedEvent>,
     id_counter: usize,
@@ -63,9 +103,10 @@ impl Scheduler {
         event_id
     }
 
-    pub fn schedule(&mut self, id: EventId, t: f64) {
+    pub fn schedule(&mut self, id: EventId, dt: f64) {
+        if dt < 0.0 { panic!("dt < 0"); }
         let qe = QueuedEvent {
-            time: OrderedFloat::from(t),
+            time: OrderedFloat::from(*self.time + dt),
             id: self.id_counter,
             event: id,
         };
@@ -84,9 +125,11 @@ impl Scheduler {
 }
 
 impl<T> Simulation<T> {
+    pub fn time(&self) -> &f64 { &self.scheduler.time }
+
     pub fn create_timeout(&mut self, dt: f64) -> EventId {
         let id = self.scheduler.new_event();
-        self.schedule(id, dt);
+        self.scheduler.schedule(id, dt);
         id
     }
 
@@ -94,13 +137,8 @@ impl<T> Simulation<T> {
         self.logger = Some(logger);
     }
 
-    pub fn schedule(&mut self, id: EventId, dt: f64) {
-        self.scheduler.schedule(id, *self.time + dt)
-    }
-
     pub fn new_with_scheduler(world: T, scheduler: Scheduler) -> Self {
         Simulation {
-            time: OrderedFloat::from(0.0),
             procs: Vec::new(),
             scheduler: scheduler,
             world: world,
@@ -110,9 +148,9 @@ impl<T> Simulation<T> {
 
     pub fn new(world: T) -> Self {
         Simulation {
-            time: OrderedFloat::from(0.0),
             procs: Vec::new(),
             scheduler: Scheduler {
+                time: OrderedFloat::from(0.0),
                 events: Vec::new(),
                 queue: BinaryHeap::new(),
                 id_counter: 0,
@@ -132,31 +170,39 @@ impl<T> Simulation<T> {
 
 
     pub fn advance_by(&mut self, dt: f64) {
-        let target = OrderedFloat::from(*self.time + dt);
+        let target = OrderedFloat::from(*self.time() + dt);
         while let Some(&QueuedEvent { time, .. }) = self.scheduler.queue.peek() {
             if time > target {
                 break;
             }
             self.step();
         }
+        let time = *self.time();
         if let Some(ref mut logger) = self.logger {
-            logger(*target - *self.time);
+            println!("ADVANCE  Y FINISHING {}", (*target - time));
+            logger(*target - time);
         }
-        self.time = target;
+        self.scheduler.time = target;
     }
 
     pub fn step(&mut self) -> bool {
         match self.scheduler.queue.pop() {
             Some(ev) => {
+                let time = *self.time();
                 if let Some(ref mut logger) = self.logger {
-                    logger(*ev.time - *self.time);
+                    println!("SCHEDULE FINISHING {}", (*ev.time - time));
+                    logger(*ev.time - time);
                 }
-                self.time = ev.time;
+                self.scheduler.time = ev.time;
                 self.fire(ev.event);
                 true
             }
             None => false,
         }
+    }
+
+    pub fn run(&mut self) { 
+        while let true = self.step() {}
     }
 
 
@@ -180,7 +226,7 @@ impl<T> Simulation<T> {
         };
         match process.resume(self) {
             ProcessState::Finished => {
-                self.schedule(event_id, 0.0);
+                self.scheduler.schedule(event_id, 0.0);
             }
             ProcessState::Wait(evs) => {
                 for x in evs {

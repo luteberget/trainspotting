@@ -80,24 +80,51 @@ fn get_dispatch(s :&Path) -> AppResult<dispatch::Dispatch> {
 }
 
 fn run(opt :&Opt) -> AppResult<()> {
+    // 
+    // Infrastructure
     let infrastructure = get_infrastructure(&opt.infrastructure)?;
-    println!("Infrastructure:");
-    println!("  Nodes:");
-    for x in &infrastructure.nodes {
-        println!("    * {:?}", x);
+    if opt.verbose >= 2 {
+        println!("Infrastructure:");
+        println!("  Nodes:");
+        for x in &infrastructure.nodes {
+            println!("    * {:?}", x);
+        }
+        println!("  Objects:");
+        for x in &infrastructure.objects {
+            println!("    * {:?}", x);
+        }
     }
-    println!("  Objects:");
-    for x in &infrastructure.objects {
-        println!("    * {:?}", x);
-    }
+
+    // Routes
     let routes = get_routes(&opt.routes, &infrastructure)?;
-    println!("Routes:");
-    for x in &routes { println!("  - {:?}", x); }
+    if opt.verbose >= 2 {
+        println!("Routes:");
+        for x in &routes { println!("  - {:?}", x); }
+    }
+
+    // Dispatch
     let dispatch = get_dispatch(&opt.dispatch)?;
-    println!("Dispatch:");
-    for x in &dispatch.actions { println!("  - {:?}", x); }
+    if opt.verbose >= 1 {
+        println!("Dispatch:");
+        for x in &dispatch.actions { println!("  - {:?}", x); }
+        println!("");
+    }
+
+    // Eval -> history
     let history = rolling::evaluate_plan(&infrastructure, &routes, &dispatch);
-    println!("{:?}", history);
+
+    // Print
+    println!("# Infrastructure history:");
+    for x in &history.inf {
+        println!("> {:?}", x);
+    }
+    for &(ref name,ref x) in &history.trains {
+        println!("## Train \"{}\":", name);
+        for x in x {
+            println!("> {:?}", x);
+        }
+    }
+
     Ok(())
 }
 

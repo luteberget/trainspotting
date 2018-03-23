@@ -52,7 +52,8 @@ impl<'a> Process<Infrastructure<'a>> for MoveSwitch {
         } else {
             match sim.world.state[self.sw] {
                 ObjectState::Switch { ref mut position, .. } => {
-                    position.set(&mut sim.scheduler, Some(self.pos))
+                    position.set(&mut sim.scheduler, Some(self.pos));
+                    (sim.world.logger)(InfrastructureLogEvent::Position(self.sw, self.pos));
                 }
                 _ => panic!("Not a switch"),
             }
@@ -76,7 +77,8 @@ impl<'a> Process<Infrastructure<'a>> for DetectEvent {
             DetectEvent::Enter(obj) => {
                 match infstate[obj] {
                     ObjectState::TVDSection { ref mut occupied, .. } => {
-                        occupied.set(scheduler, true)
+                        occupied.set(scheduler, true);
+                        (sim.world.logger)(InfrastructureLogEvent::Occupied(obj, true));
                     }
                     _ => panic!("Not a TVD section"),
                 }
@@ -84,7 +86,8 @@ impl<'a> Process<Infrastructure<'a>> for DetectEvent {
             DetectEvent::Exit(obj) => {
                 match infstate[obj] {
                     ObjectState::TVDSection { ref mut occupied, .. } => {
-                        occupied.set(scheduler, false)
+                        occupied.set(scheduler, false);
+                        (sim.world.logger)(InfrastructureLogEvent::Occupied(obj, false));
                     }
                     _ => panic!("Not a TVD section"),
                 }
