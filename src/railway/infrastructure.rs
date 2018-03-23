@@ -159,10 +159,9 @@ impl<'a> Infrastructure<'a> {
         }
     }
 
-    pub fn next_node(&self, node: NodeId)
+    pub fn edge_from(&self, node: NodeId)
                      -> Option<(Option<NodeId>, f64)> {
-        let new_start_node = self.statics.nodes[node].other_node;
-        match self.statics.nodes[new_start_node].edges {
+        match self.statics.nodes[node].edges {
             Edges::Nothing => None,
             Edges::ModelBoundary => Some((None, 1000.0)),
             Edges::Single(next_node, dist) => Some((Some(next_node), dist)),

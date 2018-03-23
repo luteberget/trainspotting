@@ -28,7 +28,7 @@ pub struct Driver {
     authority: f64,
     step: (DriverAction, f64),
     connected_signals: SmallVec<[(ObjectId, f64); 4]>,
-    history: Rc<RefCell<Vec<TrainLogEvent>>>,
+    logger: Box<Fn(TrainLogEvent)>,
 }
 
 impl Driver {
@@ -36,9 +36,13 @@ impl Driver {
                node: NodeId,
                auth: f64,
                params: TrainParams,
-               history: Rc<RefCell<Vec<TrainLogEvent>>>)
+               logger: Box<Fn(TrainLogEvent)>)
                -> Self {
-        let next = match sim.world.next_node(node) {
+
+        // The starting node is actually the opposite node of the 
+        // boundary node given as input here.
+        let node = sim.world.statics.nodes[node].other_node;
+        let next = match sim.world.edge_from(node) {
             Some(x) => x,
             None => panic!("Derailed in first node"),
         };
@@ -51,21 +55,23 @@ impl Driver {
         };
 
         if *sim.time > 0.0 {
-            history.borrow_mut().push(TrainLogEvent::Wait(*sim.time));
+            logger(TrainLogEvent::Wait(*sim.time));
         }
+        logger(TrainLogEvent::Node(node, next.0));
 
         let mut d = Driver {
             train: train,
             authority: auth,
             step: (DriverAction::Coast, *sim.time),
             connected_signals: SmallVec::new(),
-            history: history
+            logger: logger,
         };
         d.goto_node(sim, node);
         d
     }
 
     fn goto_node(&mut self, sim: &mut Sim, node: NodeId) {
+        println!("TRAIN goto node {}",node);
         for obj in sim.world.statics.nodes[node].objects.clone() {
             for p in sim.world.statics.objects[obj].arrive_front(obj) {
                 sim.start_process(p);
@@ -127,13 +133,15 @@ impl Driver {
         if dist < 1e-4 && end_node.is_some() {
             let new_start = sim.world.statics.nodes[end_node.unwrap()].other_node;
             self.goto_node(sim, new_start);
-            match sim.world.next_node(new_start) {
+            match sim.world.edge_from(new_start) {
                 Some((Some(new_end_node), d)) => {
                     self.train.location = (new_start, (Some(new_end_node), d));
+                    (self.logger)(TrainLogEvent::Node(new_start, Some(new_end_node)));
                     ModelContainment::Inside
                 }
                 Some((None, d)) => {
                     self.train.location = (new_start, (None, d));
+                    (self.logger)(TrainLogEvent::Node(new_start, None));
                     ModelContainment::Exiting
                 }
                 None => panic!("Derailed"),

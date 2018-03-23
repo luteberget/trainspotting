@@ -26,7 +26,7 @@ pub enum InfrastructureLogEvent {
 #[derive(Debug)]
 pub enum TrainLogEvent {
     Wait(f64),
-    Node(usize),
+    Node(usize,Option<usize>),
     Sight(usize, bool),
-    Move(DriverAction, DistanceVelocity),
+    Move(f64,DriverAction, DistanceVelocity),
 }
