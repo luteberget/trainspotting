@@ -73,7 +73,7 @@ impl Driver {
     fn goto_node(&mut self, sim: &mut Sim, node: NodeId) {
         println!("TRAIN goto node {}",node);
         for obj in sim.world.statics.nodes[node].objects.clone() {
-            for p in sim.world.statics.objects[obj].arrive_front(obj) {
+            for p in sim.world.statics.objects[obj].arrive_front() {
                 sim.start_process(p);
             }
             self.arrive_front(sim, obj);
@@ -115,7 +115,7 @@ impl Driver {
             *dist -= dx;
             if *dist < 1e-4 {
                 // Cleared a node.
-                for p in sim.world.statics.objects[obj].arrive_back(obj) {
+                for p in sim.world.statics.objects[obj].arrive_back() {
                     sim.start_process(p);
                 }
                 false

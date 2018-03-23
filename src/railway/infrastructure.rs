@@ -16,10 +16,10 @@ use railway::{Sim, Proc};
 //}
 
 pub trait TrainVisitable {
-    fn arrive_front(&self, object: ObjectId) -> Option<Box<Proc>> {
+    fn arrive_front(&self) -> Option<Box<Proc>> {
         None
     }
-    fn arrive_back(&self, object: ObjectId) -> Option<Box<Proc>> {
+    fn arrive_back(&self) -> Option<Box<Proc>> {
         None
     }
 }
@@ -91,7 +91,7 @@ impl<'a> Process<Infrastructure<'a>> for DetectEvent {
 }
 
 impl TrainVisitable for StaticObject {
-    fn arrive_front(&self, object: ObjectId) -> Option<Box<Proc>> {
+    fn arrive_front(&self) -> Option<Box<Proc>> {
         match self {
             &StaticObject::TVDLimit { enter, .. } => {
                 match enter {
@@ -99,12 +99,11 @@ impl TrainVisitable for StaticObject {
                     _ => None,
                 }
             }
-            //&Object::Other(ref obj) => obj.arrive_front(object, train),
             _ => None,
         }
     }
 
-    fn arrive_back(&self, object: ObjectId) -> Option<Box<Proc>> {
+    fn arrive_back(&self) -> Option<Box<Proc>> {
         match self {
             &StaticObject::TVDLimit { exit, .. } => {
                 match exit {
@@ -112,7 +111,6 @@ impl TrainVisitable for StaticObject {
                     _ => None,
                 }
             }
-            //&Object::Other(ref obj) => obj.arrive_back(object, train),
             _ => None,
         }
     }
