@@ -8,14 +8,14 @@ pub struct TrainParams {
     pub max_vel: f64,
 }
 
-#[derive(Copy,Clone)]
+#[derive(Copy,Clone, Debug)]
 pub enum DriverAction {
     Accel,
     Brake,
     Coast,
 }
 
-#[derive(Copy,Clone)]
+#[derive(Copy,Clone, Debug)]
 pub struct DistanceVelocity {
     pub dx: f64,
     pub v: f64,

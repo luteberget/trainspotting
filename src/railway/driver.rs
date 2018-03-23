@@ -50,6 +50,10 @@ impl Driver {
             under_train: SmallVec::new(),
         };
 
+        if *sim.time > 0.0 {
+            history.borrow_mut().push(TrainLogEvent::Wait(*sim.time));
+        }
+
         let mut d = Driver {
             train: train,
             authority: auth,

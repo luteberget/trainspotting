@@ -18,10 +18,13 @@ pub enum DispatchAction {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Fail)]
 pub enum ParseError {
+    #[fail(display = "error in regular expression: {}", _0)]
     RegexError(String),
+    #[fail(display = "error converting number")]
     NumberError,
+    #[fail(display = "unrecognized dispatch: {}", _0)]
     Unrecognized(String),
 }
 

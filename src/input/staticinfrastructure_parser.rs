@@ -111,7 +111,7 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
                         line += 1;
                     }
                     c => {
-                        return Err(LexerError::UnexpectedChar(line, c.to_string()));
+                        return Err(LexerError::UnexpectedChar { i: line, c: c.to_string() } );
                     }
                 }
             }
@@ -281,9 +281,11 @@ pub fn parse_object(i: &mut usize, t: &[Token]) -> Result<Object, ParseError> {
 
 
 
-#[derive(Debug,Clone)]
+#[derive(Debug,Clone,Fail)]
 pub enum ModelError {
+    #[fail(display = "too many switch legs in {}", _0)]
     SwitchLegs(String),
+    #[fail(display = "unknown modeling error")]
     Other,
 }
 
@@ -381,7 +383,6 @@ pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::Stati
                     for obj in objs.iter() {
                         match obj {
                             &Object::Sight(ref name, d) => {
-                                println!("SIGHT {} {}", name,  d);
                                 let signal = {
                                     let names = &mut model.object_names;
                                     let objs = &mut model.objects;
@@ -404,7 +405,6 @@ pub fn model_from_ast(stmts: &[Statement]) -> Result<staticinfrastructure::Stati
                                 m.objects.push(idx);
                             }
                             &Object::Signal(ref name) => {
-                                println!("SIGNAL {}",name);
                                 let idx = insert_object(&mut model.objects,
                                                         &mut model.object_names,
                                                         staticinfrastructure::StaticObject::Signal,

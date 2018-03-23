@@ -52,6 +52,8 @@ pub enum SwitchPosition {
     Right,
 }
 
+pub type Routes = HashMap<String, Route>;
+
 #[derive(Debug,Clone)]
 pub struct Route {
     pub signal :ObjectId,

@@ -1,6 +1,9 @@
 extern crate smallvec;
 extern crate ordered_float;
 extern crate regex;
+extern crate failure;
+#[macro_use] extern crate failure_derive;
+
 
 pub mod input;
 pub mod output;

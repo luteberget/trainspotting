@@ -22,14 +22,16 @@ pub extern fn parse_infrastructure_file(filename :*const c_char) -> *mut statici
 #[no_mangle]
 pub extern fn parse_routes_file(filename :*const c_char) -> *mut Vec<staticinfrastructure::Route> {
     let filename = unsafe { CStr::from_ptr(filename) }.to_str().unwrap();
+    unimplemented!()
                                                         // TODO mangage name maps
-    match route_parser::parse_file(Path::new(filename), panic!(), panic!()) {
-        Ok(routes) => Box::into_raw(Box::new(routes)),
-        Err(e) => {
-            println!("Error parsing infrastructure: {:?}", e);
-            std::ptr::null_mut()
-        }
-    }
+                                                        //
+    //match route_parser::parse_file(Path::new(filename), panic!()) {
+    //    Ok(routes) => Box::into_raw(Box::new(routes)),
+    //    Err(e) => {
+    //        println!("Error parsing infrastructure: {:?}", e);
+    //        std::ptr::null_mut()
+    //    }
+    //}
 }
 
 #[no_mangle]

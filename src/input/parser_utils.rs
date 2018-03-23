@@ -1,18 +1,25 @@
 use std::iter::Peekable;
 use std::fmt::Debug;
+use failure::Error;
 
-#[derive(Debug,Clone)]
+#[derive(Debug,Clone,Fail)]
 pub enum LexerError {
-    UnexpectedChar(usize, String),
-    UnexpectedEOF,
+    #[fail(display = "unexpected char at {}: {}", i, c)]
+    UnexpectedChar { i: usize, c: String },
+    #[fail(display = "unexpected EOF")]
+    UnexpectedEOF
 }
 
 
-#[derive(Debug,Clone)]
+#[derive(Debug,Clone, Fail)]
 pub enum ParseError {
+    #[fail(display = "unexpected token at {}: {}", _0,_1)]
     UnexpectedToken(usize, String),
+    #[fail(display = "unexpected EOF")]
     UnexpectedEOF,
+    #[fail(display = "parse errors: {:?}", _0)]
     Many(Vec<ParseError>),
+    #[fail(display = "unknown name: {},  {}", _0, _1)]
     UnknownName(String,String),
 }
 

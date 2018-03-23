@@ -13,23 +13,24 @@ type Map = HashMap<String,usize>;
 //
 //
 
-pub fn parse(t: &[Token], objnames :&Map, nodenames:&Map) -> Result<Vec<Route>, ParseError> {
+
+pub fn parse(t: &[Token], inf :&StaticInfrastructure) -> Result<Routes, ParseError> {
     let mut i = 0;
-    let mut statements = Vec::new();
+    let mut routes = HashMap::new();
     while t[i] != Token::EOF {
-        match parse_route(&mut i, t, objnames, nodenames)? {
-            Some(x) => statements.push(x),
+        match parse_route(&mut i, t, &inf.object_names, &inf.node_names)? {
+            Some((name,route)) => { routes.insert(name,route); },
             _ => {},
         }
     }
-    Ok(statements)
+    Ok(routes)
 }
 
 fn lookup(names :&HashMap<String,usize>, name :&str) -> Result<usize, ParseError>{
     names.get(name).cloned().ok_or(ParseError::UnknownName(name.to_string(), "infrastructure".to_string()))
 }
 
-pub fn parse_route(i :&mut usize, t:&[Token], objnames:&Map, nodenames:&Map) -> Result<Option<Route>, ParseError> {
+pub fn parse_route(i :&mut usize, t:&[Token], objnames:&Map, nodenames:&Map) -> Result<Option<(String,Route)>, ParseError> {
     alt(i,t,&[
         &|i,t| {
             symbol(i,t,"modelentry")?;
@@ -82,14 +83,14 @@ pub fn parse_route(i :&mut usize, t:&[Token], objnames:&Map, nodenames:&Map) -> 
                 let resources = list(i,t,|i,t| lookup(objnames, &identifier(i,t)?))?;
                 releases.push(Release { trigger: trigger, resources: resources.into() });
             }
-            Ok(Some(Route {
+            Ok(Some((route_name, Route {
                 signal: entry,
                 signal_trigger: entrysection,
                 sections: sections.into(),
                 switch_positions: switches.into(),
                 length: length,
                 releases: releases.into(),
-            }))
+            })))
         },
     ])
 }
@@ -142,12 +143,6 @@ pub enum Token {
     Number(f64),
     Identifier(String),
     EOF,
-}
-
-#[derive(Debug,Clone)]
-pub enum LexerError {
-    UnexpectedChar(usize, String),
-    UnexpectedEOF,
 }
 
 pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
@@ -208,7 +203,8 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
                         line += 1;
                     }
                     c => {
-                        return Err(LexerError::UnexpectedChar(line, c.to_string()));
+                        return Err(LexerError::UnexpectedChar {
+                            i: line, c: c.to_string()});
                     }
                 }
             }
@@ -219,30 +215,4 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
     }
     tokens.push(Token::EOF);
     Ok(tokens)
-}
-
-
-use std::path::Path;
-pub fn parse_file(f :&Path, objnames:&Map, nodenames:&Map) -> Result<Vec<Route>,String> {
-  use std::fs::File;
-  use std::io::prelude::*;
-use std::io::BufReader;
-
-  let mut file = File::open(f).map_err(|e| format!("Could not open file: {}",e.to_string()))?;
-  let mut file = BufReader::new(&file);
-  let mut contents = String::new();
-  file.read_to_string(&mut contents).map_err(|e| format!("Invalid UTF8: {}", e.to_string()))?;
-
-  let lex = lexer(&mut contents.chars()).map_err(|e| format!("{:?}",e))?;
-  let mut i = 0;
-  for x in lex.iter() {
-      println!(" *RTk {}: {:?}", i, x);
-      i += 1;
-  }
-  let routes = parse(&lex, objnames, nodenames).map_err(|e| format!("{:?}",e))?;
-  for x in routes.iter() {
-      println!(" *R {}: {:?}", i, x);
-      i += 1;
-  }
-  Ok(routes)
 }
