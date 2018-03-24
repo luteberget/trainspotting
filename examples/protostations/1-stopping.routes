@@ -1,6 +1,13 @@
+modelentry ri from b1 {
+  exit s1 
+  length 250.0
+}
 
-modelentry b1 s1 250.0
-modelexit  s3 b2 500.0
+modelexit re to b2 {
+  entry s3 
+  entrysection a3
+  length 500.0
+}
 
 route r1 {
   entry s1 exit s2

@@ -207,7 +207,11 @@ impl<'a> Process<Infrastructure<'a>> for Driver {
         println!("resume train");
         let modelcontainment = self.move_train(sim);
         match modelcontainment {
-            ModelContainment::Exiting => ProcessState::Finished,
+            ModelContainment::Exiting => {
+                println!("TRAIN FINISHED");
+                ProcessState::Finished
+            },
+
             ModelContainment::Inside => {
                 let plan = self.plan_ahead(sim);
                 self.step = (plan.action, *sim.time());

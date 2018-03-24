@@ -11,12 +11,12 @@ enum ActivateRouteState {
 }
 
 pub struct ActivateRoute {
-    route: Route,
+    route: TrainRoute,
     state: ActivateRouteState,
 }
 
 impl ActivateRoute {
-    pub fn new(r: Route) -> Self {
+    pub fn new(r: TrainRoute) -> Self {
         ActivateRoute {
             route: r,
             state: ActivateRouteState::Allocate,
@@ -24,7 +24,7 @@ impl ActivateRoute {
     }
 }
 
-fn unavailable_resource(r: &Route, infrastructure: &Infrastructure) -> Option<EventId> {
+fn unavailable_resource(r: &TrainRoute, infrastructure: &Infrastructure) -> Option<EventId> {
     for s in r.sections.iter() {
         match infrastructure.state[*s] {
             ObjectState::TVDSection { ref reserved, .. } => {
@@ -50,7 +50,7 @@ fn unavailable_resource(r: &Route, infrastructure: &Infrastructure) -> Option<Ev
     None
 }
 
-fn allocate_resources(r: &Route, infrastructure: &mut Infrastructure, scheduler: &mut Scheduler) {
+fn allocate_resources(r: &TrainRoute, infrastructure: &mut Infrastructure, scheduler: &mut Scheduler) {
     for s in r.sections.iter() {
         match infrastructure.state[*s] {
             ObjectState::TVDSection { ref mut reserved, .. } => reserved.set(scheduler, true),
@@ -67,7 +67,7 @@ fn allocate_resources(r: &Route, infrastructure: &mut Infrastructure, scheduler:
 }
 
 
-fn movable_events(r: &Route, sim: &mut Sim) -> Vec<EventId> {
+fn movable_events(r: &TrainRoute, sim: &mut Sim) -> Vec<EventId> {
     let throw = r.switch_positions
         .iter()
         .filter_map(|&(sw, pos)| {

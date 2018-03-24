@@ -55,7 +55,19 @@ pub enum SwitchPosition {
 pub type Routes = HashMap<String, Route>;
 
 #[derive(Debug,Clone)]
-pub struct Route {
+pub enum Route {
+    EntryRoute(EntryRoute),
+    TrainRoute(TrainRoute),
+}
+
+#[derive(Debug,Clone)]
+pub struct EntryRoute {
+    pub boundary: NodeId,
+    pub length: f64,
+}
+
+#[derive(Debug,Clone)]
+pub struct TrainRoute {
     pub signal: ObjectId,
     pub signal_trigger: ObjectId,
     pub sections: SmallVec<[ObjectId; 4]>,

@@ -1,5 +1,6 @@
 use super::staticinfrastructure::*;
 use super::parser_utils::*;
+use smallvec::SmallVec;
 
 use std::collections::HashMap;
 
@@ -39,17 +40,41 @@ pub fn parse_route(i: &mut usize,
         t,
         &[&|i, t| {
         symbol(i, t, "modelentry")?;
-        let _b = identifier(i, t)?;
-        let _n = identifier(i, t)?;
-        let _d = number(i, t)?;
-        Ok(None) // Ignoring model boundaries in this program
+        let name = identifier(i, t)?;
+        symbol(i,t,"from")?;
+        let node = lookup(nodenames, &identifier(i,t)?)?;
+        must_match(i,t,Token::BraceOpen)?;
+        symbol(i,t,"exit")?;
+        let _exit = identifier(i,t)?;
+        symbol(i,t,"length")?;
+        let length = number(i,t)?;
+        must_match(i,t,Token::BraceClose)?;
+        Ok(Some((name, Route::EntryRoute(EntryRoute {
+            boundary: node,
+            length: length
+        }))))
     },
           &|i, t| {
         symbol(i, t, "modelexit")?;
-        let _b = identifier(i, t)?;
-        let _n = identifier(i, t)?;
-        let _d = number(i, t)?;
-        Ok(None) // Ignoring model boundaries in this program
+        let name = identifier(i, t)?;
+        symbol(i, t, "to")?;
+        let _node = identifier(i, t)?;
+        must_match(i,t,Token::BraceOpen)?;
+        symbol(i,t,"entry")?;
+        let entry = lookup(objnames, &identifier(i,t)?)?;
+        symbol(i,t,"entrysection")?;
+        let entrysection = lookup(objnames, &identifier(i,t)?)?;
+        symbol(i,t,"length")?;
+        let length = number(i,t)?;
+        must_match(i,t,Token::BraceClose)?;
+        Ok(Some((name, Route::TrainRoute(TrainRoute {
+            signal: entry,
+            signal_trigger: entrysection,
+            length: length,
+            sections: SmallVec::new(),
+            switch_positions: SmallVec::new(),
+            releases: SmallVec::new(),
+        }))))
     },
           &|i, t| {
         symbol(i, t, "route")?;
@@ -98,14 +123,14 @@ pub fn parse_route(i: &mut usize,
             });
         }
         Ok(Some((route_name,
-                 Route {
+                 Route::TrainRoute(TrainRoute {
                      signal: entry,
                      signal_trigger: entrysection,
                      sections: sections.into(),
                      switch_positions: switches.into(),
                      length: length,
                      releases: releases.into(),
-                 })))
+                 }))))
     }])
 }
 

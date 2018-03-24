@@ -42,14 +42,20 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
         match *action {
             Wait(t) => sim.advance_by(t),
             Route(ref route_name) => match routes.get(route_name) {
-                Some(route) => {
+                Some(&input::staticinfrastructure::Route::TrainRoute(ref route)) => {
                     sim.start_process(Box::new(
                         railway::route::ActivateRoute::new(route.clone())));
                 },
-                None => panic!("Unknown route \"{}\"", route_name),
+                _ => panic!("Unknown route \"{}\"", route_name),
             },
-            Train(ref name, ref params, (ref node, auth_dist)) =>  {
-                let node_idx = staticinfrastructure.node_names[node];
+            Train(ref name, ref params, ref route_name) =>  {
+                let (node_idx, auth_dist) = match routes.get(route_name) {
+                    Some(&input::staticinfrastructure::Route::EntryRoute(ref r)) => {
+                        (r.boundary, r.length)
+                    },
+                    _ => panic!("Unknoown route \"{}\"", route_name),
+                };
+
                 let train_log = Rc::new(RefCell::new(Vec::new()));
                 train_logs.push((name.clone(), train_log.clone()));
                 let logger = Box::new(move |i| {
