@@ -215,28 +215,31 @@ impl<T> Simulation<T> {
     }
 
     fn resume(&mut self, process_id: ProcessId) {
-        let (event_id, mut process) = {
+        println!("RESUM {}", process_id);
+        if let Some((event_id, mut process)) = {
             let a = &mut self.procs[process_id];
             // We need to take the process out of the simulation
             // This creates safety againts the process
             // firing events that modify the process itself.
             // This should be impossible -- a process must either be
             // running OR waiting for an event, not both.
-            a.take().unwrap()
-        };
-        match process.resume(self) {
-            ProcessState::Finished => {
-                self.scheduler.schedule(event_id, 0.0);
-            }
-            ProcessState::Wait(evs) => {
-                for x in evs {
-                    if !self.scheduler.events[x].listeners.contains(&process_id) {
-                        self.scheduler.events[x].listeners.push(process_id);
-                    }
-                }
+            a.take()
 
-                // Put the process back in the array.
-                self.procs[process_id] = Some((event_id, process));
+        } {
+            match process.resume(self) {
+                ProcessState::Finished => {
+                    self.scheduler.schedule(event_id, 0.0);
+                }
+                ProcessState::Wait(evs) => {
+                    for x in evs {
+                        if !self.scheduler.events[x].listeners.contains(&process_id) {
+                            self.scheduler.events[x].listeners.push(process_id);
+                        }
+                    }
+
+                    // Put the process back in the array.
+                    self.procs[process_id] = Some((event_id, process));
+                }
             }
         }
     }
