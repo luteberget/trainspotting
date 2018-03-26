@@ -133,8 +133,7 @@ timingStmt = do
   refA <- identifier
   refB <- identifier
   timeDiff <- optional number
-  let dt = fromMaybe 0.0 timeDiff
-  return (TimingStmt (TimingSpec refA refB dt))
+  return (TimingStmt (TimingSpec refA refB timeDiff))
 
 swposParser :: Parser SwitchPosition
 swposParser =     (symbol "left"  >> return SwLeft) 

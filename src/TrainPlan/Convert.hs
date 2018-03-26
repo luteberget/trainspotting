@@ -13,8 +13,8 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 
 import Control.Monad (join)
-import Data.List (find)
-import Data.Maybe (catMaybes)
+import Data.List (find, intercalate)
+import Data.Maybe (catMaybes,fromJust, fromMaybe, isNothing, isJust)
 
 succPairs x = zip x (tail x)
 
@@ -73,7 +73,7 @@ convertTiming usage = [ (namedVisits Map.! a, namedVisits Map.! b)
                       | (TimingSpec a b _dt) <- timings usage]
   where 
     namedVisits :: Map String (Solver.TrainName, Solver.VisitId)
-    namedVisits = Map.fromList (join (fmap trainNamedVisits (zip [0..] (movements usage))))
+    namedVisits = Map.fromList (join (fmap trainNamedVisits (zip [1..] (movements usage))))
 
     trainNamedVisits :: (Int, MovementSpec) -> [(String, (Solver.TrainName, Solver.VisitId))]
     trainNamedVisits (i, movement) = catMaybes [ fmap (\vn -> (vn,("t" ++ (show i), j))) visitName
@@ -81,12 +81,13 @@ convertTiming usage = [ (namedVisits Map.! a, namedVisits Map.! b)
     
 -- TODO optionally given train names (for recognizing in the output)
 convertTrain :: UsagePattern -> (Int,MovementSpec) -> (Solver.Train, [Solver.TrainOrd])
-convertTrain usage (i,m) = (Solver.Train name length (fmap (\(_,nodes,_) -> nodes) (visits m)), ords)
+convertTrain usage (i,m) = (Solver.Train name length (fmap (\(_,nodes,_) -> nodes) (visits m)) veh, ords)
   where
     name = "t" ++ (show i)
     length = head [ vehicleLength v | v <- vehicles usage
                                        , vehicleName v == vehicleRef m]
     ords = fmap (\(v1,v2) -> ((name,v1),(name,v2))) (succPairs (fmap fst (zip [0..] (visits m))))
+    veh = head [ v | v <- vehicles usage, vehicleRef m == vehicleName v ]
 
 solverInput :: [Route] -> UsagePattern -> ([Solver.RoutePart], Solver.ElementaryRoutes, [Solver.Train], [Solver.TrainOrd])
 solverInput routes usage = (routeParts, elementaryRoutes, trains, ordConstraints)
@@ -96,4 +97,50 @@ solverInput routes usage = (routeParts, elementaryRoutes, trains, ordConstraints
      (trains, trainOrd) = (fmap fst trainConv, fmap snd trainConv)
      ordConstraints = (join trainOrd) ++ (convertTiming usage)
 
-dispatchPlan = undefined
+
+
+type State = [(Solver.RoutePartId, Maybe Solver.TrainName)]
+
+-- nubOrd = Set.toList . Set.fromList
+
+dispatchPlan :: Solver.Problem -> [State] -> String
+dispatchPlan (routes,_,trains,_) plan = print [actions x | x <- succPairs ([Nothing] ++ (fmap Just plan))]
+  where
+    actions :: (Maybe State,Maybe State) -> [String]
+    actions (a,b) = newRoutes ++ newTrains
+      where 
+        newRoutes = fmap printRoute (Set.toList (Set.difference (activeRoutes b) (activeRoutes a)))
+        newTrains = fmap (printTrain (fromJust b)) (Set.toList (Set.difference (activeTrains b) (activeTrains a)))
+
+    printRoute :: String -> String
+    printRoute r = "route " ++ r
+
+    printTrain :: State -> Solver.TrainName -> String
+    printTrain state name = "train " ++ name ++ 
+                                   " l=" ++ (show length) ++ 
+                                   " a=" ++ (show accel) ++
+                                   " b=" ++ (show brake) ++ 
+                                   " v=" ++ (show maxvel) ++ 
+                                   " " ++ (fst (Solver.routePartName route))
+      where 
+        (Vehicle _ length accel brake maxvel) = Solver.trainVehicle $ head
+                                                [ t | t <- trains, Solver.trainName t == name ] 
+        trainRouteIds = [r | (r,t) <- state, t == Just name]
+        route = head [r | r <- routes, (Solver.routePartName r) `elem` trainRouteIds
+                        , isNothing (Solver.routePartEntry r) ] 
+
+    activeTrains :: Maybe State -> Set Solver.TrainName
+    activeTrains (Just st) = Set.fromList (catMaybes (fmap snd st))
+    activeTrains Nothing = Set.empty
+
+    activeRoutes :: Maybe State -> Set String
+    activeRoutes (Just st) = Set.fromList [ rname | ((rname,num),t) <- st, isJust t
+                                                  , route <- routes, num == 0
+                                                  , Solver.routePartName route == (rname,num)
+                                                  , isJust (Solver.routePartEntry route) ]
+    activeRoutes Nothing = Set.empty
+
+    print :: [[String]] -> String
+    print = (intercalate "\n").(fmap (intercalate "\n"))
+
+

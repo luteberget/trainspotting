@@ -1,5 +1,5 @@
 module TrainPlan.SolverInput where
-
+import TrainPlan.UsagePattern
 
 type NodeRef = String
 type SignalRef = String 
@@ -27,6 +27,7 @@ data Train
   { trainName   :: TrainName
   , trainLength :: Double
   , trainVisits :: [[NodeRef]]
+  , trainVehicle :: Vehicle
   } deriving (Eq, Ord, Show)
 
 type TrainOrd = ((TrainName,VisitId),(TrainName,VisitId))

@@ -31,34 +31,31 @@ main = do
   Sim.withInfrastructureFile (infrastructureFile opts) $ \simInf -> do
   Sim.withRoutesFile simInf (routesFile opts) $ \simRoutes -> do
 
-    putStrLn "hello sim"
-
+   -- TODO error mesasge
     Right routes <- Parser.parseRoutesFile (routesFile opts)
     Right usage  <- Parser.parseUsageFile (usageFile opts)
 
-    -- mapM_ putStrLn (fmap show routes) 
-    -- mapM_ putStrLn (fmap show usage) 
     putStrLn (show routes)
     putStrLn (show usage)
 
-    putStrLn "hello parse"
+
 
     let numTrains = length (Usage.movements usage) -- TODO
-    let maxSteps = numTrains^2
+    let maxSteps = numTrains^2 +3
     let solverInput = Convert.solverInput routes usage
     let run d = Sim.dispatchTiming simInf simRoutes d
     let eval h = Timing.evaluate usage h
 
     putStrLn (show solverInput)
-    putStrLn "hello hello solver input"
     final <- Solver.plan maxSteps solverInput $ \plan -> do
-      putStrLn "hello hello plan"
-      Sim.withDispatch (Convert.dispatchPlan plan) $ \dispatch -> do
-        putStrLn "hello hello dispatch"
+      let dispatchString = Convert.dispatchPlan solverInput plan
+      putStrLn dispatchString
+      Sim.withDispatch dispatchString $ \dispatch -> do
         history <- run dispatch
         return (eval history)
-        
-      
 
-    putStrLn "hello world"
+    case final of
+      Just plan -> putStrLn "sat"
+      Nothing -> putStrLn "unsat"
 
+    return ()

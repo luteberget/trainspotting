@@ -21,7 +21,7 @@ data MovementSpec = MovementSpec {
 data TimingSpec = TimingSpec {
   visitA :: EventRef,
   visitB :: EventRef,
-  timingDiff :: Double
+  timingDiff :: Maybe Double
 }
     deriving (Show)
 
