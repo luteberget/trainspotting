@@ -209,11 +209,11 @@ impl Driver {
 
 impl<'a> Process<Infrastructure<'a>> for Driver {
     fn resume(&mut self, sim: &mut Sim) -> ProcessState {
-        println!("resume train");
+        //println!("resume train");
         let modelcontainment = self.move_train(sim);
         match modelcontainment {
             ModelContainment::Exiting => {
-                println!("TRAIN FINISHED");
+                //println!("TRAIN FINISHED");
                 ProcessState::Finished
             },
 

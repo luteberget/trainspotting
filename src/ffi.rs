@@ -70,21 +70,25 @@ pub unsafe extern fn eval_simplified(inf :*mut StaticInfrastructure,
 
 #[no_mangle]
 pub unsafe extern fn free_string(s :*mut c_char) {
+    println!("freeing string");
      CString::from_raw(s); 
 }
 
 #[no_mangle]
 pub unsafe extern fn free_infrastructure(x :*mut StaticInfrastructure) {
+    println!("Freeing infrastructure");
     Box::from_raw(x);
 }
 
 #[no_mangle]
 pub unsafe extern fn free_routes(x :*mut Routes) {
+    println!("freeing routes");
     Box::from_raw(x);
 }
 
 #[no_mangle]
 pub unsafe extern fn free_dispatch(x :*mut dispatch::Dispatch) {
+    println!("freeing dispatch");
     Box::from_raw(x);
 }
 

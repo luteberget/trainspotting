@@ -1,2 +1,2 @@
-test: Test
+test: Test.hs ../target/release/librolling.a
 	ghc -O2 --make -o test Test.hs ../target/release/librolling.a -lpthread

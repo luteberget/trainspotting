@@ -179,7 +179,6 @@ impl<T> Simulation<T> {
         }
         let time = *self.time();
         if let Some(ref mut logger) = self.logger {
-            println!("ADVANCE  Y FINISHING {}", (*target - time));
             logger(*target - time);
         }
         self.scheduler.time = target;
@@ -190,7 +189,6 @@ impl<T> Simulation<T> {
             Some(ev) => {
                 let time = *self.time();
                 if let Some(ref mut logger) = self.logger {
-                    println!("SCHEDULE FINISHING {}", (*ev.time - time));
                     logger(*ev.time - time);
                 }
                 self.scheduler.time = ev.time;
@@ -215,7 +213,6 @@ impl<T> Simulation<T> {
     }
 
     fn resume(&mut self, process_id: ProcessId) {
-        println!("RESUM {}", process_id);
         if let Some((event_id, mut process)) = {
             let a = &mut self.procs[process_id];
             // We need to take the process out of the simulation

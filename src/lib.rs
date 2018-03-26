@@ -59,7 +59,7 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
                 let train_log = Rc::new(RefCell::new(Vec::new()));
                 train_logs.push((name.clone(), train_log.clone()));
                 let logger = Box::new(move |i| {
-                    println!(" --- {:?}", i);
+                    //println!(" --- {:?}", i);
                     train_log.borrow_mut().push(i);
                 });
                 let driver = Box::new(

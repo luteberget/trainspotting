@@ -38,11 +38,11 @@ pub fn parse_dispatch(input: &str) -> Result<Dispatch, ParseError> {
         .map_err(|e| ParseError::RegexError(format!("{:?}",e)))?;
     let route_re = Regex::new(r"^\s*route\s*([\w\.]+)\s*$")
         .map_err(|e| ParseError::RegexError(format!("{:?}",e)))?;
-    let train_re = Regex::new(r"(?x) ^ \s* train \s* (?P<name>\w+) \s*
-            l \s* = \s* (?P<len>[\d\.]+) \s*
-            a \s* = \s* (?P<acc>[\d\.]+) \s*
-            b \s* = \s* (?P<brk>[\d\.]+) \s*
-            v \s* = \s* (?P<vel>[\d\.]+) \s*
+    let train_re = Regex::new(r"(?x) ^ \s* train \s+ (?P<name>\w+) \s+
+            l \s* = \s* (?P<len>[\d\.]+) \s+
+            a \s* = \s* (?P<acc>[\d\.]+) \s+
+            b \s* = \s* (?P<brk>[\d\.]+) \s+
+            v \s* = \s* (?P<vel>[\d\.]+) \s+
             (?P<route>\w+) \s*
             $").map_err(|e| ParseError::RegexError(format!("{:?}", e)))?;
     for line in input.lines() {
