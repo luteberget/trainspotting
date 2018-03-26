@@ -11,3 +11,6 @@ structopt="*"
 failure="*"
 failure_derive="*"
 
+[lib]
+crate-type=["rlib","staticlib"]
+
