@@ -9,56 +9,40 @@ import Text.Megaparsec.Char
 import Text.Megaparsec.Expr
 import qualified Text.Megaparsec.Char.Lexer as L
 
-import TrainPlan.Infrastructure
+import TrainPlan.Routes
 import TrainPlan.UsagePattern
-import TrainPlan.ScreenCoords
 
-type Output = (Infrastructure, UsagePattern, [ScreenCoords])
 
-parseRoutesFile :: String -> IO (Either String 
+-- Not used by planner, but recognized by parser
+data SwitchPosition = SwLeft | SwRight | SwUnknown
 
-parseUsageFile = undefined
-
-parseFile :: String -> IO (Either String Output)
-parseFile fn = do
+parseRoutesFile :: String -> IO (Either String [Route])
+parseRoutesFile fn = do
   contents <- readFile fn
-  return (TrainPlan.Parser.parse fn contents)
+  return (parseRoutes fn contents)
 
-parseStdin :: IO (Either String Output)
-parseStdin = do
-  contents <- getContents
-  return (TrainPlan.Parser.parse "<stdin>" contents)
+parseUsageFile :: String -> IO (Either String UsagePattern)
+parseUsageFile fn = do
+  contents <- readFile fn
+  return (parseUsage fn contents)
 
-parse :: String -> String -> Either String Output
-parse name contents = case MP.parse (sc >> some statement <* eof) name contents of
+parseRoutes :: String -> String -> Either String [Route]
+parseRoutes name contents = case MP.parse (sc >> some route <* eof) name contents of
   (Left err) -> Left $ parseErrorPretty err
-  (Right statements) -> Right $ toStructured statements
+  (Right routes) -> Right $ routes
 
-toStructured :: [Statement] -> Output
-toStructured xs = foldl f emptyOutput xs
+parseUsage :: String -> String -> Either String UsagePattern
+parseUsage name contents = case MP.parse (sc >> some usageStatement <* eof) name contents of
+  (Left err) -> Left $ parseErrorPretty err
+  (Right stmts) -> Right $ usageToStructured stmts
+
+usageToStructured :: [UsageStatement] -> UsagePattern
+usageToStructured = foldl f (UsagePattern [] [] [])
   where
-    f :: Output -> Statement -> Output
-    f ((Infrastructure ts ns cs rs), up, sc) 
-      (TrackStmt t) = ((Infrastructure (t:ts) ns cs rs), up, sc)
-    f ((Infrastructure ts ns cs rs), up, sc)
-      (NodeStmt n) = ((Infrastructure ts (n:ns) cs rs), up, sc)
-    f ((Infrastructure ts ns cs rs), up, sc)
-      (ComponentStmt c) = ((Infrastructure ts ns (c:cs) rs, up, sc))
-    f ((Infrastructure ts ns cs rs), up, sc)
-      (RouteStmt r) = ((Infrastructure ts ns cs (r:rs), up, sc))
-    f (is, (UsagePattern vs ms ts), sc)
-      (VehicleStmt v) = (is, (UsagePattern (v:vs) ms ts), sc)
-    f (is, (UsagePattern vs ms ts), sc)
-      (MovementStmt m) = (is, (UsagePattern vs (m:ms) ts), sc)
-    f (is, (UsagePattern vs ms ts), sc)
-      (TimingStmt t) = (is, (UsagePattern vs ms (t:ts)), sc)
-    f (is, up, sc)
-      (ScreenCoordsStmt s) = (is, up, (s:sc))
-
-emptyOutput :: Output
-emptyOutput = ((Infrastructure [] [] [] []),
-               (UsagePattern [] [] []),
-               [])
+    f :: UsagePattern -> UsageStatement -> UsagePattern
+    f (UsagePattern vs ms ts) (VehicleStmt v) = (UsagePattern (v:vs) ms ts)
+    f (UsagePattern vs ms ts) (MovementStmt m) = (UsagePattern vs (m:ms) ts)
+    f (UsagePattern vs ms ts) (TimingStmt t) = (UsagePattern vs ms (t:ts))
 
 type Parser = Parsec Void String
 
@@ -81,115 +65,18 @@ identifier :: Parser String
 identifier = lexeme ((:) <$> letterChar <*> many bodyChar)
   where bodyChar = alphaNumChar <|> (char '-') <|> (char '_')
 
-data Statement = 
-    TrackStmt Track
-  | NodeStmt Node
-  | ComponentStmt Component
-  | VehicleStmt Vehicle
+data UsageStatement = 
+    VehicleStmt Vehicle
   | MovementStmt MovementSpec
   | TimingStmt TimingSpec
-  | ScreenCoordsStmt ScreenCoords
-  | RouteStmt Route
   deriving (Show)
 
-statement :: Parser Statement
-statement = trackStmt <|> nodeStmt <|> componentStmt  -- infrastructure
-  <|> vehicleStmt <|> movementStmt <|> timingStmt -- usagepattern
-  <|> screenCoordsStmt -- screen coordinates
-  <|> routeStmt
+usageStatement :: Parser UsageStatement
+usageStatement = vehicleStmt <|> movementStmt <|> timingStmt
 
 list :: Parser a -> Parser [a]
 list =  (between (symbol ("[")) (symbol ("]"))) . (\x -> sepBy x (symbol ","))
-
-trackStmt :: Parser Statement
-trackStmt = do
-  symbol "track"
-  name <- identifier
-  l <- (number :: Parser Double)
-  return (TrackStmt (Track name l))
-
-nodeData :: Parser NodeData
-nodeData = boundary <|> trackRefList
-  where 
-    boundary = do
-      symbol "boundary"
-      return BoundaryNode
-    trackRefList = do
-      l <- list identifier
-      return $ ConnectionNode l
-
-nodeStmt :: Parser Statement
-nodeStmt = do
-  symbol "node"
-  name <- identifier 
-  from <- nodeData
-  to <- nodeData
-  return (NodeStmt (Node name from to))
-
-componentStmt :: Parser Statement
-componentStmt = signalStmt <|> detectorStmt <|> sightStmt <|> tvdStmt
-
-sightStmt :: Parser Statement
-sightStmt = do
-  symbol "sight"
-  sig <- identifier
-  dist <- number
-  loc <- location
-  return (ComponentStmt (Sight loc sig dist))
-
-signalStmt :: Parser Statement
-signalStmt = do
-  symbol "signal"
-  name <- identifier
-  loc <- directionalLocation 
-  symbol "detector"
-  d <- identifier
-  return (ComponentStmt (Signal name loc d))
-
-detectorStmt :: Parser Statement
-detectorStmt = do
-  symbol "detector"
-  name <- identifier
-  loc <- location
-  uptvd <- optional $ do
-    symbol "uptvd"
-    identifier
-  downtvd <- optional $ do
-    symbol "downtvd"
-    identifier
-  return (ComponentStmt (Detector name loc uptvd downtvd))
-
-tvdStmt :: Parser Statement
-tvdStmt = do
-  symbol "tvd"
-  name <- identifier
-  return (ComponentStmt (TVD name))
-
-location :: Parser Location 
-location = do
-  symbol "("
-  ref <- identifier
-  symbol ","
-  l <- number
-  symbol ")"
-  return (Location ref l)
-
-directionalLocation :: Parser (Location, Direction)
-directionalLocation = do
-  symbol "("
-  ref <- identifier
-  symbol ","
-  l <- number
-  symbol ","
-  dir <- direction
-  symbol ")"
-  return ((Location ref l), dir)
-
-direction :: Parser Direction
-direction =     (symbol "up" >> return Up) 
-            <|> (symbol "down" >> return Down)
-
-vehicleStmt :: Parser Statement
+vehicleStmt :: Parser UsageStatement
 vehicleStmt = vehicle >>= return . VehicleStmt
 
 vehicle :: Parser Vehicle
@@ -211,38 +98,36 @@ optname = optional $ do
   char '#'
   identifier 
 
-visit :: Parser (Maybe String, [DirectionalLocation], Maybe Double)
+visit :: Parser (Maybe String, [NodeRef], Maybe WaitTime)
 visit = do
   symbol "visit"
   name <- optname
-  locations <- list directionalLocation
+  locations <- list identifier
   waittime <- optional $ do
     symbol "wait"
     number
   return (name, locations, waittime)
 
-movementStmt :: Parser Statement
+movementStmt :: Parser UsageStatement
 movementStmt = do
   symbol "movement"
   vehicle <- identifier
   symbol "{"
-  enter <- enterExit "enter"
   visits <- some visit
-  exit <- enterExit "exit"
   symbol "}"
-  return (MovementStmt (MovementSpec vehicle enter visits exit))
+  return (MovementStmt (MovementSpec vehicle visits))
 
-enterExit :: String -> Parser (Maybe String, [NodeRef], Maybe ConstVelocity)
+enterExit :: String -> Parser (Maybe String, [NodeRef])
 enterExit n = do
   symbol n
   name <- optname
   locations <- list identifier
-  velocity <- optional $ do
-    symbol "velocity"
-    number
-  return (name, locations, velocity)
+  -- velocity <- optional $ do
+  --   symbol "velocity"
+  --   number
+  return (name, locations)
 
-timingStmt :: Parser Statement
+timingStmt :: Parser UsageStatement
 timingStmt = do
   symbol "timing"
   refA <- identifier
@@ -251,27 +136,11 @@ timingStmt = do
   let dt = fromMaybe 0.0 timeDiff
   return (TimingStmt (TimingSpec refA refB dt))
 
-coords :: Parser (Double, Double)
-coords = do
-  symbol "("
-  x <- number
-  symbol ","
-  y <- number
-  symbol ")"
-  return (x,y)
-
-screenCoordsStmt :: Parser Statement
-screenCoordsStmt = do
-  symbol "coords"
-  loc <- location
-  c <- coords
-  return (ScreenCoordsStmt (ScreenCoords loc c))
-
 swpos :: Parser SwitchPosition
 swpos =     (symbol "left"  >> return SwLeft) 
         <|> (symbol "right" >> return SwRight)
 
-release :: Parser ReleaseSpec
+release :: Parser Release
 release = do
   symbol "release"
   symbol "{"
@@ -282,7 +151,7 @@ release = do
   symbol "resources"
   res <- list identifier
   symbol "}"
-  return (ReleaseSpec length trigger res)
+  return (Release length res)
 
 routePoint :: Parser RoutePoint
 routePoint = bdry <|> sig <|> end
@@ -299,20 +168,66 @@ routePoint = bdry <|> sig <|> end
       symbol "trackend"
       return RoutePointTrackEnd
 
-routeStmt :: Parser Statement
-routeStmt = do
-  symbol "route"
-  dir <- direction
+route :: Parser Route
+route = modelEntry <|> modelExit <|> trainRoute
+
+modelEntry :: Parser Route
+modelEntry = do
+  symbol "modelentry"
   name <- identifier
-  symbol "entry"
-  entry <- routePoint
-  symbol "exit"
-  exit <- routePoint
+  symbol "from"
+  bdry <- identifier
   symbol "{"
+  symbol "exit"
+  sig <- identifier
   symbol "length"
   length <- number
-  tvds <- optional $ do 
-    symbol "tvds"
+  symbol "}"
+  let releases = []
+  let contains = []
+  return (Route name (RoutePointBoundary bdry)
+                     (RoutePointSignal sig)
+                length releases contains)
+
+modelExit :: Parser Route
+modelExit = do
+  symbol "modelexit"
+  name <- identifier
+  symbol "to"
+  bdry <- identifier
+  symbol "{"
+  symbol "entry"
+  sig <- identifier
+  optional $ do
+    symbol "entrysection"
+    entrysection <- identifier
+    return ()
+  symbol "length"
+  length <- number
+  symbol "}"
+  let releases = []
+  let contains = []
+  return (Route name (RoutePointSignal sig)
+                     (RoutePointBoundary bdry)
+                length releases contains)
+
+trainRoute :: Parser Route
+trainRoute = do
+  symbol "route"
+  name <- identifier
+  symbol "{"
+  symbol "entry"
+  entry <- identifier 
+  symbol "exit"
+  exit <- identifier
+  optional $ do
+    symbol "entrysection"
+    entrysection <- identifier
+    return ()
+  symbol "length"
+  length <- number
+  sections <- optional $ do 
+    symbol "sections"
     list identifier
   swpos <- optional $ do
     symbol "switches"
@@ -324,8 +239,10 @@ routeStmt = do
       symbol ")"
       return (swref,pos)
   releases <- many release
+  contains <- optional $ do
+     symbol "contains"
+     list identifier
   symbol "}"
-  return (RouteStmt (Route name entry exit 
-                           (fromMaybe [] tvds) 
-                           (fromMaybe [] swpos)
-                           length releases dir))
+  return (Route name (RoutePointSignal entry)
+                     (RoutePointSignal exit)
+                           length releases (fromMaybe [] contains))

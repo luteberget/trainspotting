@@ -30,6 +30,7 @@ data Route
  , exit :: RoutePoint
  , length :: Double
  , releases :: [Release]
+ , contains :: [NodeRef]
  } deriving (Show, Eq, Ord)
 
 data Release
