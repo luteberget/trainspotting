@@ -1,5 +1,4 @@
 module TrainPlan.Convert (
-  convert,
   solverInput,
   dispatchPlan
   ) where
