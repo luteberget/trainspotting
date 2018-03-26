@@ -23,20 +23,28 @@ struct Opt {
     verbose: u8,
 
     /// Static infrastructure file in the Rolling D-Graph format
-    #[structopt(short = "i", long = "infrastructure", parse(from_os_str))]
+    #[structopt(parse(from_os_str))]
     infrastructure: PathBuf,
 
     /// Route file in the Rolling Route format
-    #[structopt(short = "r", long = "routes", parse(from_os_str))]
+    #[structopt(parse(from_os_str))]
     routes: PathBuf,
     
     /// Dispatch file in the Rolling Dispatch format
-    #[structopt(short = "d", long = "dispatch", parse(from_os_str))]
+    #[structopt(parse(from_os_str))]
     dispatch: PathBuf,
+
+    /// Output JSON history file
+    #[structopt(short = "j", long = "json", parse(from_os_str))]
+    json: Option<PathBuf>,
+
+    /// Output JSON history as JavaScript
+    #[structopt(short = "J", long = "javascript", parse(from_os_str))]
+    javascript: Option<PathBuf>,
 
     /// Output format profile: full | timing
     #[structopt(short = "f", long = "format")]
-    format: String,
+    format: Option<String>,
 }
 
 pub type AppResult<T> = Result<T, failure::Error>;
