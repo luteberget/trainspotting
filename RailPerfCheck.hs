@@ -49,9 +49,12 @@ main = do
     let run d = Sim.dispatchTiming simInf simRoutes d
     let eval h = Timing.evaluate usage h
 
+    putStrLn (show solverInput)
     putStrLn "hello hello solver input"
     final <- Solver.plan maxSteps solverInput $ \plan -> do
+      putStrLn "hello hello plan"
       Sim.withDispatch (Convert.dispatchPlan plan) $ \dispatch -> do
+        putStrLn "hello hello dispatch"
         history <- run dispatch
         return (eval history)
         

@@ -46,7 +46,7 @@ splitRoutes route =  [ SplitRoute (routeName route, i) entry exit l res nodes
   where
     n = length (routeReleases route)
     signals = [routePointConv (routeEntry route)] ++ 
-            (fmap (\j -> Just ((routeName route) ++ "__i" ++ (show j))) [0..(n-1)]) ++ 
+            (fmap (\j -> Just ((routeName route) ++ "__i" ++ (show j))) [1..(n-1)]) ++ 
             [routePointConv (routeExit route)]
     nodes = (routeContains (route)) ++ (catMaybes [bdry route])
 

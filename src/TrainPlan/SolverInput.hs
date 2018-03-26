@@ -16,7 +16,7 @@ data RoutePart
   , routePartEntry     :: Maybe SignalRef 
   , routePartExit      :: Maybe SignalRef 
   , routePartConflicts :: [RoutePartId] 
-  , routeContains      :: [NodeRef]
+  , routePartContains  :: [NodeRef]
   , routePartLength    :: Double
   } deriving (Eq, Ord, Show)
 

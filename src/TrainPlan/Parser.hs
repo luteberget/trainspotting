@@ -136,8 +136,8 @@ timingStmt = do
   let dt = fromMaybe 0.0 timeDiff
   return (TimingStmt (TimingSpec refA refB dt))
 
-swpos :: Parser SwitchPosition
-swpos =     (symbol "left"  >> return SwLeft) 
+swposParser :: Parser SwitchPosition
+swposParser =     (symbol "left"  >> return SwLeft) 
         <|> (symbol "right" >> return SwRight)
 
 release :: Parser Release
@@ -183,7 +183,7 @@ modelEntry = do
   symbol "length"
   length <- number
   symbol "}"
-  let releases = []
+  let releases = [Release length []]
   let contains = []
   return (Route name (RoutePointBoundary bdry)
                      (RoutePointSignal sig)
@@ -205,7 +205,7 @@ modelExit = do
   symbol "length"
   length <- number
   symbol "}"
-  let releases = []
+  let releases = [Release length []]
   let contains = []
   return (Route name (RoutePointSignal sig)
                      (RoutePointBoundary bdry)
@@ -235,14 +235,16 @@ trainRoute = do
       symbol "("
       swref <- identifier
       symbol ","
-      pos <- swpos
+      pos <- swposParser
       symbol ")"
       return (swref,pos)
-  releases <- many release
+  releaseSpecs <- many release
   contains <- optional $ do
      symbol "contains"
      list identifier
   symbol "}"
+  let allResources = (fromMaybe [] sections) ++ (fromMaybe [] ((fmap.fmap) fst swpos))
+  let releases = if null releaseSpecs then [Release length allResources] else releaseSpecs
   return (Route name (RoutePointSignal entry)
                      (RoutePointSignal exit)
                            length releases (fromMaybe [] contains))

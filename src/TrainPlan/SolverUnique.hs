@@ -31,6 +31,7 @@ import qualified Data.Map as Map
 import Control.Monad (join, forM)
 forM_ = flip mapM_
 
+type NodeMap = Map NodeRef (Set RoutePartId)
 type Occupation = [(RoutePartId, Val (Maybe TrainName))]
 data State
   = State
@@ -59,8 +60,8 @@ exactlyOne s xs = do
   atMostOne s xs
   addClause s xs
 
-newState :: Solver -> Problem -> Maybe State -> IO State
-newState s (routes,partialroutes,trains,ords) prevState = do
+newState :: Solver -> Problem -> NodeMap -> Maybe State -> IO State
+newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
   routeStates <- sequence [ newVal s (Nothing :  [ Just (tId t) | t <- trains ])
                           | _ <- routes ]
   let occ = [(rId r, occ) | (r,occ) <- zip routes routeStates ]
@@ -114,7 +115,7 @@ newState s (routes,partialroutes,trains,ords) prevState = do
   let allFalseBorn = [ (t, false) | t <- trains ]
   let born = fromMaybe allFalseBorn (fmap bornBefore prevState)
   bornFuture <- sequence [ do
-       b <- bornCondition s routes train (fmap occupation prevState, occ) born
+       b <- bornCondition s nodeMap routes train (fmap occupation prevState, occ) born
        return (train,b)
      | (train, born) <- born ]
 
@@ -122,7 +123,7 @@ newState s (routes,partialroutes,trains,ords) prevState = do
   let visit = fromMaybe allFalseVisit (fmap visitBefore prevState)
   visitFuture <- sequence [ do
         v <- sequence [ do
-                v <- visitConstraint s occ train nodes visitBefore
+                v <- visitConstraint s nodeMap occ train nodes visitBefore
                 return (nodes, v)
               | (nodes, visitBefore) <- trainVisitsBefore ]
         return (train, v)
@@ -143,7 +144,7 @@ newState s (routes,partialroutes,trains,ords) prevState = do
             , nodes == (trainVisits train) !! v2 ]
 
       --putStrLn $ "SEQ " ++ (show (t1,r1,before1)) ++ "----" ++ (show (t2,r2,after2))
-      visitOrd s occ (t1,nodes1,before1) (t2,nodes2,after2)
+      visitOrd s nodeMap occ (t1,nodes1,before1) (t2,nodes2,after2)
     | ((t1,v1),(t2,v2)) <- ords]
 
   --return (State occ progressFuture bornFuture visitFuture)
@@ -200,8 +201,8 @@ allocateAhead s routes route train (prevState,state) progressBefore = case route
       addClause s ([progressBefore, progressFuture] ++ conflictResolved)
     return (neg progressFuture)
 
-bornCondition :: Solver -> [RoutePart] -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
-bornCondition s routes train (prevState,state) bornBefore = do
+bornCondition :: Solver -> NodeMap -> [RoutePart] -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
+bornCondition s nodeMap routes train (prevState,state) bornBefore = do
    -- Is this train born in this step?
    let bornNowAlternatives = 
          [ catMaybes [ fmap (\prev -> neg (prev .! (rId route) .= Just (tId train))) prevState,
@@ -231,8 +232,8 @@ bornCondition s routes train (prevState,state) bornBefore = do
        addClause s ([neg bornNow] ++ (join resolvedAlternatives))
    return (neg bornFuture)
 
-visitConstraint :: Solver -> Occupation -> Train -> [NodeRef] -> Lit -> IO Lit
-visitConstraint s occ train nodes visitBefore = do
+visitConstraint :: Solver -> NodeMap -> Occupation -> Train -> [NodeRef] -> Lit -> IO Lit
+visitConstraint s nodeMap occ train nodes visitBefore = do
   -- Visits must happen
   visitNow <- orl s [occ .! route .= Just (tId train)
                     | route <- nodesToRoutes nodeMap nodes]
@@ -240,8 +241,8 @@ visitConstraint s occ train nodes visitBefore = do
   addClause s [visitBefore, visitNow, visitFuture]
   return (neg visitFuture)
 
-visitOrd :: Solver -> Occupation -> (TrainName,[NodeRef],Lit) -> (TrainName,[NodeRef],Lit) -> IO ()
-visitOrd s occ (t1,nodes1,before1) (_t2,_nodes2,future2) = do
+visitOrd :: Solver -> NodeMap -> Occupation -> (TrainName,[NodeRef],Lit) -> (TrainName,[NodeRef],Lit) -> IO ()
+visitOrd s nodeMap occ (t1,nodes1,before1) (_t2,_nodes2,future2) = do
   precVisitNow <- orl s [ occ .! r .= Just t1
                         | r <- nodesToRoutes nodeMap nodes1 ]
   addClause s [before1, precVisitNow, future2]
@@ -254,9 +255,6 @@ visitOrd s occ (t1,nodes1,before1) (_t2,_nodes2,future2) = do
 nodesToRoutes :: Map NodeRef (Set RoutePartId) -> [NodeRef] -> [RoutePartId]
 nodesToRoutes map nodes = Set.toList (Set.unions [map Map.! name | name <- nodes ])
 
-nodeMap :: Map NodeRef (Set RoutePartId)
-nodeMap = undefined
-
 endStateCond :: State -> [Lit]
 endStateCond s = [ l | (_, l) <- bornBefore s] ++
                  [ l | (_, ls) <- progressBefore s, (_, l) <- ls ] ++
@@ -267,9 +265,15 @@ plan maxN problem@(routes,partialroutes,trains,orderings) test = withNewSolver $
   solveNewState s 0 []
 
   where
+    nodeMap :: NodeMap
+    --type NodeMap = Map NodeRef (Set RoutePartId)
+    nodeMap = Map.fromListWith Set.union [ (node, Set.singleton (rId route))
+                                         | route <- routes
+                                         , node <- routePartContains route ]
+
     solveNewState :: Solver -> Int -> [State] -> IO (Maybe RoutePlan)
     solveNewState s n states = do
-      state <- newState s problem (listToMaybe (reverse states))
+      state <- newState s problem nodeMap (listToMaybe (reverse states))
       solveAndTest s (n+1) (states ++ [state])
 
     solveAndTest :: Solver -> Int -> [State] -> IO (Maybe RoutePlan)
