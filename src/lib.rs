@@ -80,3 +80,45 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
 
     h
 }
+
+
+use std::path::Path;
+pub type AppResult<T> = Result<T, failure::Error>;
+
+pub fn read_file(f :&Path) -> AppResult<String> {
+  use std::fs::File;
+  use std::io::prelude::*;
+  use std::io::BufReader;
+
+  let file = File::open(f)?;
+  let mut file = BufReader::new(&file);
+  let mut contents = String::new();
+  file.read_to_string(&mut contents)?;
+  Ok(contents)
+}
+
+use input::staticinfrastructure;
+use input::dispatch;
+pub fn get_infrastructure(s :&Path) -> AppResult<staticinfrastructure::StaticInfrastructure> {
+    use input::staticinfrastructure_parser::{lexer, parse, model_from_ast};
+    let contents = read_file(s)?;
+  let lex = lexer(&mut contents.chars())?;
+  let stmts = parse(&lex)?;
+  let model = model_from_ast(&stmts)?;
+  Ok(model)
+}
+
+pub fn get_routes(s :&Path, inf :&staticinfrastructure::StaticInfrastructure) 
+    -> AppResult<staticinfrastructure::Routes> {
+    use input::route_parser::{parse, lexer};
+    let contents = read_file(s)?;
+    let lex = lexer(&mut contents.chars())?;
+    let rs = parse(&lex, inf)?;
+    Ok(rs)
+}
+
+pub fn get_dispatch(s :&Path) -> AppResult<dispatch::Dispatch> {
+    let contents = read_file(s)?;
+    let d = dispatch::parse_dispatch(&contents)?;
+    Ok(d)
+}

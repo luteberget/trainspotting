@@ -1,4 +1,4 @@
-use eventsim::{Process, ProcessState, EventId, Scheduler};
+use eventsim::{Process, ProcessState, EventId};
 use super::Sim;
 use smallvec::SmallVec;
 use input::staticinfrastructure::*;

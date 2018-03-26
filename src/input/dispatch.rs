@@ -1,9 +1,7 @@
-use super::staticinfrastructure::*;
 use railway::dynamics::TrainParams;
 use regex::Regex;
 
 type Name = String;
-type NodeName = Name;
 
 #[derive(Debug)]
 pub struct Dispatch {

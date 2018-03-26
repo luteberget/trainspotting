@@ -1,4 +1,3 @@
-use std::fmt::Write;
 use failure::Error;
 use super::history;
 
@@ -15,7 +14,7 @@ use std::io;
 
 pub fn javascript_history<W : io::Write>(inf :&StaticInfrastructure, history: &history::History, f :&mut W) -> Result<(),Error> {
     write!(f, "var data = ")?;
-    json_history(inf, history, f);
+    json_history(inf, history, f)?;
     write!(f, ";")?;
     Ok(())
 }
@@ -50,7 +49,6 @@ pub fn json_history<W : io::Write>(inf :&StaticInfrastructure, history: &history
                 if first { first = false; } else { write!(f, " ,")?; }
                 w(f, t, "occupied", get(&inf.object_names, n), if let SwitchPosition::Left = pos { "left" } else { "right" });
             }
-            _ => {},
         }
     }
     write!(f, " ]" )?;
@@ -68,8 +66,9 @@ pub fn json_history<W : io::Write>(inf :&StaticInfrastructure, history: &history
             use railway::dynamics::DistanceVelocity;
             match *ev {
                 Wait(dt) => t += dt,
-                Node(n1, n2) => {},
-                Sight(s, x) => {},
+                Node(_n1) => {},
+                Edge(_n1,_n2) => {},
+                Sight(_s, _x) => {},
                 Move(dt, action, DistanceVelocity { dx, v }) => {
                     t += dt;
                     x += dx;

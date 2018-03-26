@@ -35,9 +35,15 @@ impl Driver {
                logger: Box<Fn(TrainLogEvent)>)
                -> Self {
 
+        if *sim.time() > 0.0 {
+            logger(TrainLogEvent::Wait(*sim.time()));
+        }
+
         // The starting node is actually the opposite node of the
         // boundary node given as input here.
+        logger(TrainLogEvent::Node(node));
         let node = sim.world.statics.nodes[node].other_node;
+        logger(TrainLogEvent::Node(node));
         let next = match sim.world.edge_from(node) {
             Some(x) => x,
             None => panic!("Derailed in first node"),
@@ -50,10 +56,7 @@ impl Driver {
             under_train: SmallVec::new(),
         };
 
-        if *sim.time() > 0.0 {
-            logger(TrainLogEvent::Wait(*sim.time()));
-        }
-        logger(TrainLogEvent::Node(node, next.0));
+        logger(TrainLogEvent::Edge(node, next.0));
 
         let mut d = Driver {
             train: train,
@@ -136,16 +139,18 @@ impl Driver {
         let (_, (end_node, dist)) = self.train.location;
         if dist < 1e-4 && end_node.is_some() {
             let new_start = sim.world.statics.nodes[end_node.unwrap()].other_node;
+            (self.logger)(TrainLogEvent::Node(end_node.unwrap()));
             self.goto_node(sim, new_start);
+            (self.logger)(TrainLogEvent::Node(new_start));
             match sim.world.edge_from(new_start) {
                 Some((Some(new_end_node), d)) => {
                     self.train.location = (new_start, (Some(new_end_node), d));
-                    (self.logger)(TrainLogEvent::Node(new_start, Some(new_end_node)));
+                    (self.logger)(TrainLogEvent::Edge(new_start, Some(new_end_node)));
                     ModelContainment::Inside
                 }
                 Some((None, d)) => {
                     self.train.location = (new_start, (None, d));
-                    (self.logger)(TrainLogEvent::Node(new_start, None));
+                    (self.logger)(TrainLogEvent::Edge(new_start, None));
                     ModelContainment::Exiting
                 }
                 None => panic!("Derailed"),
