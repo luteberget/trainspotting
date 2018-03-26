@@ -15,6 +15,10 @@ import TrainPlan.ScreenCoords
 
 type Output = (Infrastructure, UsagePattern, [ScreenCoords])
 
+parseRoutesFile :: String -> IO (Either String 
+
+parseUsageFile = undefined
+
 parseFile :: String -> IO (Either String Output)
 parseFile fn = do
   contents <- readFile fn

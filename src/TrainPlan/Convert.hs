@@ -1,5 +1,7 @@
 module TrainPlan.Convert (
-  convert
+  convert,
+  solverInput,
+  dispatchPlan
   ) where
 
 import qualified TrainPlan.Infrastructure as IS
@@ -17,6 +19,10 @@ import Data.List (find)
 import Data.Maybe (catMaybes)
 
 succPairs x = zip x (tail x)
+
+
+solverInput = undefined
+dispatchPlan = undefined
 
 data RouteResources 
   = RouteResources
