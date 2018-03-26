@@ -26,28 +26,30 @@ import SAT.Equal
 import TrainPlan.SolverInput
 import Data.Set (Set)
 import qualified Data.Set as Set
-import Control.Monad (join)
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Control.Monad (join, forM)
 forM_ = flip mapM_
 
-type Occupation = [(RouteId, Val (Maybe TrainId))]
+type Occupation = [(RoutePartId, Val (Maybe TrainName))]
 data State
   = State
   { occupation     :: Occupation
-  , progressBefore :: [(Train, [(Route, Lit)])]
+  , progressBefore :: [(Train, [(RoutePart, Lit)])]
   , bornBefore     :: [(Train, Lit)]
-  , visitBefore    :: [(Train, [(RouteId, Lit)])]
+  , visitBefore    :: [(Train, [([NodeRef], Lit)])]
   } deriving (Eq, Ord, Show)
 
-rId = routeId
-tId = trainId
+rId = routePartName
+tId = trainName
 
 succPairs x = zip x (tail x)
 nubOrd = Set.toList . Set.fromList
 
-endingIn   routes x = filter (\r -> (routeExit r)  == x) routes 
-startingIn routes x = filter (\r -> (routeEntry r) == x) routes 
+endingIn   routes x = filter (\r -> (routePartExit r)  == x) routes 
+startingIn routes x = filter (\r -> (routePartEntry r) == x) routes 
 
-occupationValue :: [(RouteId, Val (Maybe TrainId))] -> RouteId -> Val (Maybe TrainId)
+occupationValue :: [(RoutePartId, Val (Maybe TrainName))] -> RoutePartId -> Val (Maybe TrainName)
 occupationValue s r = fromMaybe (error "state lookup") $
   listToMaybe [ val | (rid, val) <- s, rid == r ]
 (.!) = occupationValue
@@ -67,10 +69,10 @@ newState s (routes,partialroutes,trains,ords) prevState = do
   sequence_ [ do
       addClause s [ occ .! (rId route) .= Nothing,
                     occ .! conflicting .= Nothing]
-    | route <- routes, conflicting <- routeConflicts route ]
+    | route <- routes, conflicting <- routePartConflicts route ]
 
   -- At most one alternative routes is taken
-  let startPts = nubOrd (fmap routeEntry routes)
+  let startPts = nubOrd (fmap routePartEntry routes)
   sequence_ [ atMostOne s [ occ .! (rId route) .= Just (tId train)
                           | route <- routes `startingIn` entry ]
             | train <- trains, entry <- startPts ]
@@ -120,52 +122,52 @@ newState s (routes,partialroutes,trains,ords) prevState = do
   let visit = fromMaybe allFalseVisit (fmap visitBefore prevState)
   visitFuture <- sequence [ do
         v <- sequence [ do
-                v <- visitConstraint s occ train route visitBefore
-                return (route, v)
-              | (route, visitBefore) <- trainVisitsBefore ]
+                v <- visitConstraint s occ train nodes visitBefore
+                return (nodes, v)
+              | (nodes, visitBefore) <- trainVisitsBefore ]
         return (train, v)
     | (train,trainVisitsBefore) <- visit  ]
 
   -- putStrLn $ "ORDS: " ++ (show ords)
   sequence_ [ do
-      let (r1,before1) = head [ (route,visitBefore) 
+      let (nodes1,before1) = head [ (nodes,visitBefore) 
             | (train, (_,trainVisitsBefore)) <- zip trains visit 
             , (tId train) == t1
-            , (route, visitBefore) <- trainVisitsBefore
-            , route == (trainVisits train) !! v1 ]
+            , (nodes, visitBefore) <- trainVisitsBefore
+            , nodes == (trainVisits train) !! v1 ]
  
-      let (r2,after2) = head [ (route,neg visitBefore) 
+      let (nodes2,after2) = head [ (nodes,neg visitBefore) 
             | (train, (_,trainVisitsFuture)) <- zip trains visitFuture
             , (tId train) == t2
-            , (route, visitBefore) <- trainVisitsFuture
-            , route == (trainVisits train) !! v2 ]
+            , (nodes, visitBefore) <- trainVisitsFuture
+            , nodes == (trainVisits train) !! v2 ]
 
       --putStrLn $ "SEQ " ++ (show (t1,r1,before1)) ++ "----" ++ (show (t2,r2,after2))
-      visitOrd s occ (t1,r1,before1) (t2,r2,after2)
+      visitOrd s occ (t1,nodes1,before1) (t2,nodes2,after2)
     | ((t1,v1),(t2,v2)) <- ords]
 
   --return (State occ progressFuture bornFuture visitFuture)
   return (State occ progressFuture bornFuture visitFuture)
 
-freeRoute :: Solver -> [Route] -> Route -> Train -> (Occupation,Occupation) -> IO ()
+freeRoute :: Solver -> [RoutePart] -> RoutePart -> Train -> (Occupation,Occupation) -> IO ()
 freeRoute s routes route train (s1,s2) = do
   free <- orl s =<< isFreeable route (trainLength train)
   equalOr s [neg (s1 .! (rId route) .= Just (tId train))] 
      (neg free) (s2 .! (rId route) .= Just (tId train))
   where
-    isFreeable r remainingLength = case routeExit r of
+    isFreeable r remainingLength = case routePartExit r of
       Nothing -> return [true] -- Can always free after exiting the model
       Just signal ->  sequence [ do
-          if routeLength nextRoute >= remainingLength then do
+          if routePartLength nextRoute >= remainingLength then do
             return (s1 .! (rId nextRoute) .= Just (tId train))
           else do
-            nexts <- isFreeable nextRoute (remainingLength - (routeLength nextRoute))
+            nexts <- isFreeable nextRoute (remainingLength - (routePartLength nextRoute))
             anyNext <- orl s nexts
             andl s [s1 .! (rId nextRoute) .= Just (tId train), anyNext]
         | nextRoute <- routes `startingIn` (Just signal) ]
 
-allocateRoute :: Solver -> [Route] -> Route -> Train -> (Maybe Occupation,Occupation) -> IO ()
-allocateRoute s routes route train (s1,s2) = case routeEntry route of
+allocateRoute :: Solver -> [RoutePart] -> RoutePart -> Train -> (Maybe Occupation,Occupation) -> IO ()
+allocateRoute s routes route train (s1,s2) = case routePartEntry route of
   Nothing -> return () -- Not relevant for boundary entry routes
   Just signal -> do
     let wasAllocated        = fmap (\s -> s .! (rId route) .= Just (tId train)) s1
@@ -178,8 +180,8 @@ allocateRoute s routes route train (s1,s2) = case routeEntry route of
     addClause s $ catMaybes 
       ([fmap neg becomesAllocated, wasAllocated] ++ previousIsAllocated)
 
-allocateAhead :: Solver -> [Route] -> Route -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
-allocateAhead s routes route train (prevState,state) progressBefore = case routeExit route of
+allocateAhead :: Solver -> [RoutePart] -> RoutePart -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
+allocateAhead s routes route train (prevState,state) progressBefore = case routePartExit route of
   Nothing -> return true -- Not relevant for boundary exit routes
   Just signal -> do
     let isAllocated = state .! (rId route) .= Just (tId train)
@@ -193,12 +195,12 @@ allocateAhead s routes route train (prevState,state) progressBefore = case route
                             neg (prev .! (rId nextRoute) .= Just (tId train)),
                             state .! (rId nextRoute) .= Just (tId train) ]
                         | nextRoute <- nextRs
-                        , conflicting <- ( (rId nextRoute) : (routeConflicts nextRoute)) ]
+                        , conflicting <- ( (rId nextRoute) : (routePartConflicts nextRoute)) ]
       conflictResolved <- mapM (andl s) hadConflict
       addClause s ([progressBefore, progressFuture] ++ conflictResolved)
     return (neg progressFuture)
 
-bornCondition :: Solver -> [Route] -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
+bornCondition :: Solver -> [RoutePart] -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
 bornCondition s routes train (prevState,state) bornBefore = do
    -- Is this train born in this step?
    let bornNowAlternatives = 
@@ -208,30 +210,40 @@ bornCondition s routes train (prevState,state) bornBefore = do
    bornNow <- orl s =<< mapM (andl s) bornNowAlternatives
    bornFuture <- newLit s   -- Or is it born sometime in the future?
    exactlyOne s [bornBefore, bornNow, bornFuture]
-   let trainBirthPlace = head $ filter (\r -> (rId r) == head (trainVisits train)) routes 
+   --let trainBirthPlaces = head $ filter (\r -> (rId r) == head (trainVisits train)) routes 
+   let trainBirthPlaces = [ route
+                          | rid <- nodesToRoutes nodeMap (head (trainVisits train))
+                          , route <- routes
+                          , rid == routePartName route ]
    forM_ prevState $ \prev -> do 
-       -- If train is not born in the first step,
+       -- If train is born, and we are not on the first step,
        -- then it must be after a conflict has been resolved.
-       let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
-                             neg (prev .! (rId trainBirthPlace) .= Just (tId train)),
-                             state .! (rId trainBirthPlace) .= Just (tId train) ]
-                         | conflicting <- ((rId trainBirthPlace):
-                              (routeConflicts trainBirthPlace)) ]
-       conflictResolved <- mapM (andl s) hadConflict
-       addClause s ([neg bornNow] ++ conflictResolved)
+       resolvedAlternatives <- forM trainBirthPlaces $ \trainBirthPlace -> do
+         let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
+                               neg (prev .! (rId trainBirthPlace) .= Just (tId train)),
+                               state .! (rId trainBirthPlace) .= Just (tId train) ]
+                           | conflicting <- ((rId trainBirthPlace):
+                                            (routePartConflicts trainBirthPlace)) ]
+         conflictResolved <- mapM (andl s) hadConflict
+         -- conflictResolved :: [Lit] is a list of ways that the given
+         -- birth place could have had a conflict which is resolved.
+         return conflictResolved
+       addClause s ([neg bornNow] ++ (join resolvedAlternatives))
    return (neg bornFuture)
 
-visitConstraint :: Solver -> Occupation -> Train -> RouteId -> Lit -> IO Lit
-visitConstraint s occ train route visitBefore = do
+visitConstraint :: Solver -> Occupation -> Train -> [NodeRef] -> Lit -> IO Lit
+visitConstraint s occ train nodes visitBefore = do
   -- Visits must happen
-  let visitNow = occ .! route .= Just (tId train)
+  visitNow <- orl s [occ .! route .= Just (tId train)
+                    | route <- nodesToRoutes nodeMap nodes]
   visitFuture <- newLit s
   addClause s [visitBefore, visitNow, visitFuture]
   return (neg visitFuture)
 
-visitOrd :: Solver -> Occupation -> (TrainId,RouteId,Lit) -> (TrainId,RouteId,Lit) -> IO ()
-visitOrd s occ (t1,r1,before1) (t2,r2,future2) = do
-  let precVisitNow = occ .! r1 .= Just t1
+visitOrd :: Solver -> Occupation -> (TrainName,[NodeRef],Lit) -> (TrainName,[NodeRef],Lit) -> IO ()
+visitOrd s occ (t1,nodes1,before1) (_t2,_nodes2,future2) = do
+  precVisitNow <- orl s [ occ .! r .= Just t1
+                        | r <- nodesToRoutes nodeMap nodes1 ]
   addClause s [before1, precVisitNow, future2]
 
 --   sequence [ do
@@ -239,6 +251,11 @@ visitOrd s occ (t1,r1,before1) (t2,r2,future2) = do
 --       addClause s [precedingVisitBefore, precedingVisitNow, visitFuture]
 --     | Just (precedingTrain,precedingRoute,precedingVisitBefore) <- [precedingVisit] ]
 
+nodesToRoutes :: Map NodeRef (Set RoutePartId) -> [NodeRef] -> [RoutePartId]
+nodesToRoutes map nodes = Set.toList (Set.unions [map Map.! name | name <- nodes ])
+
+nodeMap :: Map NodeRef (Set RoutePartId)
+nodeMap = undefined
 
 endStateCond :: State -> [Lit]
 endStateCond s = [ l | (_, l) <- bornBefore s] ++

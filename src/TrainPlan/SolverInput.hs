@@ -1,35 +1,38 @@
 module TrainPlan.SolverInput where
 
-import SAT.Val
 
-type SignalId = String 
-type RouteId = Int 
-type TrainId = Int 
+type NodeRef = String
+type SignalRef = String 
+type RoutePartId = (String,Int)
+type TrainName = String
 type VisitId = Int
  
- -- data RouteEntry = NoEntry | SourceNode | SignalEntry SignalId 
- -- data RouteExit  = NoExit  | SinkNode   | SignalExit  SignalId 
+ -- data RouteEntry = NoEntry | SourceNode | SignalEntry SignalRef 
+ -- data RouteExit  = NoExit  | SinkNode   | SignalExit  SignalRef 
   
-data Route 
-  = Route 
-  { routeId        :: RouteId 
-  , routeEntry     :: Maybe SignalId 
-  , routeExit      :: Maybe SignalId 
-  , routeConflicts :: [RouteId] 
-  , routeLength    :: Double
+data RoutePart
+  = RoutePart
+  { routePartName      :: (String, Int)
+  , routePartEntry     :: Maybe SignalRef 
+  , routePartExit      :: Maybe SignalRef 
+  , routePartConflicts :: [RoutePartId] 
+  , routeContains      :: [NodeRef]
+  , routePartLength    :: Double
   } deriving (Eq, Ord, Show)
 
-type PartialRoutes = [[RouteId]]
+type ElementaryRoutes = [[RoutePartId]]
   
 data Train
   = Train 
-  { trainId     :: TrainId
+  { trainName   :: TrainName
   , trainLength :: Double
-  , trainVisits :: [RouteId]
+  , trainVisits :: [[NodeRef]]
   } deriving (Eq, Ord, Show)
 
-type TrainOrd = ((TrainId,VisitId),(TrainId,VisitId))
-type Problem = ([Route],PartialRoutes,[Train],[TrainOrd])
+type TrainOrd = ((TrainName,VisitId),(TrainName,VisitId))
 
-type RoutePlan = [[(RouteId, Maybe TrainId)]]
+type Problem = ([RoutePart],ElementaryRoutes,[Train],[TrainOrd])
+
+type RoutePlan = [[(RoutePartId, Maybe TrainName)]]
+
 

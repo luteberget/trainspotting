@@ -26,11 +26,11 @@ routePointRef (RoutePointSignal s) = s
 data Route
  = Route
  { routeName :: String
- , entry :: RoutePoint
- , exit :: RoutePoint
- , length :: Double
- , releases :: [Release]
- , contains :: [NodeRef]
+ , routeEntry :: RoutePoint
+ , routeExit :: RoutePoint
+ , routeLength :: Double
+ , routeReleases :: [Release]
+ , routeContains :: [NodeRef]
  } deriving (Show, Eq, Ord)
 
 data Release
