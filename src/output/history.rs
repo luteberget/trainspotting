@@ -7,16 +7,15 @@ pub struct History {
     pub trains: Vec<(String, Vec<TrainLogEvent>)>,
 }
 
+#[derive(Debug, Copy, Clone)]
+pub enum RouteStatus {
+    Pending, Active, Released,
+}
+
 #[derive(Debug)]
 pub enum InfrastructureLogEvent {
     Wait(f64),
-
-    // Routes
-    RoutePending(usize),
-    RouteActive(usize),
-    RouteReleased(usize),
-
-    // Objects
+    Route(usize,RouteStatus),
     Authority(usize, Option<f64>),
     Reserved(usize, bool),
     Occupied(usize, bool),

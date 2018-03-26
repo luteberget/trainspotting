@@ -72,8 +72,11 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
 
     sim.run();
 
-    output::history::History {
+
+    let h = output::history::History {
         inf: inf_log.replace(Vec::new()),
         trains: train_logs.into_iter().map(|(n,v)| (n, v.replace(Vec::new()))).collect()
-    }
+    };
+
+    h
 }

@@ -3,7 +3,7 @@ use super::Sim;
 use smallvec::SmallVec;
 use input::staticinfrastructure::*;
 use super::infrastructure::*;
-use output::history::InfrastructureLogEvent;
+use output::history::{InfrastructureLogEvent, RouteStatus};
 
 enum ActivateRouteState {
     Allocate, // Waiting for resources
@@ -50,17 +50,26 @@ fn unavailable_resource(r: &TrainRoute, infrastructure: &Infrastructure) -> Opti
     None
 }
 
-fn allocate_resources(r: &TrainRoute, infrastructure: &mut Infrastructure, scheduler: &mut Scheduler) {
+fn allocate_resources(r: &TrainRoute, sim :&mut Sim) {
+    let state = &mut sim.world.state;
+    let logger = &mut sim.world.logger;
+    let scheduler = &mut sim.scheduler;
     for s in r.sections.iter() {
-        match infrastructure.state[*s] {
-            ObjectState::TVDSection { ref mut reserved, .. } => reserved.set(scheduler, true),
+        match state[*s] {
+            ObjectState::TVDSection { ref mut reserved, .. } => {
+                reserved.set(scheduler, true);
+                logger(InfrastructureLogEvent::Reserved(*s,true));
+            }
             _ => panic!("Not a TVD"),
         };
     }
 
     for &(sw, _pos) in r.switch_positions.iter() {
-        match infrastructure.state[sw] {
-            ObjectState::Switch { ref mut reserved, .. } => reserved.set(scheduler, true),
+        match state[sw] {
+            ObjectState::Switch { ref mut reserved, .. } => {
+                reserved.set(scheduler, true);
+                logger(InfrastructureLogEvent::Reserved(sw,true));
+            }
             _ => panic!("Not a switch"),
         }
     }
@@ -106,12 +115,12 @@ fn movable_events(r: &TrainRoute, sim: &mut Sim) -> Vec<EventId> {
 
 impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
     fn resume(&mut self, sim: &mut Sim) -> ProcessState {
-        (sim.world.logger)(InfrastructureLogEvent::RoutePending(0)); // TODO id from where?
+        (sim.world.logger)(InfrastructureLogEvent::Route(0, RouteStatus::Pending)); // TODO id from where?
         if let ActivateRouteState::Allocate = self.state {
             match unavailable_resource(&self.route, &sim.world) {
                 Some(ev) => return ProcessState::Wait(SmallVec::from_slice(&[ev])),
                 None => {
-                    allocate_resources(&self.route, &mut sim.world, &mut sim.scheduler);
+                    allocate_resources(&self.route, sim);
                     self.state = ActivateRouteState::Move;
                 }
             }
@@ -147,7 +156,7 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
             }));
         }
 
-        (sim.world.logger)(InfrastructureLogEvent::RouteActive(0)); // TODO id from where?
+        (sim.world.logger)(InfrastructureLogEvent::Route(0, RouteStatus::Active)); // TODO id from where?
         ProcessState::Finished
     }
 }
@@ -227,7 +236,7 @@ impl<'a> Process<Infrastructure<'a>> for ReleaseRoute {
                         _ => panic!("Not a resource"),
                     };;
                 }
-                (sim.world.logger)(InfrastructureLogEvent::RouteReleased(0)); // TODO id from where? TODO partial 
+                (sim.world.logger)(InfrastructureLogEvent::Route(0,RouteStatus::Released)); // TODO id from where? TODO partial 
                 ProcessState::Finished
             }
         }

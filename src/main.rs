@@ -133,6 +133,22 @@ fn run(opt :&Opt) -> AppResult<()> {
         }
     }
 
+    if let Some(ref json) = opt.json {
+        use std::fs::File;
+        use std::io::BufWriter;
+        let mut file = File::create(json)?;
+        let mut writer = BufWriter::new(&file);
+        rolling::output::json::json_history(&infrastructure, &history, &mut writer)?;
+    }
+
+    if let Some(ref javascript) = opt.javascript {
+        use std::fs::File;
+        use std::io::BufWriter;
+        let mut file = File::create(javascript)?;
+        let mut writer = BufWriter::new(&file);
+        rolling::output::json::javascript_history(&infrastructure, &history, &mut writer)?;
+    }
+
     Ok(())
 }
 
