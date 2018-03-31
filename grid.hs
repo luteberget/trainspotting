@@ -59,7 +59,17 @@ ex1Nodes =
   , outLeftSw 0 (2,2)
   , inRightSw 3 (1,1)
   , endNode 2 ]
-  
+
+ex2Nodes = 
+  [ startNode  2             -- 0
+  , startNode  3             -- 1
+  , outLeftSw  0 (4,3)       -- 2
+  , inLeftSw   5 (1,2)       -- 3
+  , inRightSw  6 (2,5)       -- 4
+  , outRightSw 3 (7,4)       -- 5
+  , endNode    4             -- 6
+  , endNode    5 ]           -- 7
+
 enc2 :: Int -> (Int,Int) -> Int
 enc2 w (x,y) = x+w*y
 
@@ -251,19 +261,20 @@ draw nodes (w,h) = withNewSolver $ \s -> do
 
 
 toSvg :: Int -> [Graphics] -> String
-toSvg scale g = "<!DOCTYPE HTML><body><style>svg {width:100%; height:100%} .l { stroke-width: 2; stroke: darkred; }</style><svg>" ++ (join $ fmap elem g) ++ "</svg></body>"
+toSvg scale g = "<!DOCTYPE HTML><body><style>svg {width:650px; height:250px} .l { stroke-width: 2; stroke: darkred; }</style><svg>" ++ (join $ fmap elem g) ++ "</svg></body>"
   where 
-    elem (GNode (x,y) i) = "<circle cx=\"" ++ (show (scale*x)) ++ "\"\n"   ++
-                                   "cy=\"" ++ (show (scale*y)) ++ "\" r=\"5\" />"
+    f x = scale*x + 10
+    elem (GNode (x,y) i) = "<circle cx=\"" ++ (show (f x)) ++ "\"\n"   ++
+                                   "cy=\"" ++ (show (f y)) ++ "\" r=\"5\" />"
     elem (GLine (x1,y1) (x2,y2)) = "<line class=\"l\"\n" ++
-                                         "x1=\"" ++ (show (scale*x1)) ++ "\"\n" ++
-                                         "x2=\"" ++ (show (scale*x2)) ++ "\"\n" ++
-                                         "y1=\"" ++ (show (scale*y1)) ++ "\"\n" ++
-                                         "y2=\"" ++ (show (scale*y2)) ++ "\"\n" ++
+                                         "x1=\"" ++ (show (f x1)) ++ "\"\n" ++
+                                         "x2=\"" ++ (show (f x2)) ++ "\"\n" ++
+                                         "y1=\"" ++ (show (f y1)) ++ "\"\n" ++
+                                         "y2=\"" ++ (show (f y2)) ++ "\"\n" ++
                                          "/>"
 
 main = do
-  g <- draw ex1Nodes (6,2)
+  g <- draw ex2Nodes (6,2)
   case g of
     Just g -> putStrLn $ toSvg 100 g
     Nothing -> return ()
