@@ -168,14 +168,44 @@ draw nodes (w,h) = withNewSolver $ \s -> do
 
     forM_ edges $ \(from,to) -> do
       let cond = val .= Linear (from,to)
-      sequence_ [ exactlyOneOr s [neg cond] [ line | Just (_, line) <- coll ]
-                | coll <- [prevs, nexts] ]
-      sequence_ [ addClause s [neg cond, neg line, 
-                               val .= Node from, val .= Linear (from,to) ]
-                | Just (val, line) <- prevs]
-      sequence_ [ addClause s [neg cond, neg line, 
-                                val .= Node to, val .= Linear (from,to) ]
-                 | Just (val, line) <- nexts]
+      -- exactlyOne incoming line is now covered by combos
+      -- sequence_ [ exactlyOneOr s [neg cond] [ line | Just (_, line) <- coll ]
+      --           | coll <- [prevs, nexts] ]
+      let combos = [
+                    ((True, False, False),(False ,False, True)),
+                    ((False, True, False),(False ,True, False)),
+                    ((False, False, True),(True, False, False)),
+                    ((True, False, False),(False,True,False)),
+                    ((False, True, False),(True,False,False)),
+                    ((False, True, False),(False,False,True)),
+                    ((False, False, True),(False,True,False))
+		]
+      altLits <- forM combos $ \((a1,a2,a3),(b1,b2,b3)) -> do
+        prevConds <- forM (zip prevs [a1,a2,a3]) $ \(conn,c) -> do
+          case (conn,c) of
+            (Nothing, False) -> return []
+            (Nothing, True) -> return [false]
+            (Just (_,line), False) -> return [neg line]
+            (Just (val,line), True) -> do
+              nodeOk <- orl s [val .= Node from, val .= Linear (from,to)]
+              return [line, nodeOk]
+        nextConds <- forM (zip nexts [b1,b2,b3]) $ \(conn,c) -> do
+          case (conn,c) of
+            (Nothing, False) -> return []
+            (Nothing, True) -> return [false]
+            (Just (_,line), False) -> return [neg line]
+            (Just (val,line), True) -> do
+              nodeOk <- orl s [val .= Node to, val .= Linear (from,to)]
+              return [line, nodeOk]
+        andl s (join (prevConds ++ nextConds))
+      addClause s ([neg cond] ++ altLits)
+         
+      --  sequence_ [ addClause s [neg cond, neg line, 
+      --                           val .= Node from, val .= Linear (from,to) ]
+      --            | Just (val, line) <- prevs]
+      --  sequence_ [ addClause s [neg cond, neg line, 
+      --                            val .= Node to, val .= Linear (from,to) ]
+      --             | Just (val, line) <- nexts]
 
   b <- solve s []
   if b then do
@@ -233,5 +263,7 @@ toSvg scale g = "<!DOCTYPE HTML><body><style>svg {width:100%; height:100%} .l { 
                                          "/>"
 
 main = do
-  (Just g) <- draw ex1Nodes (5,2)
-  putStrLn $ toSvg 100 g
+  g <- draw ex1Nodes (6,2)
+  case g of
+    Just g -> putStrLn $ toSvg 100 g
+    Nothing -> return ()
