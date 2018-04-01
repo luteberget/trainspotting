@@ -1,4 +1,3 @@
-#![allow(redundant_field_names)]
 extern crate smallvec;
 extern crate ordered_float;
 extern crate regex;

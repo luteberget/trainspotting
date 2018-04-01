@@ -1,5 +1,6 @@
 use failure::Error;
 use super::history;
+use railway::dynamics::DriverAction;
 
 use std::collections::HashMap;
 use input::staticinfrastructure::{StaticInfrastructure, SwitchPosition};
@@ -34,7 +35,7 @@ pub fn json_history<W : io::Write>(inf :&StaticInfrastructure, history: &history
                 w(f, t, "signal", get(&inf.object_names, n), if x.is_some() { "green" } else { "false "});
             },
             Route(n,x) => {
-                if first { first = false; } else { write!(f, " ,")?; }
+                if first { first = false; } else { write!(f, ", ")?; }
                 write!(f, "{{ \"time\": {}, \"event\": \"{}\", \"ref\": \"{}\", \"value\": \"{:?}\" }}", t, "route", n, x)?;
             },
             Reserved(n,x) => {
@@ -42,12 +43,12 @@ pub fn json_history<W : io::Write>(inf :&StaticInfrastructure, history: &history
                 w(f, t, "reserved", get(&inf.object_names, n), if x { "true" } else { "false" });
             }
             Occupied(n,x) => {
-                if first { first = false; } else { write!(f, " ,")?; }
+                if first { first = false; } else { write!(f, ", ")?; }
                 w(f, t, "occupied", get(&inf.object_names, n), if x { "true" } else { "false" });
             }
             Position(n,pos) => {
-                if first { first = false; } else { write!(f, " ,")?; }
-                w(f, t, "occupied", get(&inf.object_names, n), if let SwitchPosition::Left = pos { "left" } else { "right" });
+                if first { first = false; } else { write!(f, ", ")?; }
+                w(f, t, "position", get(&inf.object_names, n), if let SwitchPosition::Left = pos { "left" } else { "right" });
             }
         }
     }
@@ -61,13 +62,21 @@ pub fn json_history<W : io::Write>(inf :&StaticInfrastructure, history: &history
         let mut t = 0.0;
         let mut first = true;
         let mut x = 0.0;
+        let mut nodes = Vec::new();
         for ev in his {
             use output::history::TrainLogEvent::*;
             use railway::dynamics::DistanceVelocity;
             match *ev {
-                Wait(dt) => t += dt,
+                Wait(dt) => {
+                    t += dt;
+                    if first { first = false; } else { write!(f, ", ")?; }
+                    write!(f, "{{ \"time\" : {}, \"action\": \"{:?}\", \"x\": {}, \"dx\": {}, \"v\": {} }}",
+                           t, DriverAction::Coast, 0.0, 0.0, 0.0)?;
+                },
                 Node(_n1) => {},
-                Edge(_n1,_n2) => {},
+                Edge(n1,n2) => {
+                    nodes.push(((n1,n2),0.0));
+                },
                 Sight(_s, _x) => {},
                 Move(dt, action, DistanceVelocity { dx, v }) => {
                     t += dt;
