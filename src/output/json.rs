@@ -62,7 +62,9 @@ pub fn json_history<W : io::Write>(inf :&StaticInfrastructure, history: &history
         let mut t = 0.0;
         let mut first = true;
         let mut x = 0.0;
-        let mut nodes = Vec::new();
+        let mut edges = Vec::new();
+        let trainlength = 200.0;
+
         for ev in his {
             use output::history::TrainLogEvent::*;
             use railway::dynamics::DistanceVelocity;
@@ -70,20 +72,47 @@ pub fn json_history<W : io::Write>(inf :&StaticInfrastructure, history: &history
                 Wait(dt) => {
                     t += dt;
                     if first { first = false; } else { write!(f, ", ")?; }
-                    write!(f, "{{ \"time\" : {}, \"action\": \"{:?}\", \"x\": {}, \"dx\": {}, \"v\": {} }}",
+                    write!(f, "{{ \"time\" : {}, \"action\": \"{:?}\", \"x\": {}, \"dx\": {}, \"v\": {}, \"edges\": [] }}",
                            t, DriverAction::Coast, 0.0, 0.0, 0.0)?;
                 },
                 Node(_n1) => {},
                 Edge(n1,n2) => {
-                    nodes.push(((n1,n2),0.0));
+                    edges.insert(0,((n1,n2),(0.0,0.0)));
                 },
                 Sight(_s, _x) => {},
                 Move(dt, action, DistanceVelocity { dx, v }) => {
                     t += dt;
                     x += dx;
+
+                    let mut l = trainlength;
+                    if edges.len() > 0 {
+                        let mut frontier = &mut edges[0].1;
+                        frontier.1 += dx;
+                    }
+
+                    let mut edge_num = 0;
+                    for edge in &mut edges {
+                        edge_num += 1;
+                        let mut interval = &mut edge.1;
+                        if interval.1 - interval.0 > l {
+                            interval.0 = interval.1 - l;
+                            break;
+                        } else {
+                            l -= interval.1 - interval.0;
+                        }
+                    }
+                    edges.truncate(edge_num);
+                    let edge_strings = edges.iter().map(|&((n1,n2),(a,b))| {
+                                                             if n2.is_some() {
+                            format!("{{\"n1\": \"{}\", \"n2\": \"{}\", \"start\": {}, \"end\": {}}}", 
+                                    get(&inf.node_names,n1), 
+                                    get(&inf.node_names,n2.unwrap()), a, b) } else { "".to_string() }
+                                                             }).collect::<Vec<String>>();
+                    let edge_string = format!("[{}]", edge_strings.join(", "));
+
                     if first { first = false; } else { write!(f, ", ")?; }
-                    write!(f, " {{ \"time\" : {}, \"action\": \"{:?}\", \"x\" : {}, \"dx\" : {}, \"v\": {} }}", 
-                           t, action, x, dx, v)?;
+                    write!(f, " {{ \"time\" : {}, \"action\": \"{:?}\", \"x\" : {}, \"dx\" : {}, \"v\": {}, \"edges\": {} }}", 
+                           t, action, x, dx, v, edge_string)?;
                 },
             }
         }
