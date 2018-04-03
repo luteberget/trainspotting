@@ -1,5 +1,8 @@
 -- solver for graph -> graph-like drawing
 --
+--
+
+module GridSolver where
 
 import Prelude hiding (reverse, flip)
 import Data.Set (Set)
@@ -128,8 +131,7 @@ draw nodes (w,h) = withNewSolver $ \s -> do
   sequence_ [ addClause s [neg x, neg y] | (x,y) <- zip downLines upLines ]
 
   -- each railway node is at exactly one schematic node
-  sequence_ [ exactlyOneOr s [] 
-                (fmap (\nodeVal -> nodeVal .= (Node nodeIdx)) nodeVals)
+  sequence_ [ exactlyOneOr s [] [ v .= (Node nodeIdx) | v <- nodeVals ]
             | (nodeIdx,_) <- zip [0..] nodes ]
 
   -- Expect bugs
@@ -189,7 +191,7 @@ draw nodes (w,h) = withNewSolver $ \s -> do
                     ((False, True, False),(True,False,False)),
                     ((False, True, False),(False,False,True)),
                     ((False, False, True),(False,True,False))
-		]
+                    ]
       altLits <- forM combos $ \((a1,a2,a3),(b1,b2,b3)) -> do
         prevConds <- forM (zip prevs [a1,a2,a3]) $ \(conn,c) -> do
           case (conn,c) of
@@ -259,6 +261,12 @@ draw nodes (w,h) = withNewSolver $ \s -> do
     putStrLn "no solution"
     return Nothing
 
+-- toJson
+--
+-- alt1 coords for each node { "nodename": {"x": 0.0, "y": 0.0 } }
+-- alt2 path for each edge [ { "n1": "n1", "n2": "n2", "length": 100.0, 
+--                             "pts": [ [ 0.0, 0.0 ] , [ 1.0, 1.0 ] ] } ]
+-- 
 
 toSvg :: Int -> [Graphics] -> String
 toSvg scale g = "<!DOCTYPE HTML><body><style>svg {width:650px; height:250px} .l { stroke-width: 2; stroke: darkred; }</style><svg>" ++ (join $ fmap elem g) ++ "</svg></body>"
