@@ -99,7 +99,7 @@ jsonNodeCoords xs = "{" ++ (intercalate ",\n" (fmap obj xs)) ++ "}"
     obj :: (Edge, [Line Double]) -> String
     obj ((n1,n2),ls) = "\"" ++ n1 ++ "-" ++ n2 ++"\": [ " ++ l ++ " ]" 
       where l = intercalate "," (fmap lin ls)
-            lin ((x0,y0),(x1,y1)) = "[[" ++ (show x0) ++ "," ++ (show x1) ++ "],[" ++ (show y0) ++ "," ++ (show y1) ++ "]]"
+            lin ((x0,y0),(x1,y1)) = "[[" ++ (show x0) ++ "," ++ (show y0) ++ "],[" ++ (show x1) ++ "," ++ (show y1) ++ "]]"
 
 javascriptOutput :: String -> String
 javascriptOutput x = "var edges = " ++ x ++ ";"
