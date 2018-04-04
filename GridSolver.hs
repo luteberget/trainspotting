@@ -7,9 +7,13 @@ module GridSolver where
 import Prelude hiding (reverse, flip)
 import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.Map (Map)
+import qualified Data.Map as Map
 import Data.Maybe (catMaybes)
 import Control.Monad (forM, forM_, join)
 import Data.Tuple (swap)
+import Data.List (nub, sortOn)
+import Data.Maybe (listToMaybe)
 
 import SAT
 import SAT.Val
@@ -82,7 +86,7 @@ dec2 w xy = (xy `mod` w, xy `div` w)
 data NodeValue = Unused | Linear (NodeId,NodeId) | Node NodeId
   deriving (Show, Eq, Ord)
 
-data Graphics = GNode (Int,Int) NodeId | GLine (Int,Int) (Int,Int)
+data Graphics = GNode (Int,Int) NodeId | GLine (Int,Int) (Int,Int) (NodeId,NodeId)
   deriving (Show, Eq, Ord)
 
 exactlyOneOr :: Solver -> [Lit] -> [Lit] -> IO ()
@@ -221,6 +225,17 @@ draw nodes (w,h) = withNewSolver $ \s -> do
 
   b <- solve s []
   if b then do
+    let allnodes x = case x of
+          Node x -> [x]
+          Linear (x,y) -> [x,y]
+
+    let edgeNodes p1 p2 = do
+                          v1 <- SAT.Val.modelValue s (nodeVals !! (enc2 w p1))
+                          v2 <- SAT.Val.modelValue s (nodeVals !! (enc2 w p2))
+                          case nub ((allnodes v1)++(allnodes v2)) of
+                            [x,y] -> return (x,y)
+                            _ -> error "ambiguous edge"
+
     nodes <- forM (zip [0..] nodeVals) $ \(i,val) -> do
       m <- SAT.Val.modelValue s val
       case m of
@@ -235,7 +250,8 @@ draw nodes (w,h) = withNewSolver $ \s -> do
         let (x0,y0) = dec2 (w-1) i
         let (x1,y1) = (x0+1,y0)
         --putStrLn $ "line " ++ (show (x0,y0)) ++ " " ++ (show (x1,y1))
-        return [GLine (x0,y0) (x1,y1)]
+        nodes <- edgeNodes (x0,y0) (x1,y1)
+        return [GLine (x0,y0) (x1,y1) nodes]
       else do return []
 
     up <- forM (zip [0..] upLines) $ \(i,val) -> do
@@ -244,7 +260,8 @@ draw nodes (w,h) = withNewSolver $ \s -> do
         let (x0,y0) = (\(x,y) -> (x,y+1)) (dec2 (w-1) i)
         let (x1,y1) = (x0+1,y0-1)
         --putStrLn $ "line " ++ (show (x0,y0)) ++ " " ++ (show (x1,y1))
-        return [GLine (x0,y0) (x1,y1)]
+        nodes <- edgeNodes (x0,y0) (x1,y1)
+        return [GLine (x0,y0) (x1,y1) nodes]
       else do return []
 
     down <- forM (zip [0..] downLines) $ \(i,val) -> do
@@ -253,12 +270,13 @@ draw nodes (w,h) = withNewSolver $ \s -> do
         let (x0,y0) = dec2 (w-1) i
         let (x1,y1) = (x0+1,y0+1)
         --putStrLn $ "line " ++ (show (x0,y0)) ++ " " ++ (show (x1,y1))
-        return [GLine (x0,y0) (x1,y1)]
+        nodes <- edgeNodes (x0,y0) (x1,y1)
+        return [GLine (x0,y0) (x1,y1) nodes]
       else do return []
 
     return (Just (join (nodes ++ hor ++ up ++ down)))
   else do 
-    putStrLn "no solution"
+    --putStrLn "no solution"
     return Nothing
 
 -- toJson
@@ -274,12 +292,29 @@ toSvg scale g = "<!DOCTYPE HTML><body><style>svg {width:650px; height:250px} .l 
     f x = scale*x + 10
     elem (GNode (x,y) i) = "<circle cx=\"" ++ (show (f x)) ++ "\"\n"   ++
                                    "cy=\"" ++ (show (f y)) ++ "\" r=\"5\" />"
-    elem (GLine (x1,y1) (x2,y2)) = "<line class=\"l\"\n" ++
+    elem (GLine (x1,y1) (x2,y2) _) = "<line class=\"l\"\n" ++
                                          "x1=\"" ++ (show (f x1)) ++ "\"\n" ++
                                          "x2=\"" ++ (show (f x2)) ++ "\"\n" ++
                                          "y1=\"" ++ (show (f y1)) ++ "\"\n" ++
                                          "y2=\"" ++ (show (f y2)) ++ "\"\n" ++
                                          "/>"
+
+collectEdges :: [Graphics] -> [((NodeId, NodeId), [(Int,Int)])]
+collectEdges g = go startSet []
+  where
+    startSet = [ (start, [p0,p]) | (GNode p0 start) <- g, p <- rightEdges p0 ]
+
+    getNode :: (Int,Int) -> Maybe Int
+    getNode p0 = listToMaybe [ x | (GNode p x) <- g, p == p0 ]
+
+    rightEdges :: (Int,Int) -> [(Int,Int)]
+    rightEdges p = [ pr | (GLine pl pr _ ) <- g, pl == p ]
+
+    go :: [(NodeId,[(Int,Int)])] -> [((NodeId, NodeId), [(Int,Int)])] -> [((NodeId, NodeId), [(Int,Int)])]
+    go [] ended = ended
+    go ((s,pts):starts) ended = case getNode (last pts) of 
+                                   Just nd -> go starts ((((s,nd),pts)):ended)
+                                   Nothing -> go ((s,(pts ++ (rightEdges (last pts)))):starts) ended
 
 main = do
   g <- draw ex2Nodes (6,2)

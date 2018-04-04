@@ -1,4 +1,4 @@
-module NodeParser where
+module GraphParser where
 
 import Data.Void
 import Text.Megaparsec
@@ -21,7 +21,7 @@ data NodeData = Start String | End String | Sw Side Dir String (String,String)
 
 data Statement 
   = NodeStmt String NodeData
-  | EdgeStmt (String,String) [(String,String)]
+  | EdgeStmt (String,String) Int [((String,String),Double)]
   deriving (Show, Eq, Ord)
 
 
@@ -61,7 +61,10 @@ symbol :: String -> Parser String
 symbol = L.symbol sc
 
 number :: Parser Double
-number = lexeme L.float
+number =  (try (lexeme L.float)) <|> (do x <- lexeme L.decimal ; return (fromIntegral x))
+
+integer :: Parser Int
+integer = lexeme L.decimal
 
 identifier :: Parser String
 identifier = lexeme ((:) <$> letterChar <*> many bodyChar)
@@ -105,10 +108,12 @@ edge = do
   symbol "edge"
   start <- identifier
   end <- identifier
+  symbol "level"
+  level <- integer
   other <- list $ do
-    n1 <- identifier; symbol "-"; n2 <- identifier;
-    return (n1,n2)
-  return (EdgeStmt (start,end) other)
+    n1 <- identifier; n2 <- identifier; dist <- number;
+    return ((n1,n2),dist)
+  return (EdgeStmt (start,end) level other)
 
 -- boundary :: Parser EdgeStatement
 -- boundary = do
