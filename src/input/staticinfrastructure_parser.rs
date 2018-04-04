@@ -1,7 +1,7 @@
 use smallvec::SmallVec;
 
 use super::staticinfrastructure;
-use super::staticinfrastructure::Dist;
+use super::staticinfrastructure::{Dist, SwitchPosition};
 
 use super::parser_utils::*;
 
@@ -14,7 +14,7 @@ pub enum Statement {
     DoubleNode(PartNode, PartNode),
     Boundary(NodeName),
     Linear(NodeName, NodeName, Dist),
-    Switch(String, NodeName, Vec<(NodeName, Dist)>),
+    Switch(String, SwitchPosition, NodeName, Vec<(NodeName, Dist)>),
 }
 
 #[derive(Debug)]
@@ -48,6 +48,8 @@ pub enum Token {
     Enter,
     Sight,
     Boundary,
+    Left,
+    Right,
     Number(f64),
     Identifier(String),
     EOF,
@@ -82,6 +84,8 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
                     "sight" => Token::Sight,
                     "exit" => Token::Exit,
                     "enter" => Token::Enter,
+                    "left" => Token::Left,
+                    "right" => Token::Right,
                     _ => Token::Identifier(s),
                 });
             }
@@ -205,11 +209,23 @@ pub fn parse_statement(i: &mut usize, t: &[Token]) -> Result<Statement, ParseErr
           &|i, t| {
         must_match(i, t, Token::Switch)?;
         let name = identifier(i, t)?;
+        let pos = parse_switchposition(i, t)?;
         let facenode = identifier(i, t)?;
         must_match(i, t, Token::Arrow)?;
         let branches = parse_switch_branches(i, t)?;
-        Ok(Statement::Switch(name, facenode, branches))
+        Ok(Statement::Switch(name, pos, facenode, branches))
     }])
+}
+
+pub fn parse_switchposition(i :&mut usize, t :&[Token]) 
+                            -> Result<SwitchPosition, ParseError> {
+    if matches(i,t,Token::Left) {
+        return Ok(SwitchPosition::Left);
+    }
+    if matches(i,t,Token::Right) {
+        return Ok(SwitchPosition::Right);
+    }
+    Err(ParseError::UnexpectedToken(*i, format!("{:?}", t[*i].clone())))
 }
 
 pub fn parse_switch_branches(i: &mut usize,
@@ -350,7 +366,7 @@ pub fn model_from_ast(stmts: &[Statement])
                 model.nodes[n1].edges = Edges::Single(n2, dist);
                 model.nodes[n2].edges = Edges::Single(n1, dist);
             }
-            Switch(ref name, ref node, ref legs) => {
+            Switch(ref name, ref side, ref node, ref legs) => {
                 let node_idx = get_or_create_node(&mut model.nodes, &mut model.node_names, node);
                 if legs.len() != 2 {
                     return Err(ModelError::SwitchLegs(name.clone()));
@@ -362,10 +378,13 @@ pub fn model_from_ast(stmts: &[Statement])
                 let switch = staticinfrastructure::StaticObject::Switch {
                     left_link: (l1idx, l1dist),
                     right_link: (l2idx, l2dist),
+                    branch_side: *side,
                 };
                 let sw_idx =
                     insert_object(&mut model.objects, &mut model.object_names, switch, name);
                 model.nodes[node_idx].edges = Edges::Switchable(sw_idx);
+                model.nodes[l1idx].edges = Edges::Single(node_idx, l1dist);
+                model.nodes[l2idx].edges = Edges::Single(node_idx, l2dist);
             }
             DoubleNode(ref n1, ref n2) => {
                 // Create cross references

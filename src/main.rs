@@ -50,6 +50,10 @@ struct Opt {
     /// Output node visit times to file
     #[structopt(short = "n", long = "visits", parse(from_os_str))]
     visits: Option<PathBuf>,
+
+    /// Output directed graph for graphical conversion
+    #[structopt(short = "g", long = "graphical", parse(from_os_str))]
+    graphical: Option<PathBuf>,
 }
 
 fn run(opt :&Opt) -> AppResult<()> {
@@ -120,6 +124,16 @@ fn run(opt :&Opt) -> AppResult<()> {
         let mut file = File::create(visits)?;
         let mut writer = BufWriter::new(&file);
         let string = rolling::output::history::visits(&infrastructure, &history)?;
+        use std::io::Write;
+        write!(writer,"{}",string)?;
+    }
+
+    if let Some(ref graphical) = opt.graphical {
+        use std::fs::File;
+        use std::io::BufWriter;
+        let mut file = File::create(graphical)?;
+        let mut writer = BufWriter::new(&file);
+        let string = rolling::output::graphical::graphical(&infrastructure)?;
         use std::io::Write;
         write!(writer,"{}",string)?;
     }

@@ -38,6 +38,7 @@ pub enum StaticObject {
     Switch {
         left_link: (NodeId, f64),
         right_link: (NodeId, f64),
+        branch_side: SwitchPosition,
     },
     TVDLimit {
         enter: Option<ObjectId>,
