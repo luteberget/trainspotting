@@ -71,9 +71,6 @@ pub fn json_history<W : io::Write>(inf :&StaticInfrastructure, history: &history
             match *ev {
                 Wait(dt) => {
                     t += dt;
-                    if first { first = false; } else { write!(f, ", ")?; }
-                    write!(f, "{{ \"time\" : {}, \"action\": \"{:?}\", \"x\": {}, \"dx\": {}, \"v\": {}, \"edges\": [] }}",
-                           t, DriverAction::Coast, 0.0, 0.0, 0.0)?;
                 },
                 Node(_n1) => {},
                 Edge(n1,n2) => {
@@ -81,6 +78,20 @@ pub fn json_history<W : io::Write>(inf :&StaticInfrastructure, history: &history
                 },
                 Sight(_s, _x) => {},
                 Move(dt, action, DistanceVelocity { dx, v }) => {
+                    if first { 
+                        first = false; 
+                        let edge_strings = edges.iter().map(|&((n1,n2),(a,b))| {
+                                                                 if n2.is_some() {
+                                format!("{{\"n1\": \"{}\", \"n2\": \"{}\", \"start\": {}, \"end\": {}}}", 
+                                        get(&inf.node_names,n1), 
+                                        get(&inf.node_names,n2.unwrap()), a, b) } else { "".to_string() }
+                                                                 }).collect::<Vec<String>>();
+                        let edge_string = format!("[{}]", edge_strings.join(", "));
+                        write!(f, "{{ \"time\" : {}, \"action\": \"{:?}\", \"x\": {}, \"dx\": {}, \"v\": {}, \"edges\": {} }}",
+                           t, DriverAction::Coast, 0.0, 0.0, 0.0, edge_string)?;
+                    
+                    } 
+
                     t += dt;
                     x += dx;
 
@@ -110,7 +121,7 @@ pub fn json_history<W : io::Write>(inf :&StaticInfrastructure, history: &history
                                                              }).collect::<Vec<String>>();
                     let edge_string = format!("[{}]", edge_strings.join(", "));
 
-                    if first { first = false; } else { write!(f, ", ")?; }
+                    write!(f, ", ")?;
                     write!(f, " {{ \"time\" : {}, \"action\": \"{:?}\", \"x\" : {}, \"dx\" : {}, \"v\": {}, \"edges\": {} }}", 
                            t, action, x, dx, v, edge_string)?;
                 },

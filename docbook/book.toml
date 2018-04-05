@@ -3,3 +3,6 @@ authors = ["Bjørnar Luteberget"]
 multilingual = false
 src = "src"
 title = "rolling"
+
+[output.html]
+additional-css = ["railview.css"]

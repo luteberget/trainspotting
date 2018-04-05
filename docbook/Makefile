@@ -19,9 +19,10 @@ src/%.md: src/%-history.js src/%-vis.js src/%.md.template %/infrastructure %/rou
 	    -e "/RAILWAYROUTES/ {r $*/routes" -e 'd }' \
 	    -e "/RAILWAYDISPATCH/ {r $*/plan" -e 'd }' \
 	    -e '/RAILWAYVIEW/ { i <div id="railview"></div>'  \
+	    -e 'i <script src="d3/d3.js"></script>' \
 	    -e 'i <script src="$*-history.js"></script>' \
 	    -e 'i <script src="$*-vis.js"></script>' \
-	    -e 'i <script src="../railview.js"></script>' \
+	    -e 'i <script src="railview.js"></script>' \
 	    -e 'd }' \
 	    src/$*.md.template > src/$*.md
 
