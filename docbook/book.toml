@@ -1,0 +1,5 @@
+[book]
+authors = ["Bjørnar Luteberget"]
+multilingual = false
+src = "src"
+title = "rolling"
