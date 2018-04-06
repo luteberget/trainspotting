@@ -18,7 +18,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 
 import Control.Monad (forM, forM_,join)
-import Data.List (mapAccumL, intercalate)
+import Data.List (mapAccumL, intercalate, sortOn)
 
 clamp :: Double -> Double -> Double -> Double
 clamp a b x = if x < a then a else (if x > b then b else x)
@@ -111,8 +111,8 @@ main = do
   let (problem,names) = convertInput graph
   sol <- solve problem
   let edges = S.collectEdges sol
-  let edgesA = [((reverseNames names a, reverseNames names b, (mkLevel c)), c) | ((a,b),c) <- edges ]
-  let edgesB = [ ((a,b,l),c) | (P.EdgeStmt (a,b) l c) <- graph ]
+  let edgesA = sortOn fst [((reverseNames names a, reverseNames names b, (mkLevel c)), c) | ((a,b),c) <- edges ]
+  let edgesB = sortOn fst [ ((a,b,l),c) | (P.EdgeStmt (a,b) l c) <- graph ]
   let edgesAB = join [ edgeCoords screen dist | ((_,screen),(_,dist)) <- zip edgesA edgesB ]
   putStrLn $ javascriptOutput (jsonNodeCoords edgesAB)
 
