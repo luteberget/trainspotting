@@ -72,15 +72,15 @@ type Pt x = (x,x)
 type Line x = (Pt x, Pt x)
 type Edge = (String,String)
 
-edgeCoords :: [Pt Int] -> [(Edge,Double)] -> [(Edge, [Line Double])]
+edgeCoords :: [Pt Int] -> [(Edge,Double)] -> [(Edge, Double, [Line Double])]
 edgeCoords screen edges = (snd (mapAccumL f 0.0 nonZeroEdges))
   where
     edgelength = sum [ x | (_,x) <- edges ]
     nonZeroEdges = [ x | x@(_,l) <- edges, l > 0.0 ]
     e2s x = (x / edgelength) * (fromIntegral ((length screen)-1))
 
-    f :: Double -> (Edge,Double) -> (Double, (Edge, [Line Double]))
-    f l (e, dl) = (l + dl, (e, lines (e2s l) (e2s (l+dl))))
+    f :: Double -> (Edge,Double) -> (Double, (Edge, Double, [Line Double]))
+    f l (e, dl) = (l + dl, (e, dl, lines (e2s l) (e2s (l+dl))))
 
     lines :: Double -> Double -> [Line Double]
     lines s0 s1 = [ (a,b) | (start, (p1i,p2i)) <- zip [0..] (succPairs screen)
@@ -93,11 +93,11 @@ edgeCoords screen edges = (snd (mapAccumL f 0.0 nonZeroEdges))
 mkLevel :: [Pt Int] -> Int
 mkLevel = (* (-1)) . sum . (map snd)
 
-jsonNodeCoords :: [(Edge, [Line Double])] -> String
+jsonNodeCoords :: [(Edge, Double, [Line Double])] -> String
 jsonNodeCoords xs = "{" ++ (intercalate ",\n" (fmap obj xs)) ++ "}"
   where
-    obj :: (Edge, [Line Double]) -> String
-    obj ((n1,n2),ls) = "\"" ++ n1 ++ "-" ++ n2 ++"\": [ " ++ l ++ " ]" 
+    obj :: (Edge, Double, [Line Double]) -> String
+    obj ((n1,n2),length, ls) = "\"" ++ n1 ++ "-" ++ n2 ++"\": { \"length\": " ++ (show length) ++ ", \"lines\": [ " ++ l ++ " ] }" 
       where l = intercalate "," (fmap lin ls)
             lin ((x0,y0),(x1,y1)) = "[[" ++ (show x0) ++ "," ++ (show y0) ++ "],[" ++ (show x1) ++ "," ++ (show y1) ++ "]]"
 
