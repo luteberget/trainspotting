@@ -8,6 +8,27 @@ type Map = HashMap<String, usize>;
 
 
 
+pub fn default_release(route :&mut Route) {
+    match *route {
+        Route::TrainRoute(ref mut route) => {
+            if route.releases.len() > 0 { return; }
+            // use last section as trigger
+            match route.sections.last() {
+                Some(trigger) => {
+                    let mut resources = Vec::new();
+                    resources.extend(&route.sections);
+                    resources.extend(route.switch_positions.iter().map(|&(a,_)| a));
+                    route.releases.push(Release { 
+                        trigger: *trigger, resources: resources.into() });
+                    println!("DEFAULT RELEASE: {:?}", route);
+                },
+                None => println!("Warning: route has no sections."),
+            }
+        },
+        _ => {},
+    }
+}
+
 
 // PARSER
 //
@@ -18,7 +39,8 @@ pub fn parse(t: &[Token], inf: &StaticInfrastructure) -> Result<Routes, ParseErr
     let mut i = 0;
     let mut routes = HashMap::new();
     while t[i] != Token::EOF {
-        if let Some((name, route)) = parse_route(&mut i, t, &inf.object_names, &inf.node_names)? {
+        if let Some((name, mut route)) = parse_route(&mut i, t, &inf.object_names, &inf.node_names)? {
+            default_release(&mut route);
             routes.insert(name, route);
         }
     }
@@ -66,12 +88,14 @@ pub fn parse_route(i: &mut usize,
         let entrysection = lookup(objnames, &identifier(i,t)?)?;
         symbol(i,t,"length")?;
         let length = number(i,t)?;
+        symbol(i, t, "sections")?;
+        let sections = list(i, t, |i, t| lookup(objnames, &identifier(i, t)?))?;
         must_match(i,t,Token::BraceClose)?;
         Ok(Some((name, Route::TrainRoute(TrainRoute {
             signal: entry,
             signal_trigger: entrysection,
             length: length,
-            sections: SmallVec::new(),
+            sections: sections.into(),
             switch_positions: SmallVec::new(),
             releases: SmallVec::new(),
         }))))
@@ -92,7 +116,7 @@ pub fn parse_route(i: &mut usize,
         let sections = list(i, t, |i, t| lookup(objnames, &identifier(i, t)?))?;
         symbol(i, t, "switches")?;
         let switches = list(i, t, |i, t| {
-            must_match(i, t, Token::ParensOpen)?;
+            //must_match(i, t, Token::ParensOpen)?;
             let sw = lookup(objnames, &identifier(i, t)?)?;
             let pos = alt(i,
                           t,
@@ -104,7 +128,7 @@ pub fn parse_route(i: &mut usize,
                                 symbol(i, t, "right")?;
                                 Ok(SwitchPosition::Right)
                             }])?;
-            must_match(i, t, Token::ParensClose)?;
+            //must_match(i, t, Token::ParensClose)?;
             Ok((sw, pos))
         })?;
         symbol(i, t, "contains")?;

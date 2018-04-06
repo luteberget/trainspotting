@@ -8,7 +8,7 @@ use super::Sim;
 
 enum ModelContainment {
     Inside,
-    Exiting,
+    Outside,
 }
 
 #[derive(Debug)]
@@ -109,9 +109,14 @@ impl Driver {
         let update = dynamic_update(&self.train.params, self.train.velocity, 
                                     DriverPlan { action: action, dt: dt, });
 
+        println!("DYNAMIC UPDATE {:?}", (action,dt));
+        println!("{:?}", update);
+
         (self.logger)(TrainLogEvent::Move(dt, action, update));
         self.train.velocity = update.v;
+        println!("train loc {:?}", self.train.location);
         (self.train.location.1).1 -= update.dx;
+        println!("train loc {:?}", self.train.location);
 
         // In case there are no signals in sight,
         // the remembered authority is updated.
@@ -140,6 +145,8 @@ impl Driver {
         });
         }
 
+
+
         let (_, (end_node, dist)) = self.train.location;
         if dist < 1e-4 && end_node.is_some() {
             let new_start = sim.world.statics.nodes[end_node.unwrap()].other_node;
@@ -150,15 +157,17 @@ impl Driver {
                 Some((Some(new_end_node), d)) => {
                     self.train.location = (new_start, (Some(new_end_node), d));
                     (self.logger)(TrainLogEvent::Edge(new_start, Some(new_end_node)));
-                    ModelContainment::Inside
                 }
                 Some((None, d)) => {
                     self.train.location = (new_start, (None, d));
                     (self.logger)(TrainLogEvent::Edge(new_start, None));
-                    ModelContainment::Exiting
                 }
                 None => panic!("Derailed"),
             }
+        }
+
+        if (self.train.location.1).0.is_none() && self.train.under_train.len() == 0 {
+            ModelContainment::Outside
         } else {
             ModelContainment::Inside
         }
@@ -166,14 +175,20 @@ impl Driver {
 
     fn plan_ahead(&mut self, sim: &Sim) -> DriverPlan {
         // Travel distance is limited by next node
+        println!("Travel distance is limited by next node");
+        println!("{:?}", (self.train.location.1).1);
         let mut max_dist = (self.train.location.1).1;
 
         // Travel distance is limited by nodes under train
+        println!("Travel distance is limited by nodes under train");
+        println!("{:?}", self.train.under_train);
         for &(_n, d) in self.train.under_train.iter() {
             max_dist = max_dist.min(d);
         }
 
         // Travel distance is limited by sight distances
+        println!("Travel distance is limited by sight distances");
+        println!("{:?}", self.connected_signals);
         for &(_n, d) in self.connected_signals.iter() {
             max_dist = max_dist.min(d);
         }
@@ -184,7 +199,7 @@ impl Driver {
                 ObjectState::Signal { ref authority } => {
                     match *authority.get() {
                         Some(d) => {
-                            self.authority = dist + d;
+                            self.authority = dist + d - 20.0;
                         }
                         None => {
                             self.authority = dist - 20.0;
@@ -199,15 +214,18 @@ impl Driver {
         // Static maximum speed profile ahead from current position
         // TODO: other speed limitations
         let static_speed_profile = StaticMaximumVelocityProfile {
-            local_max_velocity: 20.0,
+            local_max_velocity: 20.0, //self.train.params.max_vel,
             max_velocity_ahead: SmallVec::from_slice(&[DistanceVelocity {
                dx: self.authority, v: 0.0}]),
         };
 
-        dynamic_plan_step(&self.train.params,
+        let plan = dynamic_plan_step(&self.train.params,
                           max_dist,
                           self.train.velocity,
-                          &static_speed_profile)
+                          &static_speed_profile);
+
+        println!("PLAN: {:?} {:?} {:?} {:?} {:?} ", self.train.params, max_dist, self.train.velocity, static_speed_profile,plan);
+        plan
     }
 }
 
@@ -216,7 +234,7 @@ impl<'a> Process<Infrastructure<'a>> for Driver {
         //println!("resume train");
         let modelcontainment = self.move_train(sim);
         match modelcontainment {
-            ModelContainment::Exiting => {
+            ModelContainment::Outside => {
                 //println!("TRAIN FINISHED");
                 ProcessState::Finished
             },
@@ -227,12 +245,14 @@ impl<'a> Process<Infrastructure<'a>> for Driver {
 
                 let mut events = SmallVec::new();
                 if plan.dt > 1e-4 {
+                    println!("SET TIMOUT {:?}", plan.dt);
                     events.push(sim.create_timeout(plan.dt));
                 } else {
                     if self.train.velocity > 1e-4 { panic!("Velocity, but no plan."); }
                     self.train.velocity = 0.0;
                     self.step.0 = DriverAction::Coast;
                 }
+                println!("Connected signals: {:?}", self.connected_signals);
                 for &(ref sig, _) in self.connected_signals.iter() {
                     match sim.world.state[*sig] {
                         ObjectState::Signal { ref authority } => events.push(authority.event()),

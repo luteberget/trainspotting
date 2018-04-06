@@ -11,8 +11,6 @@ GRIDVIS = ../../linearschematic/gridjson
 book: $(examples) $(example_history) $(example_vis)
 	mdbook build
 
-.PRECIOUS: src/*/*-history.js src/*/*-vis.js
-
 src/%.md: src/%-history.js src/%-vis.js src/%.md.template %/infrastructure %/routes %/plan
 	sed \
 	    -e "/RAILWAYINFRASTRUCTURE/ {r $*/infrastructure" -e 'd }' \

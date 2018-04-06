@@ -7,6 +7,8 @@ use output::history::InfrastructureLogEvent;
 pub type TrainId = usize;
 pub type InfLogger = Box<Fn(InfrastructureLogEvent)>;
 
+
+use std::f64::INFINITY;
 use railway::{Sim, Proc};
 
 // pub trait Logger {
@@ -50,9 +52,11 @@ impl<'a> Process<Infrastructure<'a>> for MoveSwitch {
             self.state = true;
             ProcessState::Wait(SmallVec::from_slice(&[sim.create_timeout(5.0)]))
         } else {
+            println!("SWITCH MOVED {:?} {:?}", self.sw, self.pos);
             match sim.world.state[self.sw] {
-                ObjectState::Switch { ref mut position, .. } => {
+                ObjectState::Switch { ref mut position, ref mut throwing, .. } => {
                     position.set(&mut sim.scheduler, Some(self.pos));
+                    *throwing = None;
                     (sim.world.logger)(InfrastructureLogEvent::Position(self.sw, self.pos));
                 }
                 _ => panic!("Not a switch"),
@@ -179,7 +183,7 @@ impl<'a> Infrastructure<'a> {
     pub fn edge_from(&self, node: NodeId) -> Option<(Option<NodeId>, f64)> {
         match self.statics.nodes[node].edges {
             Edges::Nothing => None,
-            Edges::ModelBoundary => Some((None, 1000.0)),
+            Edges::ModelBoundary => Some((None, INFINITY)),
             Edges::Single(next_node, dist) => Some((Some(next_node), dist)),
             Edges::Switchable(sw) => {
                 match (&self.statics.objects[sw], &self.state[sw]) {

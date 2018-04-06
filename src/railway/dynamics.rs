@@ -1,4 +1,5 @@
 use smallvec::SmallVec;
+use std::f64::{NAN, INFINITY};
 
 #[derive(Copy, Clone, Debug)]
 pub struct TrainParams {
@@ -27,6 +28,7 @@ pub struct DriverPlan {
     pub dt: f64,
 }
 
+#[derive(Clone, Debug)]
 pub struct StaticMaximumVelocityProfile {
     pub local_max_velocity: f64,
     pub max_velocity_ahead: SmallVec<[DistanceVelocity; 4]>,
@@ -44,10 +46,17 @@ pub fn dynamic_update(train: &TrainParams,
             }
         }
         DriverAction::Brake => {
-            DistanceVelocity {
+            let mut d = DistanceVelocity {
                 dx: current_velocity * plan.dt - 0.5 * train.max_brk * plan.dt * plan.dt,
                 v: current_velocity - plan.dt * train.max_brk,
+            };
+            // Cannot brake to negative distance or velocity.
+            if d.dx < 0.0 { d.dx = 0.0; d.v = 0.0; }
+            if d.v < 0.0 { 
+                d.v = 0.0; 
+                d.dx = current_velocity*current_velocity / ( 2.0 * train.max_brk);
             }
+            d
         }
         DriverAction::Coast => {
             DistanceVelocity {
@@ -59,7 +68,7 @@ pub fn dynamic_update(train: &TrainParams,
 }
 
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 struct TimeDistVel {
     t: f64,
     x: f64,
@@ -71,16 +80,33 @@ type Point = TimeDistVel;
 fn plan_accel_v(start: Point, v: f64, acc: f64) -> Point {
     let dt = (v - start.v) / acc;
     let dx = start.v * dt + 0.5 * acc * dt * dt;
-    Point {
+    let p = Point {
+        t: start.t + dt,
+        x: start.x + dx,
+        v: v,
+    };
+    println!("PLAN ACCEL V {:?} -> {:?}", start, p);
+    p
+}
+
+fn plan_accel_x(start: Point, dx: f64, acc: f64) -> Point {
+    let v = (2.0 * acc * dx + start.v * start.v).sqrt();
+    let dt = (v - start.v) / acc;
+    TimeDistVel {
         t: start.t + dt,
         x: start.x + dx,
         v: v,
     }
 }
 
-fn plan_accel_x(start: Point, dx: f64, acc: f64) -> Point {
-    let v = (2.0 * acc * dx + start.v * start.v).sqrt();
-    let dt = (v - start.v) / acc;
+fn plan_brake_x(start: Point, dx: f64, acc: f64) -> Point {
+    // v^2 - v0^2 = 2 a s
+    // braking:
+    // v0^2 - v^2 = 2 b s
+    // v^2 = v0^2 - 2 b s
+    // 20*20 - 2 * 0.5 * 100
+    let v = (start.v * start.v - 2.0 * acc * dx).sqrt();
+    let dt = (start.v - v) / acc;
     TimeDistVel {
         t: start.t + dt,
         x: start.x + dx,
@@ -102,18 +128,24 @@ fn plan_accel_brake_intersection(start: Point,
     let brake_dx = (start.v * start.v - restriction.v * restriction.v) / (2.0 * brk);
     let brake_dt = (start.v - restriction.v) / brk;
 
-    (Point {
-         // Accelerate to
-         t: start.t + intersection_dt,
-         x: start.x + intersection_dx,
-         v: intersection_v,
-     },
-     Point {
-         // Then brake to
-         t: start.t + intersection_dt + brake_dt,
-         x: start.x + intersection_dx + brake_dx,
-         v: restriction.v,
-     })
+    if intersection_v.is_nan() {
+        // restriction has already been applied, brake forever.
+        (Point { t: NAN, x: 0.0, v: 0.0 },
+         Point { t: INFINITY, x: 0.0, v: 0.0 })
+    } else {
+        (Point {
+             // Accelerate to
+             t: start.t + intersection_dt,
+             x: start.x + intersection_dx,
+             v: intersection_v,
+         },
+         Point {
+             // Then brake to
+             t: start.t + intersection_dt + brake_dt,
+             x: start.x + intersection_dx + brake_dx,
+             v: restriction.v,
+         })
+    }
 }
 
 fn plan_coast_x(start: Point, dx: f64) -> Point {
@@ -169,6 +201,10 @@ pub fn dynamic_plan_step(train: &TrainParams,
 
     // Acceleration is limited by maximum travel distance
     accel_plans.push(plan_accel_x(p, max_dist, train.max_acc));
+    
+    // Braking is limited by maximum travel distance
+    let brake_x = plan_brake_x(p, max_dist, train.max_brk);
+    if !brake_x.t.is_nan() { brake_plans.push(brake_x); }
 
     // Coasting is limited by maximum travel distance
     coast_plans.push(plan_coast_x(p, max_dist));
@@ -177,6 +213,7 @@ pub fn dynamic_plan_step(train: &TrainParams,
         // Acceleration limited by braking curve (+ braking curve)
         let (acc, brk) =
             plan_accel_brake_intersection(p, restriction, train.max_acc, train.max_brk);
+        println!("ACCEL PLANX {:?} {:?} {:?}", restriction, acc, brk);
         accel_plans.push(acc);
         brake_plans.push(brk);
 
@@ -187,13 +224,19 @@ pub fn dynamic_plan_step(train: &TrainParams,
         brake_plans.push(brk);
     }
 
+    println!("ACCEL PLANS {:?}", accel_plans);
+    println!("BRAKE PLANS {:?}", brake_plans);
+    println!("COAST PLANS {:?}", coast_plans);
+
     let shortest_accel_plan = accel_plans.iter()
         .fold(accel_plans[0], |a, b| if a.t < b.t { a } else { *b });
     let shortest_coast_plan = coast_plans.iter()
         .fold(coast_plans[0], |a, b| if a.t < b.t { a } else { *b });
     let shortest_brake_plan = brake_plans.iter()
-        .fold(brake_plans[0], |a, b| if a.t < b.t { a } else { *b });
+        .fold(brake_plans[0], |a, b| if !(b.t >= 0.0) || a.t < b.t { a } else { *b });
 
+    println!("SHORTEST {:?}", shortest_accel_plan);
+    println!("SHORTEST BRAKE {:?}", shortest_brake_plan);
     if shortest_accel_plan.t > tol {
         DriverPlan {
             action: DriverAction::Accel,

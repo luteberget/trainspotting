@@ -1,0 +1,7 @@
+boundary b1
+node b1-n1(enter a1,sight sig 100.0)
+linear n1-n2 100.0
+node n2-n3(signal sig, enter a2)
+linear n3-n4 100.0
+node n4-b2(exit a2)
+boundary b2

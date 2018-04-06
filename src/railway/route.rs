@@ -27,9 +27,12 @@ impl ActivateRoute {
 fn unavailable_resource(r: &TrainRoute, infrastructure: &Infrastructure) -> Option<EventId> {
     for s in r.sections.iter() {
         match infrastructure.state[*s] {
-            ObjectState::TVDSection { ref reserved, .. } => {
+            ObjectState::TVDSection { ref reserved, ref occupied, .. } => {
                 if *reserved.get() {
                     return Some(reserved.event());
+                }
+                if *occupied.get() {
+                    return Some(occupied.event());
                 }
             }
             _ => panic!("Not a TVD"),
@@ -94,11 +97,16 @@ fn movable_events(r: &TrainRoute, sim: &mut Sim) -> Vec<EventId> {
         .collect::<Vec<_>>();
 
     for (sw, pos) in throw {
-        sim.start_process(Box::new(MoveSwitch {
+        println!("MOving {:?} {:?}", sw, pos);
+        let throw = sim.start_process(Box::new(MoveSwitch {
             sw: sw,
             pos: pos,
             state: false,
         }));
+        match sim.world.state[sw] {
+            ObjectState::Switch { ref mut throwing, .. } => *throwing = Some(throw),
+            _ => panic!("Not a switch"),
+        };
     }
 
     r.switch_positions
@@ -126,11 +134,13 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
             }
         }
 
-        // TODO smallvec
+        // TODO smallvec5
+        println!("ROUTE movable @{}",sim.time());
         let wait_move = movable_events(&self.route, sim);
         if !wait_move.is_empty() {
             return ProcessState::Wait(wait_move.into());
         }
+        println!("ROUTE movable finished @{}",sim.time());
 
         // Set the signal to green
         match sim.world.state[self.route.signal] {
@@ -148,6 +158,7 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
             state: CatchSignalState::Start,
         }));
 
+        println!("ROUTE RELEASES: {:?}", self.route.releases);
         for release in self.route.releases.iter() {
             sim.start_process(Box::new(ReleaseRoute {
                 trigger: release.trigger,

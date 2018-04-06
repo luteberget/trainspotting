@@ -1,7 +1,14 @@
 var div = d3.select("div#railview");
-var grid = div.append("svg").attr("id","gridview")
+var gridsvg = div.append("svg").attr("id","gridview")
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 960 300");
+
+var grid = gridsvg.append("g");
+
+
+gridsvg.call(d3.zoom().on("zoom", function () {
+             grid.attr("transform", d3.event.transform)
+                  })) ;
 
 var gridmargin = {right: 50, left: 50, top: 50, bottom: 50};
 var gridwidth = 960;
@@ -15,6 +22,7 @@ var gridx = d3.scaleLinear()
 
 var gridy = d3.scaleLinear()
     .rangeRound([gridheight-gridmargin.bottom, gridmargin.top]);
+
 
 var lines = [];
 var points = [];
@@ -45,9 +53,15 @@ grid.selectAll("line.schematicline").data(lines).enter().append("line")
   .attr("cx", function(d) { return gridx(d[0]); })
   .attr("cy", function(d) { return gridy(-d[1]); });
 
-var timeline = div.append("svg").attr("id","timeline")
+var timelinesvg = div.append("svg").attr("id","timeline")
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 960 500");
+
+var timeline = timelinesvg.append("g");
+timelinesvg.call(d3.zoom().on("zoom", function () {
+             timeline.attr("transform", d3.event.transform)
+                  })) ;
+
 var margin = {right: 50, left: 50, top: 50, bottom: 50};
 var width = 960; //+timeline.attr("width"),
 var height = 500; // +timeline.attr("height");
@@ -62,15 +76,18 @@ var y = d3.scaleLinear()
     .rangeRound([height-margin.bottom, margin.top]);
 
 
-	x.domain(d3.extent(data.trains["t1"], function(d) { return d.time }));
-	y.domain(d3.extent(data.trains["t1"], function(d) { return d.x}));
+    let train_snapshots = [];
+    for (var k in data.trains) { train_snapshots.push(...(data.trains[k])); }
+
+	x.domain(d3.extent(train_snapshots, function(d) { return d.time }));
+	y.domain(d3.extent(train_snapshots, function(d) { return d.x}));
 
 
 var train = timeline.append("g").attr("class","trains")
   .selectAll("g").data(Object.keys(data.trains).map(function (key) { return data.trains[key]; })).enter()
   .append("g").attr("class","trainline");
 
-  var trainlength = 200.0;
+  var trainlength = 100.0;
 
   var trainpaths = train.selectAll("path").data(function(d) {return d.slice(1).map(function(b,i) { return [d[i],b]; }) }).enter();
 //  .append("line")
@@ -82,6 +99,7 @@ var train = timeline.append("g").attr("class","trains")
 .attr("d", function(d) { return "M" + x(d[0].time) + "," + y(d[0].x) + 
              "L" + x(d[1].time) + "," + y(d[1].x) ;})
 .attr("stroke", function(d) { 
+        if (d[1].dx < 1e-4) return "gray";
 	if (d[1].action == "Accel" ) return "green";
 	if (d[1].action == "Coast" ) return "orange";
 	if (d[1].action == "Brake" ) return "red";
@@ -128,7 +146,7 @@ var train = timeline.append("g").attr("class","trains")
 //train_t_x(data["trains"]["t1"],0.0);
 //train_t_x(data["trains"]["t1"],-200.0);
 
-var slider = timeline.append("g")
+var slider = timelinesvg.append("g")
 .attr("class", "slider")
 .attr("transform", "translate(" + 0 + "," + margin.top / 2 + ")");
 
@@ -177,11 +195,11 @@ function set_t(t) {
   for (var train in data.trains) {
       var d = data.trains[train];
       var consecutive = d.slice(1).map(function(b,i) { return [d[i],b]; });
+      var train_intervals = [];
       for (var i in consecutive) {
 
           if (consecutive[i][0].time <= t && consecutive[i][1].time >= t) {
 
-              var intervals = [];
 
 
               var fraction = (t - consecutive[i][0].time)/(consecutive[i][1].time - consecutive[i][0].time);
@@ -246,10 +264,12 @@ function set_t(t) {
               for (var j in joined_edges) {
                   var edge = joined_edges[j];
                   var edgename = edge.n1 + "-" + edge.n2;
-                  var edgelines = edges[edgename].lines;
+                  var edge_graphic = get_edge(edge.n1,edge.n2);
+                  if(edge_graphic == null) continue;
+                  var edgelines = edge_graphic.lines;
                   var edgelines_length = 0.0;
-                  var start_frac = edge.start / edges[edgename].length;
-                  var end_frac   = edge.end   / edges[edgename].length;
+                  var start_frac = edge.start / edge_graphic.length;
+                  var end_frac   = edge.end   / edge_graphic.length;
                   for(var k in edgelines) {
                       var l = edgelines[k];
                       var l_len = Math.sqrt((l[0][0] - l[1][0])**2 +
@@ -272,27 +292,39 @@ function set_t(t) {
                                     (end_frac-this_frac_start)/(this_frac_end-this_frac_start)));
                       var y2 = lerp(l[0][1], l[1][1], clamp(0.0, 1.0, 
                                     (end_frac-this_frac_start)/(this_frac_end-this_frac_start)));
-                      intervals.push([[x1,y1],[x2,y2]]);
+                      train_intervals.push([[x1,y1],[x2,y2]]);
                   }
                   //console.log("edgelines_length");
                   //console.log(edgelines_length);
                   //intervals.push(...edgelines);
               }
 
-              var ls = grid.selectAll("line.train").data(intervals);
-              ls.exit().remove();
-              ls.enter().append("line").attr("class","train")
-                  .merge(ls)
-                .attr("x1", function(d) { return gridx(d[0][0]); })
-                .attr("x2", function(d) { return gridx(d[1][0]); })
-                .attr("y1", function(d) { return gridy(-d[0][1]); })
-                .attr("y2", function(d) { return gridy(-d[1][1]); });
 
               break;
           }
 
       }
+
+      var ls = grid.selectAll("line.train.train"+train).data(train_intervals);
+      ls.exit().remove();
+      ls.enter().append("line").attr("class","train train"+train)
+          .merge(ls)
+        .attr("x1", function(d) { return gridx(d[0][0]); })
+        .attr("x2", function(d) { return gridx(d[1][0]); })
+        .attr("y1", function(d) { return gridy(-d[0][1]); })
+        .attr("y2", function(d) { return gridy(-d[1][1]); });
   }
+}
+
+function get_edge(n1,n2) {
+    let edge = edges[n1 + "-" + n2];
+    if (edge == null) {
+        edge = edges[n2 + "-" + n1];
+        if (edge == null) return null;
+        edge = { "length": edge.length,
+                 "lines": edge.lines.map(function (a) { return [a[1],a[0]]; }) };
+    }
+    return edge;
 }
 
 function clamp(a,b,x) {

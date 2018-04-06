@@ -105,6 +105,7 @@ impl Scheduler {
 
     pub fn schedule(&mut self, id: EventId, dt: f64) {
         if dt < 0.0 { panic!("dt < 0"); }
+        if dt.is_infinite() { return; } // Will never happen
         let qe = QueuedEvent {
             time: OrderedFloat::from(*self.time + dt),
             id: self.id_counter,

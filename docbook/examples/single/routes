@@ -6,7 +6,8 @@ modelentry ri from b1 {
 modelexit re to b2 {
   entry s3 
   entrysection a3
-  length 500.0
+  length 5000.0
+  sections []
 }
 
 route r1 {

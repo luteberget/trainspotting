@@ -133,7 +133,7 @@ pub fn graphical(inf :&StaticInfrastructure) -> Result<String,Error> {
         let find = |start :usize,x :usize| {
                 let mut intermediate = vec![start];
                 let mut next = x.clone();
-                while let Some(&(intermed, GNode::Linear(a,b))) = nodes.iter().find(|&&(i,_)| i == next) {
+                while let Some(&(intermed, GNode::Linear(_,b))) = nodes.iter().find(|&&(i,_)| i == next) {
                     intermediate.push(intermed);
                     next = b.clone();
                 }
@@ -145,11 +145,11 @@ pub fn graphical(inf :&StaticInfrastructure) -> Result<String,Error> {
             (start, GNode::StartNode(ref x)) => {
                 vec![(find(start,*x),0)]
             },
-            (start, GNode::Sw(side, SwDir::Outgoing, ref n1, (ref n2, ref n3))) => {
-                let (l1,l2) = if side == SwitchPosition::Left { (0,1) } else { (1,0) };
-                vec![(find(start,*n2),l1),(find(start,*n3),l2)]
+            (start, GNode::Sw(_, SwDir::Outgoing, ref _n1, (ref n2, ref n3))) => {
+                // left (n2) on higher level than right (since this is outgoing switch)
+                vec![(find(start,*n2),1),(find(start,*n3),0)]
             },
-            (start, GNode::Sw(_, SwDir::Incoming, ref n1, (ref n2, ref n3))) => {
+            (start, GNode::Sw(_, SwDir::Incoming, ref n1, (ref _n2, ref _n3))) => {
                 vec![(find(start,*n1),0)]
             },
             _ => vec![]
@@ -229,7 +229,6 @@ pub fn graphical(inf :&StaticInfrastructure) -> Result<String,Error> {
                i, if pos == SwitchPosition::Left { "left" } else { "right" },
                   if dir == SwDir::Outgoing { "outgoing" } else { "incoming" },
                   a,b,c),
-        _ => format!(""),
     }).collect::<Vec<_>>();
 
     let edge_output = edges2.into_iter().map(|(e,level)|  {

@@ -1,0 +1,72 @@
+
+
+.ticks {
+  font: 12pt;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+circle.node {
+    fill: #fff;
+    stroke: #a0a;
+    stroke-width: 2px;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.3;
+  stroke-width: 10px;
+}
+
+.tline {
+  stroke: #000;
+  stroke-opacity: 1.0;
+  stroke-width: 1px;
+}
+
+.schematicline {
+  stroke: #bb0066;
+  stroke-opacity: 1.0;
+  stroke-width: 4px;
+}
+
+.train {
+  stroke: #000000;
+  stroke-opacity: 0.75;
+  stroke-width: 15px;
+}
+
+.track-inset {
+  stroke: #ddd;
+  stroke-width: 8px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  stroke: transparent;
+  cursor: crosshair;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.5;
+  stroke-width: 1.25px;
+}
+
+.trainline {
+    fill: none;
+    stroke: #ffab00;
+    stroke-width: 3;
+}
+
+.trainfilled {
+    fill: green;
+    stroke: #ffab00;
+    stroke-width: 1;
+}

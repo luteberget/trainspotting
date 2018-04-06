@@ -25,7 +25,7 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
     let inf_log = Rc::new(RefCell::new(Vec::new()));
     let time_log = {
         let log = inf_log.clone();
-        Box::new(move |t| log.borrow_mut().push(InfrastructureLogEvent::Wait(t)))
+        Box::new(move |t| if t > 0.0 { log.borrow_mut().push(InfrastructureLogEvent::Wait(t)); })
     };
 
     let mut scheduler = eventsim::Scheduler::new();
