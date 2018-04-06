@@ -69,7 +69,7 @@ type Point = TimeDistVel;
 
 // Plan types
 fn plan_accel_v(start: Point, v: f64, acc: f64) -> Point {
-    let dt = (v - start.v) * acc;
+    let dt = (v - start.v) / acc;
     let dx = start.v * dt + 0.5 * acc * dt * dt;
     Point {
         t: start.t + dt,
