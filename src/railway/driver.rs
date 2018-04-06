@@ -113,6 +113,10 @@ impl Driver {
         self.train.velocity = update.v;
         (self.train.location.1).1 -= update.dx;
 
+        // In case there are no signals in sight,
+        // the remembered authority is updated.
+        self.authority -= update.dx;
+
         self.train.under_train.retain(|&mut (obj, ref mut dist)| {
             *dist -= update.dx;
             if *dist < 1e-4 {
