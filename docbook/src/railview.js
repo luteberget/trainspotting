@@ -53,6 +53,8 @@ grid.selectAll("line.schematicline").data(lines).enter().append("line")
   .attr("cx", function(d) { return gridx(d[0]); })
   .attr("cy", function(d) { return gridy(-d[1]); });
 
+var traingroup = grid.append("g").attr("id","traingroup");
+
 var timelinesvg = div.append("svg").attr("id","timeline")
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 960 500");
@@ -305,7 +307,7 @@ function set_t(t) {
 
       }
 
-      var ls = grid.selectAll("line.train.train"+train).data(train_intervals);
+      var ls = traingroup.selectAll("line.train.train"+train).data(train_intervals);
       ls.exit().remove();
       ls.enter().append("line").attr("class","train train"+train)
           .merge(ls)
@@ -316,13 +318,15 @@ function set_t(t) {
   }
 }
 
+
 function get_edge(n1,n2) {
     let edge = edges[n1 + "-" + n2];
     if (edge == null) {
         edge = edges[n2 + "-" + n1];
         if (edge == null) return null;
+        
         edge = { "length": edge.length,
-                 "lines": edge.lines.map(function (a) { return [a[1],a[0]]; }) };
+                 "lines": edge.lines.map(function (a) { return [a[1],a[0]]; }).reverse() };
     }
     return edge;
 }

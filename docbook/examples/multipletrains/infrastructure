@@ -17,5 +17,5 @@ switch sw2 right n9-(n6 300.0, n8y 300.0)
 node n9-n10
 linear n10-n11 500.0
 node n11-b2(exit a2)
-boundary b2
 
+boundary b2
