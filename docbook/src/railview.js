@@ -8,9 +8,6 @@ var gridsvg = div.append("svg").attr("id","gridview")
 var grid = gridsvg.append("g");
 
 
-gridsvg.call(d3.zoom().on("zoom", function () {
-             grid.attr("transform", d3.event.transform)
-                  })) ;
 
 var gridmargin = {right: 50, left: 50, top: 50, bottom: 50};
 var gridwidth = 960;
@@ -24,7 +21,6 @@ var gridx = d3.scaleLinear()
 
 var gridy = d3.scaleLinear()
     .rangeRound([gridheight-gridmargin.bottom, gridmargin.top]);
-
 
 var lines = [];
 var points = [];
@@ -57,7 +53,16 @@ for (var l in lines) {
 }
 
 gridx.domain(d3.extent(points, function(e) { return e[0]; }))
-gridy.domain(d3.extent(points.concat([[0,5]]), function(e) { return -e[1]; }))
+gridy.domain(d3.extent(points.concat([[0,2.5]]), function(e) { return -e[1]; }))
+
+
+gridsvg.call(d3.zoom()
+        .scaleExtent([0.9,5.0])
+        .translateExtent([[-100,-100],[gridwidth,gridheight]])
+        .on("zoom", function () {
+             grid.attr("transform", d3.event.transform)
+                  })) ;
+
 
 grid.selectAll("line.schematicline").data(lines).enter().append("line")
   .attr("class", "schematicline")
@@ -75,14 +80,15 @@ grid.selectAll("line.schematicline").data(lines).enter().append("line")
 var traingroup = grid.append("g").attr("id","traingroup");
 var signalgroup = grid.append("g").attr("id","signalgroup");
 
+var timeslidersvg = div.append("svg").attr("id","timeline")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "0 0 960 50");
+
 var timelinesvg = div.append("svg").attr("id","timeline")
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 960 500");
 
 var timeline = timelinesvg.append("g");
-timelinesvg.call(d3.zoom().on("zoom", function () {
-             timeline.attr("transform", d3.event.transform)
-                  })) ;
 
 var margin = {right: 50, left: 50, top: 50, bottom: 50};
 var width = 960; //+timeline.attr("width"),
@@ -92,10 +98,10 @@ var height = 500; // +timeline.attr("height");
 //timeline.attr("height",height);
 
 var x = d3.scaleLinear()
-    .rangeRound([margin.left, width-margin.right]).clamp(true);
+    .rangeRound([0, width]).clamp(true);
 
 var y = d3.scaleLinear()
-    .rangeRound([height-margin.bottom, margin.top]);
+    .rangeRound([height, 0]);
 
 
     let train_snapshots = [];
@@ -104,6 +110,25 @@ var y = d3.scaleLinear()
 	x.domain(d3.extent(train_snapshots, function(d) { return d.time }));
 	y.domain(d3.extent(train_snapshots, function(d) { return d.x}));
 
+timelinesvg.call(d3.zoom()
+        .scaleExtent([0.8,Math.max(2,(x.domain()[1] - x.domain()[0])/25)])
+        .translateExtent([[-100,-100],[width,height]])
+        .on("zoom", function () {
+             timeline.attr("transform", d3.event.transform);
+             xaxis_g.call(xaxis.scale(d3.event.transform.rescaleX(x)));
+             yaxis_g.call(yaxis.scale(d3.event.transform.rescaleY(y)));
+
+                  })) ;
+
+var xaxis = d3.axisBottom(x).tickSize(height).tickPadding(8 - height);
+var xaxis_g = timelinesvg.append("g").attr("class","axis").call(xaxis);
+var yaxis = d3.axisRight(y).tickSize(width).tickPadding(8-width);
+var yaxis_g = timelinesvg.append("g").attr("class","axis").call(yaxis);
+
+timeline.on("click", function() {
+    var t = x.invert(d3.mouse(this)[0]);
+    set_t(t);
+});
 
 var train = timeline.append("g").attr("class","trains")
   .selectAll("g").data(Object.keys(data.trains).map(function (key) { return data.trains[key]; })).enter()
@@ -168,7 +193,7 @@ var train = timeline.append("g").attr("class","trains")
 //train_t_x(data["trains"]["t1"],0.0);
 //train_t_x(data["trains"]["t1"],-200.0);
 
-var slider = timelinesvg.append("g")
+var slider = timeslidersvg.append("g")
 .attr("class", "slider")
 .attr("transform", "translate(" + 0 + "," + margin.top / 2 + ")");
 
@@ -200,6 +225,7 @@ var handle = slider.insert("circle", ".track-overlay")
     .attr("cx", x(0.0));
 
 var t_line = timeline.insert("line")
+  .attr("vector-effect","non-scaling-stroke")
   .attr("class","tline")
   .attr("x1",x(0.0))
   .attr("x2",x(0.0))
@@ -240,10 +266,12 @@ function set_t(t) {
   var offset = 0.25;
   var s = signalgroup.selectAll("*").data(signals);
   s.exit().remove();
-  s.enter().append("circle").merge(s)
-      .attr("cx", function(d) { return gridx(d.pt[0] + offset*rotate_right(d.tangent)[0]); })
-      .attr("cy", function(d) { return gridy(-(d.pt[1]) + offset*rotate_right(d.tangent)[1]); })
-      .attr("r", 5)
+  s.enter().append("rect").merge(s)
+      .attr("x", function(d) { return gridx(d.pt[0] + offset*rotate_right(d.tangent)[0]); })
+      .attr("y", function(d) { return gridy(-(d.pt[1]) + offset*rotate_right(d.tangent)[1]); })
+      .attr("width",10).attr("height",10)
+      .attr("rx", function(d) { if(d.green) { return 10; } else { return 0; }})
+      .attr("ry", function(d) { if(d.green) { return 10; } else { return 0; }})
       .attr("class", function(d) { if(d.green) { return "greensig"; } else { return "redsig"; }});
 
   for (var train in data.trains) {
@@ -338,15 +366,16 @@ function set_t(t) {
                       let this_frac_start = line_length / edgelines_length;
                       line_length += l_len;
                       let this_frac_end   = line_length / edgelines_length;
-                      var x1 = lerp(l[0][0], l[1][0], clamp(0.0, 1.0, 
-                                    (start_frac-this_frac_start)/(this_frac_end-this_frac_start)));
-                      var y1 = lerp(l[0][1], l[1][1], clamp(0.0, 1.0, 
-                                    (start_frac-this_frac_start)/(this_frac_end-this_frac_start)));
-                      var x2 = lerp(l[0][0], l[1][0], clamp(0.0, 1.0, 
-                                    (end_frac-this_frac_start)/(this_frac_end-this_frac_start)));
-                      var y2 = lerp(l[0][1], l[1][1], clamp(0.0, 1.0, 
-                                    (end_frac-this_frac_start)/(this_frac_end-this_frac_start)));
-                      train_intervals.push([[x1,y1],[x2,y2]]);
+                      let line_frac_start = clamp(0.0, 1.0, (start_frac-this_frac_start)/(this_frac_end-this_frac_start));
+                      var line_frac_end = clamp(0.0, 1.0, (end_frac-this_frac_start)/(this_frac_end-this_frac_start));
+                      var x1 = lerp(l[0][0], l[1][0], line_frac_start);
+                      var y1 = lerp(l[0][1], l[1][1], line_frac_start);
+                      var x2 = lerp(l[0][0], l[1][0], line_frac_end);
+                      var y2 = lerp(l[0][1], l[1][1], line_frac_end);
+
+                      if(Math.abs(line_frac_end - line_frac_start) > 1e-4) {
+                          train_intervals.push([[x1,y1],[x2,y2]]);
+                      }
                   }
                   //console.log("edgelines_length");
                   //console.log(edgelines_length);
@@ -359,17 +388,49 @@ function set_t(t) {
 
       }
 
+      var paths = [];
+      console.log("TRAIN INTERVALS");
+      console.log(train_intervals);
+      train_intervals.reverse();
+      if (train_intervals.length > 0) { 
+          paths = [[]];
+          for (var interval in train_intervals) {
+              //if (interval == 0) { 
+              paths[0].push(train_intervals[interval][1]); 
+          //}
+              paths[0].push(train_intervals[interval][0]);
+          }
+      }
+      //console.log("PATHS");
+      //console.log(paths);
+
+      //var linef = d3.line()
+      //    .x(function(d) { console.log("LINNNNE"); console.log(y(-d[1])); return gridx(d[0]); })
+      //    .y(function(d) { return gridy(-d[1]); });
+
+      //var ls = traingroup.selectAll(".train.train"+train).data(paths);
+      //ls.exit().remove();
+      //ls.enter().append("path").attr("class", "train train"+train)
+      //  .merge(ls)
+      //  .attr("d",linef);
+
       var ls = traingroup.selectAll("line.train.train"+train).data(train_intervals);
       ls.exit().remove();
       ls.enter().append("line").attr("class","train train"+train)
           .merge(ls)
+        //.transition(train_transition)
         .attr("x1", function(d) { return gridx(d[0][0]); })
         .attr("x2", function(d) { return gridx(d[1][0]); })
         .attr("y1", function(d) { return gridy(-d[0][1]); })
-        .attr("y2", function(d) { return gridy(-d[1][1]); });
+        .attr("y2", function(d) { return gridy(-d[1][1]); })
   }
 }
 
+
+var train_transition = d3.transition()
+    .duration(300)
+        .ease(d3.easeCubic);
+        
 
 function get_edge(n1,n2) {
     let edge = edges[n1 + "-" + n2];

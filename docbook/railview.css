@@ -1,24 +1,49 @@
 
+.axis line {
+      stroke-opacity: 0.3;
+      /*shape-rendering: crispEdges;
+      stroke-width: 1px;*/
+}
+
 svg {
     /* border: 1px solid gray;*/
     background: #faf9ff;
 }
 
-#signalgroup * {
+#signalgroup > * {
     stroke-width: 1px;
     stroke: #000000;
+    fill-opacity: 0.9;
+    stroke-opacity: 0.5;
+    -webkit-transition: all 0.2s ease;
+    -moz-transition: all 0.2s ease;
+    -o-transition: all 0.2s ease;
+}
+
+#signalgroup:hover > * {
+    fill-opacity: 0.5;
+}
+
+#signalgroup:hover > *:hover {
+    fill-opacity: 1.0;
+    stroke-opacity: 1.0;
+    stroke-width: 2px;
 }
 
 .redsig {
-    fill: #ee1111;
+    fill: #e01010;
 }
 
 .greensig {
-    fill: #11ee11;
+    fill: #10c010;
 }
 
 .ticks {
-  font: 12pt;
+  font-size: 12pt;
+}
+
+#timeline text {
+  font-size: 12pt;
 }
 
 #traingroup:hover > .train {
@@ -27,7 +52,7 @@ svg {
 
 #traingroup:hover > .train:hover {
     stroke-opacity: 1.0;
-                filter: drop-shadow( -5px -5px 5px #000 );
+    filter: drop-shadow( -5px -5px 5px #000 );
 
 }
 
@@ -70,6 +95,7 @@ circle.node {
   stroke: #000000;
   stroke-opacity: 0.65;
   stroke-width: 15px;
+  fill: none;
 }
 
 .traint1 {
