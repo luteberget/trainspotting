@@ -39,7 +39,35 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
             .unwrap();
     };
 
-    write!(f, "{{ \"infrastructure\": [\n")?;
+    write!(f, "{{ \"infrastructure\": {{\n")?;
+
+    write!(f, "\"nodes\":{{")?;
+    let mut first = true;
+    for (node_idx,node) in inf.nodes.iter().enumerate() {
+        if first { first = false; } else { write!(f, ", ")?; }
+        write!(f, "\"{}\": {{ \"other_node\": \"{}\" }}", get(&inf.node_names, node_idx), 
+               get(&inf.node_names, node.other_node))?;
+    }
+    write!(f, "}},")?;
+
+    write!(f, "\"objects\":{{")?;
+    let mut first = true;
+    for (node_idx, node) in inf.nodes.iter().enumerate() {
+        for obj in &node.objects {
+            use staticinfrastructure::StaticObject;
+            match inf.objects[*obj] {
+                StaticObject::Signal => {
+                    if first { first = false; } else { write!(f, ", ")?; }
+                    write!(f, " \"{}\": {{ \"type\":\"signal\", \"node\": \"{}\" }} ",
+                           get(&inf.object_names, *obj), get(&inf.node_names, node_idx))?;
+                },
+                _ => {},
+            }
+        }
+    }
+    write!(f, "}},")?;
+
+    write!(f, "\"events\":[")?;
     let mut t = 0.0;
     let mut first = true;
     for ev in &history.inf {
@@ -56,7 +84,7 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
                   t,
                   "signal",
                   get(&inf.object_names, n),
-                  if x.is_some() { "green" } else { "false " });
+                  if x.is_some() { "green" } else { "red" });
             }
             Route(n, x) => {
                 if first {
@@ -114,7 +142,7 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
             }
         }
     }
-    write!(f, " ]")?;
+    write!(f, " ]}}")?;
 
     write!(f, ", \"trains\": {{ ")?;
     let mut firsttrain = true;

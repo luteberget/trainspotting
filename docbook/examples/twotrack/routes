@@ -7,12 +7,14 @@ modelexit reright to b2 {
   entry s1
   entrysection a2
   length 800.0
+  sections []
 }
 
 modelexit releft to b2 {
   entry s2
   entrysection a2
   length 800.0
+  sections []
 }
 
 route rright {

@@ -1,3 +1,5 @@
+function last(a) { return a[a.length -1]; }
+
 var div = d3.select("div#railview");
 var gridsvg = div.append("svg").attr("id","gridview")
     .attr("preserveAspectRatio", "xMinYMin meet")
@@ -27,8 +29,25 @@ var gridy = d3.scaleLinear()
 var lines = [];
 var points = [];
 for (var edge in edges) {
+    var node_names = edge.split("-");
+    var node1_pt      = edges[edge]["lines"][0][0];
+    var node1_tangent = edges[edge]["lines"][0];
+    var node2_pt      = last(edges[edge]["lines"])[1];
+    var node2_tangent = reverse_line(last(edges[edge]["lines"]));
+    data.infrastructure.nodes[node_names[0]].pt = node1_pt;
+    data.infrastructure.nodes[node_names[0]].tangent = normalize_vector(line_to_vector(node1_tangent));
+    data.infrastructure.nodes[node_names[1]].pt = node2_pt;
+    data.infrastructure.nodes[node_names[1]].tangent = normalize_vector(line_to_vector(node2_tangent));
     for (var l in edges[edge]["lines"]) {
         lines.push(edges[edge]["lines"][l]);
+    }
+}
+
+for (var node in data.infrastructure.nodes) {
+    var n = data.infrastructure.nodes;
+    if (n[node].pt == null) {
+        n[node].pt = n[n[node].other_node].pt;
+        n[node].tangent = reverse_vector(n[n[node].other_node].tangent);
     }
 }
 
@@ -54,6 +73,7 @@ grid.selectAll("line.schematicline").data(lines).enter().append("line")
   .attr("cy", function(d) { return gridy(-d[1]); });
 
 var traingroup = grid.append("g").attr("id","traingroup");
+var signalgroup = grid.append("g").attr("id","signalgroup");
 
 var timelinesvg = div.append("svg").attr("id","timeline")
     .attr("preserveAspectRatio", "xMinYMin meet")
@@ -194,6 +214,38 @@ function set_t(t) {
   handle.attr("cx",x(t));
   t_line.attr("x1",x(t)).attr("x2",x(t));
 
+  var signals = [];
+  for (var obj_i in data.infrastructure.objects) {
+      var obj = data.infrastructure.objects[obj_i];
+      if (obj.type == "signal") {
+          var green = false;
+          for(var ei in data.infrastructure.events) {
+              var ev = data.infrastructure.events[ei];
+              if(ev.time > t) break;
+              if(ev.event == "signal" && ev.ref == obj_i) {
+                  if (ev.value == "green") { green = true; }
+                  else { green = false; }
+              }
+          }
+          signals.push({ "name":obj_i, "green": green, 
+              "pt": data.infrastructure.nodes[obj.node].pt,
+              "tangent": data.infrastructure.nodes[obj.node].tangent
+          });
+      }
+  }
+
+  console.log("SIGNALS");
+  console.log(signals);
+
+  var offset = 0.25;
+  var s = signalgroup.selectAll("*").data(signals);
+  s.exit().remove();
+  s.enter().append("circle").merge(s)
+      .attr("cx", function(d) { return gridx(d.pt[0] + offset*rotate_right(d.tangent)[0]); })
+      .attr("cy", function(d) { return gridy(-(d.pt[1]) + offset*rotate_right(d.tangent)[1]); })
+      .attr("r", 5)
+      .attr("class", function(d) { if(d.green) { return "greensig"; } else { return "redsig"; }});
+
   for (var train in data.trains) {
       var d = data.trains[train];
       var consecutive = d.slice(1).map(function(b,i) { return [d[i],b]; });
@@ -326,10 +378,12 @@ function get_edge(n1,n2) {
         if (edge == null) return null;
         
         edge = { "length": edge.length,
-                 "lines": edge.lines.map(function (a) { return [a[1],a[0]]; }).reverse() };
+                 "lines": edge.lines.map(reverse_line).reverse() };
     }
     return edge;
 }
+
+function reverse_line(a) { return [a[1],a[0]]; }
 
 function clamp(a,b,x) {
     if (a > x) { return a; }
@@ -337,6 +391,27 @@ function clamp(a,b,x) {
         if (b < x) { return b; }
         else { return x; }
     }
+}
+
+function reverse_vector(a) {
+    return [-a[0], -a[1]];
+}
+
+function normalize_vector(a) {
+    var len = Math.sqrt(a[0]*a[0] + a[1]*a[1]);
+    if (len > 0) {
+     return [a[0]/len, a[1]/len];
+    } else {
+        return a;
+    }
+}
+
+function rotate_right(a) {
+    return [a[1],-a[0]];
+}
+
+function line_to_vector(a) {
+    return [a[1][0] - a[0][0], a[1][1] - a[0][1]];
 }
 
 function lerp(a,b,x) {

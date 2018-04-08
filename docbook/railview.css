@@ -1,4 +1,21 @@
 
+svg {
+    /* border: 1px solid gray;*/
+    background: #faf9ff;
+}
+
+#signalgroup * {
+    stroke-width: 1px;
+    stroke: #000000;
+}
+
+.redsig {
+    fill: #ee1111;
+}
+
+.greensig {
+    fill: #11ee11;
+}
 
 .ticks {
   font: 12pt;

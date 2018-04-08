@@ -24,11 +24,11 @@ src/%.md: src/%-history.js src/%-vis.js src/%.md.template %/infrastructure %/rou
 	    -e 'd }' \
 	    src/$*.md.template > src/$*.md
 
-src/%-history.js %/graph: %/infrastructure %/routes %/plan
+src/%-history.js %/graph: $(ROLLING) %/infrastructure %/routes %/plan
 	$(ROLLING) $*/infrastructure $*/routes $*/plan -vv \
 	    -J src/$*-history.js -g $*/graph
 
-src/%-vis.js: %/graph
+src/%-vis.js: $(GRIDVIS) %/graph
 	$(GRIDVIS) $*/graph > src/$*-vis.js
 
 .PHONY: cleanexamples

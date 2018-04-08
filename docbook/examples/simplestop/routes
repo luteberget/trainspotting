@@ -7,4 +7,5 @@ modelexit re to b2 {
   entry sig
   entrysection a2
   length 10000.0
+  sections []
 }
