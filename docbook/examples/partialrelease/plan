@@ -1,0 +1,7 @@
+train t1 l=50.0 a=1.0 b=1.0 v=10.0 re
+train t2 l=50.0 a=1.0 b=1.0 v=10.0 re
+wait 30.0
+route r1
+route r2
+route re2
+route re1

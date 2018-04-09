@@ -1,11 +1,11 @@
 use input::staticinfrastructure::{StaticInfrastructure, SwitchPosition};
-use railway::dynamics::{DriverAction, DistanceVelocity};
+use railway::dynamics::{DriverAction, DistanceVelocity, TrainParams};
 use failure;
 
 #[derive(Debug)]
 pub struct History {
     pub inf: Vec<InfrastructureLogEvent>,
-    pub trains: Vec<(String, Vec<TrainLogEvent>)>,
+    pub trains: Vec<(String, TrainParams, Vec<TrainLogEvent>)>,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -37,7 +37,7 @@ pub enum TrainLogEvent {
 pub fn visits(inf :&StaticInfrastructure, h: &History) -> Result<String,failure::Error> {
     use std::fmt::Write;
     let mut s = String::new();
-    for &(ref train_name, ref events) in &h.trains {
+    for &(ref train_name, ref _params, ref events) in &h.trains {
         let mut t = 0.0;
         for ev in events {
             use self::TrainLogEvent::*;

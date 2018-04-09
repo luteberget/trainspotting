@@ -41,28 +41,35 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
         match *action {
             Wait(t) => sim.advance_by(t),
             Route(ref route_name) => match routes.get(route_name) {
-                Some(&input::staticinfrastructure::Route::TrainRoute(ref route)) => {
+                Some(route) => {
                     sim.start_process(Box::new(
                         railway::route::ActivateRoute::new(route.clone())));
                 },
                 _ => panic!("Unknown route \"{}\"", route_name),
             },
             Train(ref name, ref params, ref route_name) =>  {
-                let (node_idx, auth_dist) = match routes.get(route_name) {
-                    Some(&input::staticinfrastructure::Route::EntryRoute(ref r)) => {
-                        (r.boundary, r.length)
+                let (activated, node_idx, auth_dist) = match routes.get(route_name) {
+                    Some(route) => {
+                        match route.entry {
+                            staticinfrastructure::RouteEntry::Boundary(id) => {
+                                let activated = sim.start_process(Box::new(
+                                    railway::route::ActivateRoute::new(route.clone())));
+                                (activated, id, route.length)
+                            },
+                            _ => panic!("Not an boundary entry route"),
+                        }
                     },
-                    _ => panic!("Unknoown route \"{}\"", route_name),
+                    _ => panic!("Unkoown route \"{}\"", route_name),
                 };
 
                 let train_log = Rc::new(RefCell::new(Vec::new()));
-                train_logs.push((name.clone(), train_log.clone()));
+                train_logs.push((name.clone(), params.clone(), train_log.clone()));
                 let logger = Box::new(move |i| {
                     //println!(" --- {:?}", i);
                     train_log.borrow_mut().push(i);
                 });
                 let driver = Box::new(
-                    railway::driver::Driver::new(&mut sim, node_idx, auth_dist, 
+                    railway::driver::Driver::new(&mut sim, activated, node_idx, auth_dist, 
                           *params, logger));
                 sim.start_process(driver);
             }
@@ -74,7 +81,7 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
 
     let h = output::history::History {
         inf: inf_log.replace(Vec::new()),
-        trains: train_logs.into_iter().map(|(n,v)| (n, v.replace(Vec::new()))).collect()
+        trains: train_logs.into_iter().map(|(n,p,v)| (n, p, v.replace(Vec::new()))).collect()
     };
 
     h

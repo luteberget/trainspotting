@@ -11,12 +11,12 @@ enum ActivateRouteState {
 }
 
 pub struct ActivateRoute {
-    route: TrainRoute,
+    route: Route,
     state: ActivateRouteState,
 }
 
 impl ActivateRoute {
-    pub fn new(r: TrainRoute) -> Self {
+    pub fn new(r: Route) -> Self {
         ActivateRoute {
             route: r,
             state: ActivateRouteState::Allocate,
@@ -24,8 +24,8 @@ impl ActivateRoute {
     }
 }
 
-fn unavailable_resource(r: &TrainRoute, infrastructure: &Infrastructure) -> Option<EventId> {
-    for s in r.sections.iter() {
+fn unavailable_resource(r: &Route, infrastructure: &Infrastructure) -> Option<EventId> {
+    for s in r.resources.sections.iter() {
         match infrastructure.state[*s] {
             ObjectState::TVDSection { ref reserved, ref occupied, .. } => {
                 if *reserved.get() {
@@ -39,7 +39,7 @@ fn unavailable_resource(r: &TrainRoute, infrastructure: &Infrastructure) -> Opti
         };
     }
 
-    for &(sw, _pos) in r.switch_positions.iter() {
+    for &(sw, _pos) in r.resources.switch_positions.iter() {
         match infrastructure.state[sw] {
             ObjectState::Switch { ref reserved, .. } => {
                 if *reserved.get() {
@@ -53,11 +53,11 @@ fn unavailable_resource(r: &TrainRoute, infrastructure: &Infrastructure) -> Opti
     None
 }
 
-fn allocate_resources(r: &TrainRoute, sim :&mut Sim) {
+fn allocate_resources(r: &Route, sim :&mut Sim) {
     let state = &mut sim.world.state;
     let logger = &mut sim.world.logger;
     let scheduler = &mut sim.scheduler;
-    for s in r.sections.iter() {
+    for s in r.resources.sections.iter() {
         match state[*s] {
             ObjectState::TVDSection { ref mut reserved, .. } => {
                 reserved.set(scheduler, true);
@@ -67,7 +67,7 @@ fn allocate_resources(r: &TrainRoute, sim :&mut Sim) {
         };
     }
 
-    for &(sw, _pos) in r.switch_positions.iter() {
+    for &(sw, _pos) in r.resources.switch_positions.iter() {
         match state[sw] {
             ObjectState::Switch { ref mut reserved, .. } => {
                 reserved.set(scheduler, true);
@@ -79,8 +79,8 @@ fn allocate_resources(r: &TrainRoute, sim :&mut Sim) {
 }
 
 
-fn movable_events(r: &TrainRoute, sim: &mut Sim) -> Vec<EventId> {
-    let throw = r.switch_positions
+fn movable_events(r: &Route, sim: &mut Sim) -> Vec<EventId> {
+    let throw = r.resources.switch_positions
         .iter()
         .filter_map(|&(sw, pos)| {
             match sim.world.state[sw] {
@@ -109,7 +109,7 @@ fn movable_events(r: &TrainRoute, sim: &mut Sim) -> Vec<EventId> {
         };
     }
 
-    r.switch_positions
+    r.resources.switch_positions
         .iter()
         .filter_map(|&(sw, _pos)| {
             match sim.world.state[sw] {
@@ -141,25 +141,32 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
             return ProcessState::Wait(wait_move.into());
         }
         println!("ROUTE movable finished @{}",sim.time());
+        println!("Trying entry {:?}",self.route.entry);
 
         // Set the signal to green
-        match sim.world.state[self.route.signal] {
-            ObjectState::Signal { ref mut authority } => {
-                let l = Some(self.route.length);
-                authority.set(&mut sim.scheduler, l);
-                (sim.world.logger)(InfrastructureLogEvent::Authority(self.route.signal,l));
-            }
-            _ => panic!("Not a signal"),
-        }
+        match self.route.entry {
+            RouteEntry::Signal { ref signal, ref trigger_section } => {
+                println!("SIGNAL GREEN {:?}", self.route.entry);
+                match sim.world.state[*signal] {
+                    ObjectState::Signal { ref mut authority } => {
+                        let l = Some(self.route.length);
+                        authority.set(&mut sim.scheduler, l);
+                        (sim.world.logger)(InfrastructureLogEvent::Authority(*signal,l));
+                    }
+                    _ => panic!("Not a signal"),
+                }
 
-        sim.start_process(Box::new(CatchSignal {
-            signal: self.route.signal,
-            tvd: self.route.signal_trigger,
-            state: CatchSignalState::Start,
-        }));
+                sim.start_process(Box::new(CatchSignal {
+                    signal: *signal,
+                    tvd: *trigger_section,
+                    state: CatchSignalState::Start,
+                }));
+           },
+           RouteEntry::Boundary(_) =>  {},
+        };
 
-        println!("ROUTE RELEASES: {:?}", self.route.releases);
-        for release in self.route.releases.iter() {
+        println!("ROUTE RELEASES: {:?}", self.route.resources.releases);
+        for release in self.route.resources.releases.iter() {
             sim.start_process(Box::new(ReleaseRoute {
                 trigger: release.trigger,
                 resources: release.resources.clone().to_vec(),

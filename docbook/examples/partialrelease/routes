@@ -1,0 +1,47 @@
+modelentry re from b1 {
+  exit sigentry
+  length 30.0
+  sections [a1]
+  switches []
+  contains []
+}
+
+route r1 {
+  entry sigentry exit sig1
+  entrysection a2
+  length 300.0
+  sections [a2]
+  switches [sw1 right]
+  contains []
+  release { trigger a2 resources [a2,sw1] }
+}
+
+route r2 {
+  entry sigentry exit sig2
+  entrysection a2
+  length 300.0
+  sections [a2,a3]
+  switches [sw1 left]
+  contains []
+  release { trigger a2 resources [a2,sw1] }
+  release { trigger a3 resources [a3] }
+}
+
+modelexit re1 to b2 {
+  entry sig1
+  entrysection a4
+  length 2000.0
+  sections [a4]
+  switches []
+  contains []
+}
+
+modelexit re2 to b2 {
+  entry sig2
+  entrysection a4
+  length 2000.0
+  sections [a4]
+  switches []
+  contains []
+}
+  

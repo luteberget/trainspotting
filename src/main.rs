@@ -95,8 +95,8 @@ fn run(opt :&Opt) -> AppResult<()> {
     for x in &history.inf {
         println!("> {:?}", x);
     }
-    for &(ref name,ref x) in &history.trains {
-        println!("## Train \"{}\":", name);
+    for &(ref name,ref params, ref x) in &history.trains {
+        println!("## Train \"{}\" {:?}:", name, params);
         for x in x {
             println!("> {:?}", x);
         }

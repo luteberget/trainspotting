@@ -1,6 +1,6 @@
 use super::staticinfrastructure::*;
 use super::parser_utils::*;
-use smallvec::SmallVec;
+//use smallvec::SmallVec;
 
 use std::collections::HashMap;
 
@@ -9,23 +9,18 @@ type Map = HashMap<String, usize>;
 
 
 pub fn default_release(route :&mut Route) {
-    match *route {
-        Route::TrainRoute(ref mut route) => {
-            if route.releases.len() > 0 { return; }
-            // use last section as trigger
-            match route.sections.last() {
-                Some(trigger) => {
-                    let mut resources = Vec::new();
-                    resources.extend(&route.sections);
-                    resources.extend(route.switch_positions.iter().map(|&(a,_)| a));
-                    route.releases.push(Release { 
-                        trigger: *trigger, resources: resources.into() });
-                    println!("DEFAULT RELEASE: {:?}", route);
-                },
-                None => println!("Warning: route has no sections."),
-            }
+    if route.resources.releases.len() > 0 { return; }
+    // use last section as trigger
+    match route.resources.sections.last() {
+        Some(trigger) => {
+            let mut resources = Vec::new();
+            resources.extend(&route.resources.sections);
+            resources.extend(route.resources.switch_positions.iter().map(|&(a,_)| a));
+            route.resources.releases.push(Release { 
+                trigger: *trigger, resources: resources.into() });
+            println!("DEFAULT RELEASE: {:?}", route);
         },
-        _ => {},
+        None => println!("Warning: route has no sections."),
     }
 }
 
@@ -53,6 +48,51 @@ fn lookup(names: &HashMap<String, usize>, name: &str) -> Result<usize, ParseErro
         .ok_or_else(|| ParseError::UnknownName(name.to_string(), "infrastructure".to_string()))
 }
 
+pub fn parse_resources(i :&mut usize, t: &[Token], objnames :&Map, nodenames: &Map) -> Result<RouteResources, ParseError> {
+    symbol(i, t, "sections")?;
+    let sections = list(i, t, |i, t| lookup(objnames, &identifier(i, t)?))?;
+    symbol(i, t, "switches")?;
+    let switches = list(i, t, |i, t| {
+        //must_match(i, t, Token::ParensOpen)?;
+        let sw = lookup(objnames, &identifier(i, t)?)?;
+        let pos = alt(i,
+                      t,
+                      &[&|i, t| {
+                            symbol(i, t, "left")?;
+                            Ok(SwitchPosition::Left)
+                        },
+                        &|i, t| {
+                            symbol(i, t, "right")?;
+                            Ok(SwitchPosition::Right)
+                        }])?;
+        //must_match(i, t, Token::ParensClose)?;
+        Ok((sw, pos))
+    })?;
+
+    symbol(i, t, "contains")?;
+    let _contains = list(i, t, |i, t| lookup(nodenames, &identifier(i, t)?))?;
+
+    let mut releases = Vec::new();
+    while matches(i, t, Token::Identifier("release".to_string())) {
+        must_match(i, t, Token::BraceOpen)?;
+        symbol(i, t, "trigger")?;
+        let trigger = lookup(objnames, &identifier(i, t)?)?;
+        symbol(i, t, "resources")?;
+        let resources = list(i, t, |i, t| lookup(objnames, &identifier(i, t)?))?;
+        must_match(i, t, Token::BraceClose)?;
+        releases.push(Release {
+            trigger: trigger,
+            resources: resources.into(),
+        });
+    }
+
+    Ok(RouteResources {
+        sections: sections.into(),
+        switch_positions: switches.into(),
+        releases: releases.into(),
+    })
+}
+
 pub fn parse_route(i: &mut usize,
                    t: &[Token],
                    objnames: &Map,
@@ -70,11 +110,13 @@ pub fn parse_route(i: &mut usize,
         let _exit = identifier(i,t)?;
         symbol(i,t,"length")?;
         let length = number(i,t)?;
+        let resources = parse_resources(i,t,objnames,nodenames)?;
         must_match(i,t,Token::BraceClose)?;
-        Ok(Some((name, Route::EntryRoute(EntryRoute {
-            boundary: node,
-            length: length
-        }))))
+        Ok(Some((name, Route {
+            entry: RouteEntry::Boundary(node),
+            length: length,
+            resources: resources.into(),
+        })))
     },
           &|i, t| {
         symbol(i, t, "modelexit")?;
@@ -88,17 +130,14 @@ pub fn parse_route(i: &mut usize,
         let entrysection = lookup(objnames, &identifier(i,t)?)?;
         symbol(i,t,"length")?;
         let length = number(i,t)?;
-        symbol(i, t, "sections")?;
-        let sections = list(i, t, |i, t| lookup(objnames, &identifier(i, t)?))?;
+        let resources = parse_resources(i,t,objnames,nodenames)?;
         must_match(i,t,Token::BraceClose)?;
-        Ok(Some((name, Route::TrainRoute(TrainRoute {
-            signal: entry,
-            signal_trigger: entrysection,
+        Ok(Some((name, Route {
+            entry: RouteEntry::Signal { signal: entry,
+                                         trigger_section: entrysection },
             length: length,
-            sections: sections.into(),
-            switch_positions: SmallVec::new(),
-            releases: SmallVec::new(),
-        }))))
+            resources: resources.into(),
+        })))
     },
           &|i, t| {
         symbol(i, t, "route")?;
@@ -112,49 +151,15 @@ pub fn parse_route(i: &mut usize,
         let entrysection = lookup(objnames, &identifier(i, t)?)?;
         symbol(i, t, "length")?;
         let length = number(i, t)?;
-        symbol(i, t, "sections")?;
-        let sections = list(i, t, |i, t| lookup(objnames, &identifier(i, t)?))?;
-        symbol(i, t, "switches")?;
-        let switches = list(i, t, |i, t| {
-            //must_match(i, t, Token::ParensOpen)?;
-            let sw = lookup(objnames, &identifier(i, t)?)?;
-            let pos = alt(i,
-                          t,
-                          &[&|i, t| {
-                                symbol(i, t, "left")?;
-                                Ok(SwitchPosition::Left)
-                            },
-                            &|i, t| {
-                                symbol(i, t, "right")?;
-                                Ok(SwitchPosition::Right)
-                            }])?;
-            //must_match(i, t, Token::ParensClose)?;
-            Ok((sw, pos))
-        })?;
-        symbol(i, t, "contains")?;
-        let _contains = list(i, t, |i, t| lookup(nodenames, &identifier(i, t)?))?;
+        let resources = parse_resources(i,t,objnames,nodenames)?;
         must_match(i, t, Token::BraceClose)?;
-        let mut releases = Vec::new();
-        while matches(i, t, Token::Identifier("release".to_string())) {
-            must_match(i, t, Token::BraceOpen)?;
-            symbol(i, t, "trigger")?;
-            let trigger = lookup(objnames, &identifier(i, t)?)?;
-            symbol(i, t, "resources")?;
-            let resources = list(i, t, |i, t| lookup(objnames, &identifier(i, t)?))?;
-            releases.push(Release {
-                trigger: trigger,
-                resources: resources.into(),
-            });
-        }
         Ok(Some((route_name,
-                 Route::TrainRoute(TrainRoute {
-                     signal: entry,
-                     signal_trigger: entrysection,
-                     sections: sections.into(),
-                     switch_positions: switches.into(),
+                 Route {
+                     entry: RouteEntry::Signal { signal: entry,
+                                                 trigger_section: entrysection },
                      length: length,
-                     releases: releases.into(),
-                 }))))
+                     resources: resources
+                 })))
     }])
 }
 

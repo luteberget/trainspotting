@@ -56,24 +56,22 @@ pub enum SwitchPosition {
 pub type Routes = HashMap<String, Route>;
 
 #[derive(Debug,Clone)]
-pub enum Route {
-    EntryRoute(EntryRoute),
-    TrainRoute(TrainRoute),
+pub enum RouteEntry {
+    Boundary(NodeId),
+    Signal { signal: ObjectId, trigger_section: ObjectId },
 }
 
 #[derive(Debug,Clone)]
-pub struct EntryRoute {
-    pub boundary: NodeId,
+pub struct Route {
+    pub entry: RouteEntry,
     pub length: f64,
+    pub resources: RouteResources,
 }
 
 #[derive(Debug,Clone)]
-pub struct TrainRoute {
-    pub signal: ObjectId,
-    pub signal_trigger: ObjectId,
+pub struct RouteResources {
     pub sections: SmallVec<[ObjectId; 4]>,
     pub switch_positions: SmallVec<[(ObjectId, SwitchPosition); 2]>,
-    pub length: f64,
     pub releases: SmallVec<[Release; 2]>,
 }
 

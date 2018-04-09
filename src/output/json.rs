@@ -146,18 +146,19 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
 
     write!(f, ", \"trains\": {{ ")?;
     let mut firsttrain = true;
-    for &(ref name, ref his) in &history.trains {
+    for &(ref name, ref params, ref his) in &history.trains {
         if firsttrain {
             firsttrain = false;
         } else {
             write!(f, ", ")?;
         }
-        write!(f, " \"{}\": [", name)?;
+        write!(f, " \"{}\": {{ \"params\": {{ \"length\": {}, \"max_acc\": {}, \"max_brk\": {}, \"max_vel\":{} }}, \"events\":[",  name, params.length, params.max_acc, params.max_brk, params.max_vel )?;
+
         let mut t = 0.0;
         let mut first = true;
         let mut x = 0.0;
         let mut edges = Vec::new();
-        let trainlength = 200.0;
+        let trainlength = params.length;
 
         for ev in his {
             use output::history::TrainLogEvent::*;
@@ -249,7 +250,7 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
                 }
             }
         }
-        write!(f, " ]")?;
+        write!(f, " ] }}")?;
     }
     write!(f, " }} ")?;
     write!(f, " }}")?;

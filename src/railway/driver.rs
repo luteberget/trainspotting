@@ -1,4 +1,4 @@
-use eventsim::{Process, ProcessState};
+use eventsim::{Process, ProcessState, EventId};
 use super::infrastructure::*;
 use input::staticinfrastructure::*;
 use smallvec::SmallVec;
@@ -9,6 +9,12 @@ use super::Sim;
 enum ModelContainment {
     Inside,
     Outside,
+}
+
+enum Activation {
+    Wait(EventId),
+    Activate,
+    Running,
 }
 
 #[derive(Debug)]
@@ -25,19 +31,17 @@ pub struct Driver {
     step: (DriverAction, f64),
     connected_signals: SmallVec<[(ObjectId, f64); 4]>,
     logger: Box<Fn(TrainLogEvent)>,
+    activation: Activation,
 }
 
 impl Driver {
     pub fn new(sim: &mut Sim,
+               activated: EventId,
                node: NodeId,
                auth: f64,
                params: TrainParams,
                logger: Box<Fn(TrainLogEvent)>)
                -> Self {
-
-        if *sim.time() > 0.0 {
-            logger(TrainLogEvent::Wait(*sim.time()));
-        }
 
         // The starting node is actually the opposite node of the
         // boundary node given as input here.
@@ -56,17 +60,28 @@ impl Driver {
             under_train: SmallVec::new(),
         };
 
-        logger(TrainLogEvent::Edge(node, next.0));
-
-        let mut d = Driver {
+        let d = Driver {
             train: train,
             authority: auth,
             step: (DriverAction::Coast, *sim.time()),
             connected_signals: SmallVec::new(),
             logger: logger,
+            activation: Activation::Wait(activated),
         };
-        d.goto_node(sim, node);
+
         d
+    }
+
+    fn activate(&mut self, sim:&mut Sim) {
+        if *sim.time() > 0.0 {
+            (self.logger)(TrainLogEvent::Wait(*sim.time()));
+        }
+        (self.logger)(TrainLogEvent::Edge(self.train.location.0, 
+                                        (self.train.location.1).0));
+
+        self.step = (DriverAction::Coast, *sim.time());
+        let loc = self.train.location.0;
+        self.goto_node(sim, loc);
     }
 
     fn goto_node(&mut self, sim: &mut Sim, node: NodeId) {
@@ -199,9 +214,11 @@ impl Driver {
                 ObjectState::Signal { ref authority } => {
                     match *authority.get() {
                         Some(d) => {
+                            println!("Signal green in sight dist{} sigauth{} self.auth{}", dist, d, dist+d-20.0);
                             self.authority = dist + d - 20.0;
                         }
                         None => {
+                            println!("Signal red in sight dist{} self.auth{}", dist,dist-20.0);
                             self.authority = dist - 20.0;
                             break;
                         }
@@ -210,6 +227,8 @@ impl Driver {
                 _ => panic!("Not a signal"),
             }
         }
+
+        println!("Updated authority {}", self.authority);
 
         // Static maximum speed profile ahead from current position
         // TODO: other speed limitations
@@ -231,6 +250,18 @@ impl Driver {
 
 impl<'a> Process<Infrastructure<'a>> for Driver {
     fn resume(&mut self, sim: &mut Sim) -> ProcessState {
+        match self.activation {
+            Activation::Wait(ev) => {
+                self.activation = Activation::Activate;
+                return ProcessState::Wait(SmallVec::from_slice(&[ev]));
+            },
+            Activation::Activate => {
+                self.activate(sim);
+                self.activation = Activation::Running;
+            },
+            Activation::Running => { }
+        };
+
         //println!("resume train");
         let modelcontainment = self.move_train(sim);
         match modelcontainment {

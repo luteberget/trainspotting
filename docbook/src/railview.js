@@ -105,7 +105,7 @@ var y = d3.scaleLinear()
 
 
     let train_snapshots = [];
-    for (var k in data.trains) { train_snapshots.push(...(data.trains[k])); }
+    for (var k in data.trains) { train_snapshots.push(...(data.trains[k].events)); }
 
 	x.domain(d3.extent(train_snapshots, function(d) { return d.time }));
 	y.domain(d3.extent(train_snapshots, function(d) { return d.x}));
@@ -134,34 +134,35 @@ var train = timeline.append("g").attr("class","trains")
   .selectAll("g").data(Object.keys(data.trains).map(function (key) { return data.trains[key]; })).enter()
   .append("g").attr("class","trainline");
 
-  var trainlength = 100.0;
-
-  var trainpaths = train.selectAll("path").data(function(d) {return d.slice(1).map(function(b,i) { return [d[i],b]; }) }).enter();
+  var trainpaths = train.selectAll("path").data(function(d) {
+      return d.events.slice(1).map(function(b,i) { 
+          return { "start": d.events[i], "end": b, "length": d.params.length}; 
+      }) }).enter();
 //  .append("line")
 //.attr("x1", function(d) { return x(d[0].time); })
 //.attr("x2", function(d) { return x(d[1].time); })
 //.attr("y1", function(d) { return y(d[0].x); })
 //.attr("y2", function(d) { return y(d[1].x); })
   trainpaths.append("path")
-.attr("d", function(d) { return "M" + x(d[0].time) + "," + y(d[0].x) + 
-             "L" + x(d[1].time) + "," + y(d[1].x) ;})
+.attr("d", function(d) { return "M" + x(d.start.time) + "," + y(d.start.x) + 
+             "L" + x(d.end.time) + "," + y(d.end.x) ;})
 .attr("stroke", function(d) { 
-        if (d[1].dx < 1e-4) return "gray";
-	if (d[1].action == "Accel" ) return "green";
-	if (d[1].action == "Coast" ) return "orange";
-	if (d[1].action == "Brake" ) return "red";
+        if (d.end.dx < 1e-4) return "gray";
+	if (d.end.action == "Accel" ) return "green";
+	if (d.end.action == "Coast" ) return "orange";
+	if (d.end.action == "Brake" ) return "red";
 });
 
   trainpaths.append("path")
   .attr("class","trainfilled")
-.attr("d", function(d) { return "M" + x(d[0].time) + "," + y(d[0].x) + 
-             "L" + x(d[1].time) + "," + y(d[1].x) + 
-             "L" + x(d[1].time) + "," + y(d[1].x - trainlength) + 
-             "L" + x(d[0].time) + "," + y(d[0].x - trainlength) ;})
+.attr("d", function(d) { return "M" + x(d.start.time) + "," + y(d.start.x) + 
+             "L" + x(d.end.time) + "," + y(d.end.x) + 
+             "L" + x(d.end.time) + "," + y(d.end.x - d.length) + 
+             "L" + x(d.start.time) + "," + y(d.start.x - d.length) ;})
 .attr("stroke", function(d) { 
-	if (d[1].action == "Accel" ) return "green";
-	if (d[1].action == "Coast" ) return "orange";
-	if (d[1].action == "Brake" ) return "red";
+	if (d.end.action == "Accel" ) return "green";
+	if (d.end.action == "Coast" ) return "orange";
+	if (d.end.action == "Brake" ) return "red";
 })
 .style("opacity",0.25);
 
@@ -275,24 +276,29 @@ function set_t(t) {
       .attr("class", function(d) { if(d.green) { return "greensig"; } else { return "redsig"; }});
 
   for (var train in data.trains) {
-      var d = data.trains[train];
+      var d = data.trains[train].events;
       var consecutive = d.slice(1).map(function(b,i) { return [d[i],b]; });
       var train_intervals = [];
       for (var i in consecutive) {
 
           if (consecutive[i][0].time <= t && consecutive[i][1].time >= t) {
 
-
-
               var fraction = (t - consecutive[i][0].time)/(consecutive[i][1].time - consecutive[i][0].time);
               console.log("fraction");
               console.log(fraction);
 
               var joined_edges = [];
+              var kjeks = [];
+              console.log("consecutive[i]");
+              console.log(consecutive[i]);
               for (var j in consecutive[i][1].edges) { 
                   var e = consecutive[i][1].edges[j];
-                  joined_edges.push({n1: e.n1, n2: e.n2, start: e.start, end: e.end});
+                  joined_edges.push({n1: e.n1, n2: e.n2, start: 0.0, end: e.end});
+                  kjeks.push({n1: e.n1, n2: e.n2, start: 0.0, end: e.end});
               }
+              console.log("joined_edges befor befor befor");
+              console.log(kjeks);
+              console.log("joined_edges XYZ");
               for (var j in consecutive[i][0].edges) {
                   var e = consecutive[i][0].edges[j];
 
@@ -300,20 +306,24 @@ function set_t(t) {
                   for (var k in joined_edges) {
                       if (joined_edges[k].n1 == e.n1 && joined_edges[k].n2 == e.n2 ) {
                           found = true;
-                          joined_edges[k].start = Math.min(joined_edges[k].start, e.start);
-                          joined_edges[k].end   = Math.max(joined_edges[k].end, e.end);
+                          //joined_edges[k].start = 0.0; // Math.min(joined_edges[k].start, e.start);
+                          //joined_edges[k].end   = Math.max(joined_edges[k].end, e.end);
                       }
                   }
 
                   if(!found) {
-                      joined_edges.push({n1: e.n1, n2: e.n2, start: e.start, end: e.end});
+                      joined_edges.push({n1: e.n1, n2: e.n2, start: 0.0, end: get_edge_length(e.n1,e.n2)});
                   }
               }
+
+              var copy = joined_edges.map((x) => Object.assign({}, x));
 
               var neg_x = consecutive[i][1].dx * (1-fraction);
               console.log("neg_x");
               console.log(neg_x);
 
+              console.log("joined_edges befor befor");
+              console.log(copy);
               while (neg_x > 0.0 && joined_edges.length > 0) {
                   if (joined_edges[0].end - joined_edges[0].start > neg_x) {
                       joined_edges[0].end = joined_edges[0].end - neg_x;
@@ -324,7 +334,10 @@ function set_t(t) {
                   }
               }
 
-              var after_train = trainlength;
+              console.log("joined_edges befor");
+              console.log(joined_edges);
+
+              var after_train = data.trains[train].params.length;
               var after_train_idx = 0;
               while (after_train_idx < joined_edges.length) {
                   if(joined_edges[after_train_idx].end - joined_edges[after_train_idx].start > after_train) {
@@ -442,6 +455,15 @@ function get_edge(n1,n2) {
                  "lines": edge.lines.map(reverse_line).reverse() };
     }
     return edge;
+}
+
+function get_edge_length(n1,n2) {
+    let edge = edges[n1 + "-" + n2];
+    if (edge == null) {
+        edge = edges[n2 + "-" + n1];
+        if (edge == null) return null;
+    }
+    return edge.length;
 }
 
 function reverse_line(a) { return [a[1],a[0]]; }
