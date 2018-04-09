@@ -270,9 +270,10 @@ function set_t(t) {
   s.enter().append("rect").merge(s)
       .attr("x", function(d) { return gridx(d.pt[0] + offset*rotate_right(d.tangent)[0]); })
       .attr("y", function(d) { return gridy(-(d.pt[1]) + offset*rotate_right(d.tangent)[1]); })
-      .attr("width",10).attr("height",10)
-      .attr("rx", function(d) { if(d.green) { return 10; } else { return 0; }})
-      .attr("ry", function(d) { if(d.green) { return 10; } else { return 0; }})
+      .attr("width", function(d) { if(d.green) { return 17; } else { return 10; }})
+      .attr("height", function(d) { if(d.green) { return 17; } else { return 10; }})
+      .attr("rx", function(d) { if(d.green) { return 17; } else { return 0; }})
+      .attr("ry", function(d) { if(d.green) { return 17; } else { return 0; }})
       .attr("class", function(d) { if(d.green) { return "greensig"; } else { return "redsig"; }});
 
   for (var train in data.trains) {
