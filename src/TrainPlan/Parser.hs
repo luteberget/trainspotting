@@ -181,8 +181,25 @@ modelEntry = do
   sig <- identifier
   symbol "length"
   length <- number
+  sections <- optional $ do 
+    symbol "sections"
+    list identifier
+  swpos <- optional $ do
+    symbol "switches"
+    list $ do
+      --symbol "["
+      swref <- identifier
+      -- symbol ","
+      pos <- swposParser
+      --symbol "]"
+      return (swref,pos)
+  contains <- optional $ do
+     symbol "contains"
+     list identifier
+  releaseSpecs <- many release
   symbol "}"
-  let releases = [Release length []]
+  let allResources = (fromMaybe [] sections) ++ (fromMaybe [] ((fmap.fmap) fst swpos))
+  let releases = [Release length allResources]
   let contains = []
   return (Route name (RoutePointBoundary bdry)
                      (RoutePointSignal sig)
@@ -203,8 +220,25 @@ modelExit = do
     return ()
   symbol "length"
   length <- number
+  sections <- optional $ do 
+    symbol "sections"
+    list identifier
+  swpos <- optional $ do
+    symbol "switches"
+    list $ do
+      -- symbol "("
+      swref <- identifier
+      --symbol ","
+      pos <- swposParser
+      -- symbol ")"
+      return (swref,pos)
+  contains <- optional $ do
+     symbol "contains"
+     list identifier
+  releaseSpecs <- many release
   symbol "}"
-  let releases = [Release length []]
+  let allResources = (fromMaybe [] sections) ++ (fromMaybe [] ((fmap.fmap) fst swpos))
+  let releases = [Release length allResources]
   let contains = []
   return (Route name (RoutePointSignal sig)
                      (RoutePointBoundary bdry)
@@ -231,16 +265,16 @@ trainRoute = do
   swpos <- optional $ do
     symbol "switches"
     list $ do
-      symbol "("
+      -- symbol "("
       swref <- identifier
-      symbol ","
+      --symbol ","
       pos <- swposParser
-      symbol ")"
+      -- symbol ")"
       return (swref,pos)
-  releaseSpecs <- many release
   contains <- optional $ do
      symbol "contains"
      list identifier
+  releaseSpecs <- many release
   symbol "}"
   let allResources = (fromMaybe [] sections) ++ (fromMaybe [] ((fmap.fmap) fst swpos))
   let releases = if null releaseSpecs then [Release length allResources] else releaseSpecs
