@@ -204,18 +204,18 @@ allocateAhead s routes route train (prevState,state) progressBefore = case route
 bornCondition :: Solver -> NodeMap -> [RoutePart] -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
 bornCondition s nodeMap routes train (prevState,state) bornBefore = do
    -- Is this train born in this step?
-   let bornNowAlternatives = 
-         [ catMaybes [ fmap (\prev -> neg (prev .! (rId route) .= Just (tId train))) prevState,
-                       Just (state .! (rId route) .= Just (tId train)) ]
-         | route <- routes `startingIn` Nothing ]
-   bornNow <- orl s =<< mapM (andl s) bornNowAlternatives
-   bornFuture <- newLit s   -- Or is it born sometime in the future?
-   exactlyOne s [bornBefore, bornNow, bornFuture]
-   --let trainBirthPlaces = head $ filter (\r -> (rId r) == head (trainVisits train)) routes 
    let trainBirthPlaces = [ route
                           | rid <- nodesToRoutes nodeMap (head (trainVisits train))
                           , route <- routes
                           , rid == routePartName route ]
+   let bornNowAlternatives = 
+         [ catMaybes [ fmap (\prev -> neg (prev .! (rId route) .= Just (tId train))) prevState,
+                       Just (state .! (rId route) .= Just (tId train)) ]
+         | route <- trainBirthPlaces ]
+   bornNow <- orl s =<< mapM (andl s) bornNowAlternatives
+   bornFuture <- newLit s   -- Or is it born sometime in the future?
+   exactlyOne s [bornBefore, bornNow, bornFuture]
+   --let trainBirthPlaces = head $ filter (\r -> (rId r) == head (trainVisits train)) routes 
    forM_ prevState $ \prev -> do 
        -- If train is born, and we are not on the first step,
        -- then it must be after a conflict has been resolved.
