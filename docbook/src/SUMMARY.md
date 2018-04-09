@@ -12,6 +12,7 @@
   - [Two track station](./examples/twotrack.md)
   - [Multiple trains](./examples/multipletrains.md)
   - [Partial release](./examples/partialrelease.md)
+  - [Two-way traffic](./examples/crossing.md)
 - [Planning model](./planner.md)
 - [Verification examples](./plannerexamples.md)
   - [Running time](./examples/runningtime.md)

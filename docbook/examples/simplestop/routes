@@ -1,6 +1,7 @@
 modelentry ri from b1 {
   exit sig
   length 100.0
+  sections [] switches [] contains []
 }
 
 modelexit re to b2 {
@@ -8,4 +9,5 @@ modelexit re to b2 {
   entrysection a2
   length 10000.0
   sections []
+  switches [] contains []
 }

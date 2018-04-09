@@ -1,13 +1,14 @@
 modelentry ri from b1 {
   exit s1 
   length 250.0
+  sections [] switches [] contains []
 }
 
 modelexit re to b2 {
   entry s3 
   entrysection a3
   length 5000.0
-  sections []
+  sections [] switches [] contains []
 }
 
 route r1 {

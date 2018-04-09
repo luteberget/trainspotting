@@ -146,6 +146,9 @@ pub fn main() {
     println!("{:?}", opt);
     match run(&opt) {
         Ok(()) => {},
-        Err(e) => println!("Error:\n{}", e.cause()),
+        Err(e) => {
+            println!("Error:\n{}", e.cause());
+            std::process::exit(1);
+        },
     }
 }

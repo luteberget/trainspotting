@@ -1,6 +1,7 @@
 modelentry ri from b1 {
   exit sa
   length 500.0
+  sections [] switches [] contains []
 }
 
 modelexit re1 to b2 {
@@ -8,6 +9,7 @@ modelexit re1 to b2 {
   entrysection a2
   length 8000.0
   sections [a2]
+  switches [] contains []
 }
 
 modelexit re2 to b2 {
@@ -15,6 +17,7 @@ modelexit re2 to b2 {
   entrysection a2
   length 8000.0
   sections [a2]
+  switches [] contains []
 }
 
 route r1 {
