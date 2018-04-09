@@ -13,7 +13,7 @@ route r1 {
   sections [a2]
   switches [sw1 right]
   contains []
-  release { trigger a2 resources [a2,sw1] }
+  release { length 300.0 trigger a2 resources [a2,sw1] }
 }
 
 route r2 {
@@ -23,8 +23,8 @@ route r2 {
   sections [a2,a3]
   switches [sw1 left]
   contains []
-  release { trigger a2 resources [a2,sw1] }
-  release { trigger a3 resources [a3] }
+  release { length 200.0 trigger a2 resources [a2,sw1] }
+  release { length 100.0 trigger a3 resources [a3] }
 }
 
 modelexit re1 to b2 {

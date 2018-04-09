@@ -1,0 +1,26 @@
+# Running time verification
+
+Using the two track bidirectional station from previous examples, we now turn
+to verifying the running time for a single train across the station.
+
+The properties to be verified are summarized in the `usage` file:
+
+```haskell
+$RAILWAYUSAGE
+```
+
+Running the `railperfcheck` program on this usage gives success, and outputs
+the following dispatch plan:
+
+```haskell
+$RAILWAYDISPATCH
+
+```
+
+### Witness
+
+The plan represents a witness for the satisfaction of the properties given in the `usage` file, and the results can be inspected as usual.
+
+$RAILWAYVIEW
+
+

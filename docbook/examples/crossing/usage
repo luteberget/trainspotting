@@ -1,0 +1,15 @@
+vehicle passengertrain length 150.0 accel 1.0 brake 0.9 maxspeed 40.0
+vehicle goodstrain length 850.0 accel 0.5 brake 0.4 maxspeed 20.0
+
+movement passengertrain {
+  visit #start_p [b2]
+  visit #end_p [b1]
+}
+
+movement goodstrain {
+  visit #start_g [b1]
+  visit #end_g [b2]
+}
+
+timing start_p end_g
+timing start_g end_p

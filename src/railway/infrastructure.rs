@@ -52,7 +52,7 @@ impl<'a> Process<Infrastructure<'a>> for MoveSwitch {
             self.state = true;
             ProcessState::Wait(SmallVec::from_slice(&[sim.create_timeout(5.0)]))
         } else {
-            println!("SWITCH MOVED {:?} {:?}", self.sw, self.pos);
+            //println!("SWITCH MOVED {:?} {:?}", self.sw, self.pos);
             match sim.world.state[self.sw] {
                 ObjectState::Switch { ref mut position, ref mut throwing, .. } => {
                     position.set(&mut sim.scheduler, Some(self.pos));

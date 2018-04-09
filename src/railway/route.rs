@@ -97,7 +97,7 @@ fn movable_events(r: &Route, sim: &mut Sim) -> Vec<EventId> {
         .collect::<Vec<_>>();
 
     for (sw, pos) in throw {
-        println!("MOving {:?} {:?}", sw, pos);
+        //println!("MOving {:?} {:?}", sw, pos);
         let throw = sim.start_process(Box::new(MoveSwitch {
             sw: sw,
             pos: pos,
@@ -135,18 +135,18 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
         }
 
         // TODO smallvec5
-        println!("ROUTE movable @{}",sim.time());
+        //println!("ROUTE movable @{}",sim.time());
         let wait_move = movable_events(&self.route, sim);
         if !wait_move.is_empty() {
             return ProcessState::Wait(wait_move.into());
         }
-        println!("ROUTE movable finished @{}",sim.time());
-        println!("Trying entry {:?}",self.route.entry);
+        //println!("ROUTE movable finished @{}",sim.time());
+        //println!("Trying entry {:?}",self.route.entry);
 
         // Set the signal to green
         match self.route.entry {
             RouteEntry::Signal { ref signal, ref trigger_section } => {
-                println!("SIGNAL GREEN {:?}", self.route.entry);
+                //println!("SIGNAL GREEN {:?}", self.route.entry);
                 match sim.world.state[*signal] {
                     ObjectState::Signal { ref mut authority } => {
                         let l = Some(self.route.length);
@@ -165,7 +165,7 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
            RouteEntry::Boundary(_) =>  {},
         };
 
-        println!("ROUTE RELEASES: {:?}", self.route.resources.releases);
+        //println!("ROUTE RELEASES: {:?}", self.route.resources.releases);
         for release in self.route.resources.releases.iter() {
             sim.start_process(Box::new(ReleaseRoute {
                 trigger: release.trigger,

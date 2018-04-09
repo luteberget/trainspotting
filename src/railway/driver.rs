@@ -124,14 +124,14 @@ impl Driver {
         let update = dynamic_update(&self.train.params, self.train.velocity, 
                                     DriverPlan { action: action, dt: dt, });
 
-        println!("DYNAMIC UPDATE {:?}", (action,dt));
-        println!("{:?}", update);
+        //println!("DYNAMIC UPDATE {:?}", (action,dt));
+        //println!("{:?}", update);
 
         (self.logger)(TrainLogEvent::Move(dt, action, update));
         self.train.velocity = update.v;
-        println!("train loc {:?}", self.train.location);
+        //println!("train loc {:?}", self.train.location);
         (self.train.location.1).1 -= update.dx;
-        println!("train loc {:?}", self.train.location);
+        //println!("train loc {:?}", self.train.location);
 
         // In case there are no signals in sight,
         // the remembered authority is updated.
@@ -190,20 +190,20 @@ impl Driver {
 
     fn plan_ahead(&mut self, sim: &Sim) -> DriverPlan {
         // Travel distance is limited by next node
-        println!("Travel distance is limited by next node");
-        println!("{:?}", (self.train.location.1).1);
+        //println!("Travel distance is limited by next node");
+        //println!("{:?}", (self.train.location.1).1);
         let mut max_dist = (self.train.location.1).1;
 
         // Travel distance is limited by nodes under train
-        println!("Travel distance is limited by nodes under train");
-        println!("{:?}", self.train.under_train);
+        //println!("Travel distance is limited by nodes under train");
+        //println!("{:?}", self.train.under_train);
         for &(_n, d) in self.train.under_train.iter() {
             max_dist = max_dist.min(d);
         }
 
         // Travel distance is limited by sight distances
-        println!("Travel distance is limited by sight distances");
-        println!("{:?}", self.connected_signals);
+        //println!("Travel distance is limited by sight distances");
+        //println!("{:?}", self.connected_signals);
         for &(_n, d) in self.connected_signals.iter() {
             max_dist = max_dist.min(d);
         }
@@ -214,11 +214,11 @@ impl Driver {
                 ObjectState::Signal { ref authority } => {
                     match *authority.get() {
                         Some(d) => {
-                            println!("Signal green in sight dist{} sigauth{} self.auth{}", dist, d, dist+d-20.0);
+                            //println!("Signal green in sight dist{} sigauth{} self.auth{}", dist, d, dist+d-20.0);
                             self.authority = dist + d - 20.0;
                         }
                         None => {
-                            println!("Signal red in sight dist{} self.auth{}", dist,dist-20.0);
+                            //println!("Signal red in sight dist{} self.auth{}", dist,dist-20.0);
                             self.authority = dist - 20.0;
                             break;
                         }
@@ -228,7 +228,7 @@ impl Driver {
             }
         }
 
-        println!("Updated authority {}", self.authority);
+        //println!("Updated authority {}", self.authority);
 
         // Static maximum speed profile ahead from current position
         // TODO: other speed limitations
@@ -243,7 +243,7 @@ impl Driver {
                           self.train.velocity,
                           &static_speed_profile);
 
-        println!("PLAN: {:?} {:?} {:?} {:?} {:?} ", self.train.params, max_dist, self.train.velocity, static_speed_profile,plan);
+        //println!("PLAN: {:?} {:?} {:?} {:?} {:?} ", self.train.params, max_dist, self.train.velocity, static_speed_profile,plan);
         plan
     }
 }
@@ -276,14 +276,14 @@ impl<'a> Process<Infrastructure<'a>> for Driver {
 
                 let mut events = SmallVec::new();
                 if plan.dt > 1e-4 {
-                    println!("SET TIMOUT {:?}", plan.dt);
+                    //println!("SET TIMOUT {:?}", plan.dt);
                     events.push(sim.create_timeout(plan.dt));
                 } else {
                     if self.train.velocity > 1e-4 { panic!("Velocity, but no plan."); }
                     self.train.velocity = 0.0;
                     self.step.0 = DriverAction::Coast;
                 }
-                println!("Connected signals: {:?}", self.connected_signals);
+                //println!("Connected signals: {:?}", self.connected_signals);
                 for &(ref sig, _) in self.connected_signals.iter() {
                     match sim.world.state[*sig] {
                         ObjectState::Signal { ref authority } => events.push(authority.event()),

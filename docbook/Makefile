@@ -6,6 +6,7 @@ example_vis     = $(patsubst %.md,%-vis.js, $(examples))
 
 ROLLING = ../target/debug/rolling
 GRIDVIS = ../../linearschematic/gridjson
+RAILPERFCHECK = ../trainspotting/railperfcheck
 
 .PHONY: book
 book: $(examples) $(example_history) $(example_vis)
@@ -16,6 +17,7 @@ src/%.md: src/%-history.js src/%-vis.js src/%.md.template %/infrastructure %/rou
 	    -e "/RAILWAYINFRASTRUCTURE/ {r $*/infrastructure" -e 'd }' \
 	    -e "/RAILWAYROUTES/ {r $*/routes" -e 'd }' \
 	    -e "/RAILWAYDISPATCH/ {r $*/plan" -e 'd }' \
+	    -e "/RAILWAYUSAGE/ {r $*/usage" -e 'd }' \
 	    -e '/RAILWAYVIEW/ { i <div id="railview"></div>'  \
 	    -e 'i <script src="d3/d3.js"></script>' \
 	    -e 'i <script src="$*-history.js"></script>' \
@@ -30,6 +32,9 @@ src/%-history.js %/graph: $(ROLLING) %/infrastructure %/routes %/plan
 
 src/%-vis.js: $(GRIDVIS) %/graph
 	$(GRIDVIS) $*/graph > src/$*-vis.js
+
+%/plan: $(RAILPERFCHECK) %/infrastructure %/routes %/usage
+	$(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan
 
 .PHONY: cleanexamples
 cleanexamples:

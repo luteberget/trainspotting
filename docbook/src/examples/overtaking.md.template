@@ -1,0 +1,26 @@
+# Overtaking
+
+To check that one train is able to overtake another, we require two movements and put timing constraints on their entry and exit which require one train to enter first and the other train to exit first.
+
+```haskell
+$RAILWAYUSAGE
+```
+
+Note that if we had instead required the long goods train to enter first, the verification would fail, as the goods train would block all paths for the passenger train. The constraints would be as follows:
+
+```haskell
+timing start_g start_p
+timing end_p end_g
+```
+
+### Result
+
+When the passenger train goes first, we get the following successful dispatch plan:
+
+```haskell
+$RAILWAYDISPATCH
+
+```
+
+
+$RAILWAYVIEW

@@ -18,7 +18,7 @@ pub fn default_release(route :&mut Route) {
             resources.extend(route.resources.switch_positions.iter().map(|&(a,_)| a));
             route.resources.releases.push(Release { 
                 trigger: *trigger, resources: resources.into() });
-            println!("DEFAULT RELEASE: {:?}", route);
+            //println!("DEFAULT RELEASE: {:?}", route);
         },
         None => println!("Warning: route has no sections."),
     }
@@ -75,6 +75,8 @@ pub fn parse_resources(i :&mut usize, t: &[Token], objnames :&Map, nodenames: &M
     let mut releases = Vec::new();
     while matches(i, t, Token::Identifier("release".to_string())) {
         must_match(i, t, Token::BraceOpen)?;
+        symbol(i, t, "length")?;
+        let _length = number(i,t)?;
         symbol(i, t, "trigger")?;
         let trigger = lookup(objnames, &identifier(i, t)?)?;
         symbol(i, t, "resources")?;

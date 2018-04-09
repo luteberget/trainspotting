@@ -1,0 +1,26 @@
+boundary b1
+node b1(exit a0)-n1b(sight sigentrya 200.0, enter a0)
+linear n1b-n2a 200.0
+node n2a(exit a1, enter a0)-n2b(exit a0, enter a1, signal sigentrya)
+linear n2b-n3a 200.0
+node n3a-n3b
+switch sw1 left n3b-(n6a 200.0, n4a 200.0)
+
+node n4a(enter a1, exit a3, signal sig1b)-n4b(exit a1, enter a3, sight sig1a 200.0)
+linear n4b-n5a 200.0
+node n5a(enter a3, exit a4, sight sig1b 200.0)-n5b(exit a3, enter a4, signal sig1a)
+
+node n6a(enter a1, exit a2, signal sig2b)-n6b(exit a1, enter a2, sight sig2a 200.0)
+linear n6b-n7a 200.0
+node n7a(enter a2, exit a4, sight sig2b 200.0)-n7b(enter a4, exit a2, signal sig2a)
+
+switch sw2 right n8a-(n5b 200.0, n7b 200.0)
+node n8a-n8b
+
+linear n8b-n9a 200.0
+node n9a(signal sigentryb, enter a4, exit a5)-n9b(exit a4, enter a5)
+linear n9b-n10a 200.0
+
+node n10a(enter a5, sight sigentryb 200.0)-b2(exit a5)
+boundary b2
+

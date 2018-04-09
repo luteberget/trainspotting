@@ -85,7 +85,7 @@ fn plan_accel_v(start: Point, v: f64, acc: f64) -> Point {
         x: start.x + dx,
         v: v,
     };
-    println!("PLAN ACCEL V {:?} -> {:?}", start, p);
+    //println!("PLAN ACCEL V {:?} -> {:?}", start, p);
     p
 }
 
@@ -213,7 +213,7 @@ pub fn dynamic_plan_step(train: &TrainParams,
         // Acceleration limited by braking curve (+ braking curve)
         let (acc, brk) =
             plan_accel_brake_intersection(p, restriction, train.max_acc, train.max_brk);
-        println!("ACCEL PLANX {:?} {:?} {:?}", restriction, acc, brk);
+        //println!("ACCEL PLANX {:?} {:?} {:?}", restriction, acc, brk);
         accel_plans.push(acc);
         brake_plans.push(brk);
 
@@ -224,9 +224,9 @@ pub fn dynamic_plan_step(train: &TrainParams,
         brake_plans.push(brk);
     }
 
-    println!("ACCEL PLANS {:?}", accel_plans);
-    println!("BRAKE PLANS {:?}", brake_plans);
-    println!("COAST PLANS {:?}", coast_plans);
+    //println!("ACCEL PLANS {:?}", accel_plans);
+    //println!("BRAKE PLANS {:?}", brake_plans);
+    //println!("COAST PLANS {:?}", coast_plans);
 
     let shortest_accel_plan = accel_plans.iter()
         .fold(accel_plans[0], |a, b| if a.t < b.t { a } else { *b });
@@ -235,8 +235,8 @@ pub fn dynamic_plan_step(train: &TrainParams,
     let shortest_brake_plan = brake_plans.iter()
         .fold(brake_plans[0], |a, b| if !(b.t >= 0.0) || a.t < b.t { a } else { *b });
 
-    println!("SHORTEST {:?}", shortest_accel_plan);
-    println!("SHORTEST BRAKE {:?}", shortest_brake_plan);
+    //println!("SHORTEST {:?}", shortest_accel_plan);
+    //println!("SHORTEST BRAKE {:?}", shortest_brake_plan);
     if shortest_accel_plan.t > tol {
         DriverPlan {
             action: DriverAction::Accel,
