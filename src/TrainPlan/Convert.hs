@@ -16,6 +16,8 @@ import Control.Monad (join)
 import Data.List (find, intercalate)
 import Data.Maybe (catMaybes,fromJust, fromMaybe, isNothing, isJust)
 
+import Debug.Trace
+
 succPairs x = zip x (tail x)
 
 routePointConv :: RoutePoint -> Maybe String
@@ -42,8 +44,9 @@ data SplitRoute
 splitRoutes :: Route -> [SplitRoute]
 splitRoutes route =  [ SplitRoute (routeName route, i) entry exit l res nodes
                      | (i, (entry,exit), (Release l res)) <-
-                            zip3 [0..] (succPairs signals) (routeReleases route)]
+                            zip3 [0..] (succPairs signals) thisReleases ]
   where
+    thisReleases = trace ("RELEASES for " ++ (show route) ++ "---"  ++ (show (routeReleases route))) (routeReleases route)
     n = length (routeReleases route)
     signals = [routePointConv (routeEntry route)] ++ 
             (fmap (\j -> Just ((routeName route) ++ "__i" ++ (show j))) [1..(n-1)]) ++ 
@@ -112,8 +115,8 @@ dispatchPlan (routes,_,trains,_) plan = print [actions x | x <- succPairs ([Noth
         newRoutes = fmap printRoute (Set.toList (Set.difference (activeRoutes b) (activeRoutes a)))
         newTrains = fmap (printTrain (fromJust b)) (Set.toList (Set.difference (activeTrains b) (activeTrains a)))
 
-    printRoute :: String -> String
-    printRoute r = "route " ++ r
+    printRoute :: (String,String) -> String
+    printRoute (_train,route) = "route " ++ route
 
     printTrain :: State -> Solver.TrainName -> String
     printTrain state name = "train " ++ name ++ 
@@ -133,11 +136,12 @@ dispatchPlan (routes,_,trains,_) plan = print [actions x | x <- succPairs ([Noth
     activeTrains (Just st) = Set.fromList (catMaybes (fmap snd st))
     activeTrains Nothing = Set.empty
 
-    activeRoutes :: Maybe State -> Set String
-    activeRoutes (Just st) = Set.fromList [ rname | ((rname,num),t) <- st, isJust t
-                                                  , route <- routes, num == 0
-                                                  , Solver.routePartName route == (rname,num)
-                                                  , isJust (Solver.routePartEntry route) ]
+    activeRoutes :: Maybe State -> Set (String,String)
+    activeRoutes (Just st) = Set.fromList [ (fromJust t,rname)
+                              | ((rname,num),t) <- st, isJust t
+                              , route <- routes, num == 0
+                              , Solver.routePartName route == (rname,num)
+                              , isJust (Solver.routePartEntry route) ]
     activeRoutes Nothing = Set.empty
 
     print :: [[String]] -> String

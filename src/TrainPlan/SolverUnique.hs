@@ -212,6 +212,11 @@ bornCondition s nodeMap routes train (prevState,state) bornBefore = do
          [ catMaybes [ fmap (\prev -> neg (prev .! (rId route) .= Just (tId train))) prevState,
                        Just (state .! (rId route) .= Just (tId train)) ]
          | route <- trainBirthPlaces ]
+
+   -- Don't get born in other places
+   sequence_ [ addClause s [ neg (state .! (rId r) .= Just (tId train)) ]
+             | r <- routes `startingIn` Nothing , not ((rId r) `elem` (fmap rId trainBirthPlaces)) ]
+
    bornNow <- orl s =<< mapM (andl s) bornNowAlternatives
    bornFuture <- newLit s   -- Or is it born sometime in the future?
    exactlyOne s [bornBefore, bornNow, bornFuture]
