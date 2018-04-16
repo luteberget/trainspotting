@@ -1,0 +1,27 @@
+# Simplest examples
+# Single
+
+This is the simplest example of a working train station in `rolling`.
+
+The infrastructure is a single signal with detection sections in the front and back.
+
+```haskell
+$RAILWAYINFRASTRUCTURE
+```
+
+There is one entry and one exit train route.
+
+```haskell
+$RAILWAYROUTES
+```
+
+We dispatch a short train.
+
+```haskell
+$RAILWAYDISPATCH
+```
+
+And the results from `rolling` are:
+
+$RAILWAYVIEW
+

@@ -1,0 +1,6 @@
+movement {
+  vehicle passengertrain
+  enter [b1]
+  visit [t1stop] wait 60.0
+  exit [b2]
+}

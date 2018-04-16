@@ -1,0 +1,26 @@
+# Frequency
+
+An important performance indicator for a railway station is the 
+frequency with which it can handle consecutive trains.
+To verify e.g. that the two-track station can handle 
+a passenger train every 90 sec, we write the following `usage` file:
+
+```haskell
+$RAILWAYUSAGE
+```
+
+Running the `railperfcheck` program on this usage gives success, and outputs
+the following dispatch plan:
+
+```haskell
+$RAILWAYDISPATCH
+
+```
+
+### Witness
+
+The plan represents a witness for the satisfaction of the properties given in the `usage` file, and the results can be inspected as usual.
+
+$RAILWAYVIEW
+
+

@@ -1,0 +1,20 @@
+# Multiple trains on a two-track station
+
+## Release of resources
+
+In order to have multiple trains using the same routes at different times, resources need to be released
+after one train has finished the route. We may use the `release` statement inside a route to specify
+one or more groups of resources which may be release, and which detector triggers the release.
+
+```haskell
+$RAILWAYROUTES
+```
+
+## Dispatch
+
+```haskell
+$RAILWAYDISPATCH
+```
+
+
+$RAILWAYVIEW
