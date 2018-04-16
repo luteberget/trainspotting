@@ -1,5 +1,7 @@
 ### Railway performance analysis tools
 
+Check out the [documentation with examples](https://luteberget.github.io/rollingdocs).
+
 This repository contains the following programs:
 
  * **rolling** - a simple train simulator written in Rust
