@@ -4,9 +4,9 @@ examples = $(addsuffix .md, $(addprefix src/,\
 example_history = $(patsubst %.md,%-history.js, $(examples))
 example_vis     = $(patsubst %.md,%-vis.js, $(examples))
 
-ROLLING = ../target/release/rolling
-GRIDVIS = ../../gridvis/gridjson
-RAILPERFCHECK = ../../railperfcheck/railperfcheck
+ROLLING = ../rolling/target/release/rolling
+GRIDVIS = ../gridvis/gridjson
+RAILPERFCHECK = ../railperfcheck/railperfcheck
 
 .PHONY: book
 book: $(examples) $(example_history) $(example_vis)
