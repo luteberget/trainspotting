@@ -10,6 +10,8 @@
 module Main where
 
 import System.Environment (getArgs)
+import System.IO (stderr,hPutStrLn)
+import System.Exit (exitFailure,exitSuccess)
 
 import qualified GraphParser as P
 import qualified GridSolver as S
@@ -19,6 +21,9 @@ import qualified Data.Map as Map
 
 import Control.Monad (forM, forM_,join)
 import Data.List (mapAccumL, intercalate, sortOn)
+
+logmsg = hPutStrLn stderr
+output = putStrLn
 
 clamp :: Double -> Double -> Double -> Double
 clamp a b x = if x < a then a else (if x > b then b else x)
@@ -51,22 +56,29 @@ solve x = go 2
   where
     go dim = do
          -- putStrLn $ "trying dim " ++ (show dim)
-         sol <- S.draw x (dim,dim `div` 3)
+         sol <- S.draw x (dim,dim `div` 3) logmsg
          case sol of
-           Just x -> reduceY (dim,dim `div` 3) x
+           Just x -> minSol (dim+3,(dim `div` 3)+1)
            Nothing -> if dim > 100 then error "No solution" else go (dim+1)
     reduceY (w,h) sol = do
          -- putStrLn $ "reducing height " ++ (show (w,h))
-         sol2 <- S.draw x (w,h-1)
+         sol2 <- S.draw x (w,h-1) logmsg
          case sol2 of
            Just sol2 -> reduceY (w,h-1) sol2
            Nothing -> reduceX (w,h) sol
     reduceX (w,h) sol = do
          -- putStrLn $ "reducing width " ++ (show (w,h))
-         sol2 <- S.draw x (w-1,h)
+         sol2 <- S.draw x (w-1,h) logmsg
          case sol2 of
            Just sol2 -> reduceX (w-1,h) sol2
-           Nothing -> return sol
+           Nothing -> do
+                      m <- S.minimizeSolution x (w,h) logmsg
+                      case m of 
+                        Just s -> return s
+    minSol (w,h) = do
+      m <- S.minimizeSolution x (w,h) logmsg
+      case m of
+        Just s -> return s
 
 type Pt x = (x,x)
 type Line x = (Pt x, Pt x)

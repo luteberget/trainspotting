@@ -15,6 +15,9 @@ import Data.Tuple (swap)
 import Data.List (nub, sortOn)
 import Data.Maybe (listToMaybe)
 
+import qualified SAT.Unary as Unary
+import qualified SAT.Optimize as Optimize
+
 import SAT
 import SAT.Val
 import SAT.Bool
@@ -33,8 +36,8 @@ flip = fmap swap
 reverse (a,b,c) = (c,b,a)
 
 horiz x     = (nop, Just x, nop)
-left (y,z)  = (Just z, Just y, nop)
-right       = reverse . left
+left (y,z)  = (Just y, Just z, nop)
+right (y,z) = (nop, Just y, Just z)
 
 rotLeft  ((a,b,c),(d,e,f)) = ((nop, a, b), (e, f, nop))
 rotRight ((a,b,c),(d,e,f)) = ((b, c, nop), (nop, d, e))
@@ -58,8 +61,8 @@ outRightSwHoriz x (y,z) = (horiz x, right (y,z))
 outLeftSw  x (y,z) = [ outLeftSwHoriz  x (y,z), rotRight $ outLeftSwHoriz x (y,z)  ]
 outRightSw x (y,z) = [ outRightSwHoriz x (y,z), rotLeft  $ outRightSwHoriz x (y,z) ]
 
-inRightSw x (y,z) = flip $ outLeftSw  x (y,z)
-inLeftSw  x (y,z) = flip $ outRightSw x (y,z)
+inRightSw x (y,z) = flip $ outLeftSw  x (z,y)
+inLeftSw  x (y,z) = flip $ outRightSw x (z,y)
 
 ex1Nodes = 
   [ startNode 1
@@ -89,13 +92,21 @@ data NodeValue = Unused | Linear (NodeId,NodeId) | Node NodeId
 data Graphics = GNode (Int,Int) NodeId | GLine (Int,Int) (Int,Int) (NodeId,NodeId)
   deriving (Show, Eq, Ord)
 
+data Problem
+  = Problem
+  { pNodeVals   :: [Val NodeValue]
+  , pHorizLines :: [Lit]
+  , pDownLines  :: [Lit]
+  , pUpLines    :: [Lit]
+  } deriving (Show, Eq, Ord)
+
 exactlyOneOr :: Solver -> [Lit] -> [Lit] -> IO ()
 exactlyOneOr s pre ls = do
   addClause s (pre ++ ls)
   atMostOneOr s pre ls
 
-draw :: [Node] -> Pt -> IO (Maybe [Graphics])
-draw nodes (w,h) = withNewSolver $ \s -> do
+withProblem :: [Node] -> Pt -> (Solver -> Problem -> IO a) -> IO a
+withProblem nodes (w,h) f = withNewSolver $ \s -> do
   let edges = (Set.toList $ Set.fromList e)
         where e = [(j,i) | (i,alt) <- zip [0..] nodes
                   , ((a1,a2,a3),b) <- alt , j <- catMaybes [a1,a2,a3] ] ++ 
@@ -222,62 +233,93 @@ draw nodes (w,h) = withNewSolver $ \s -> do
       --  sequence_ [ addClause s [neg cond, neg line, 
       --                            val .= Node to, val .= Linear (from,to) ]
       --             | Just (val, line) <- nexts]
+  f s (Problem nodeVals horizLines downLines upLines)
 
-  b <- solve s []
-  if b then do
-    let allnodes x = case x of
-          Node x -> [x]
-          Linear (x,y) -> [x,y]
+getSolution :: Solver -> Problem -> (Int, Int) -> IO (Maybe [Graphics])
+getSolution s p (w,h) = do 
+  let allnodes x = case x of
+        Node x -> [x]
+        Linear (x,y) -> [x,y]
 
-    let edgeNodes p1 p2 = do
-                          v1 <- SAT.Val.modelValue s (nodeVals !! (enc2 w p1))
-                          v2 <- SAT.Val.modelValue s (nodeVals !! (enc2 w p2))
-                          case nub ((allnodes v1)++(allnodes v2)) of
-                            [x,y] -> return (x,y)
-                            _ -> error "ambiguous edge"
+  let edgeNodes p1 p2 = do
+                        v1 <- SAT.Val.modelValue s ((pNodeVals p) !! (enc2 w p1))
+                        v2 <- SAT.Val.modelValue s ((pNodeVals p) !! (enc2 w p2))
+                        case nub ((allnodes v1)++(allnodes v2)) of
+                          [x,y] -> return (x,y)
+                          _ -> error "ambiguous edge"
 
-    nodes <- forM (zip [0..] nodeVals) $ \(i,val) -> do
-      m <- SAT.Val.modelValue s val
-      case m of
-        Node idx -> do 
-          --putStrLn $ "node " ++ (show (dec2 w i)) ++ ", " ++ (show idx)
-          return [GNode (dec2 w i) idx]
-        _ -> return []
+  nodes <- forM (zip [0..] (pNodeVals p)) $ \(i,val) -> do
+    m <- SAT.Val.modelValue s val
+    case m of
+      Node idx -> do 
+        --putStrLn $ "node " ++ (show (dec2 w i)) ++ ", " ++ (show idx)
+        return [GNode (dec2 w i) idx]
+      _ -> return []
 
-    hor <- forM (zip [0..] horizLines) $ \(i,val) -> do
-      m <- SAT.modelValue s val
-      if m then do 
-        let (x0,y0) = dec2 (w-1) i
-        let (x1,y1) = (x0+1,y0)
-        --putStrLn $ "line " ++ (show (x0,y0)) ++ " " ++ (show (x1,y1))
-        nodes <- edgeNodes (x0,y0) (x1,y1)
-        return [GLine (x0,y0) (x1,y1) nodes]
-      else do return []
+  hor <- forM (zip [0..] (pHorizLines p)) $ \(i,val) -> do
+    m <- SAT.modelValue s val
+    if m then do 
+      let (x0,y0) = dec2 (w-1) i
+      let (x1,y1) = (x0+1,y0)
+      --putStrLn $ "line " ++ (show (x0,y0)) ++ " " ++ (show (x1,y1))
+      nodes <- edgeNodes (x0,y0) (x1,y1)
+      return [GLine (x0,y0) (x1,y1) nodes]
+    else do return []
 
-    up <- forM (zip [0..] upLines) $ \(i,val) -> do
-      m <- SAT.modelValue s val
-      if m then do 
-        let (x0,y0) = (\(x,y) -> (x,y+1)) (dec2 (w-1) i)
-        let (x1,y1) = (x0+1,y0-1)
-        --putStrLn $ "line " ++ (show (x0,y0)) ++ " " ++ (show (x1,y1))
-        nodes <- edgeNodes (x0,y0) (x1,y1)
-        return [GLine (x0,y0) (x1,y1) nodes]
-      else do return []
+  up <- forM (zip [0..] (pUpLines p)) $ \(i,val) -> do
+    m <- SAT.modelValue s val
+    if m then do 
+      let (x0,y0) = (\(x,y) -> (x,y+1)) (dec2 (w-1) i)
+      let (x1,y1) = (x0+1,y0-1)
+      --putStrLn $ "line " ++ (show (x0,y0)) ++ " " ++ (show (x1,y1))
+      nodes <- edgeNodes (x0,y0) (x1,y1)
+      return [GLine (x0,y0) (x1,y1) nodes]
+    else do return []
 
-    down <- forM (zip [0..] downLines) $ \(i,val) -> do
-      m <- SAT.modelValue s val
-      if m then do 
-        let (x0,y0) = dec2 (w-1) i
-        let (x1,y1) = (x0+1,y0+1)
-        --putStrLn $ "line " ++ (show (x0,y0)) ++ " " ++ (show (x1,y1))
-        nodes <- edgeNodes (x0,y0) (x1,y1)
-        return [GLine (x0,y0) (x1,y1) nodes]
-      else do return []
+  down <- forM (zip [0..] (pDownLines p)) $ \(i,val) -> do
+    m <- SAT.modelValue s val
+    if m then do 
+      let (x0,y0) = dec2 (w-1) i
+      let (x1,y1) = (x0+1,y0+1)
+      --putStrLn $ "line " ++ (show (x0,y0)) ++ " " ++ (show (x1,y1))
+      nodes <- edgeNodes (x0,y0) (x1,y1)
+      return [GLine (x0,y0) (x1,y1) nodes]
+    else do return []
 
-    return (Just (join (nodes ++ hor ++ up ++ down)))
-  else do 
-    --putStrLn "no solution"
-    return Nothing
+  return (Just (join (nodes ++ hor ++ up ++ down)))
+
+draw :: [Node] -> Pt -> (String -> IO ()) -> IO (Maybe [Graphics])
+draw nodes (w,h) log = do
+  log $ "Preparing problem (" ++ (show w) ++ "," ++ (show h) ++ ")"
+  withProblem nodes (w,h) $ \s p -> do
+    log $ "Solving problem (" ++ (show w) ++ "," ++ (show h) ++ ")"
+    b <- solve s []
+    if b then do
+      getSolution s p (w,h)
+    else do 
+      log "no solution"
+      return Nothing
+
+minimizeSolution :: [Node] -> Pt -> (String -> IO ()) -> IO (Maybe [Graphics])
+minimizeSolution nodes (w,h) log = do
+  log $ "Preparing optimization (" ++ (show w) ++ "," ++ (show h) ++ ")"
+  withProblem nodes (w,h) $ \s p -> do
+    let slant = [ Unary.digit l 
+                | l <- (pUpLines p) ++ (pDownLines p) ]
+    let horiz = [Unary.digit l | l <- pHorizLines p ]
+    numSlants <- Unary.addList s slant
+    numHoriz  <- Unary.addList s horiz
+    log $ "Solving optimization"
+    b1 <- Optimize.solveOptimize s [] numSlants $ \(a,b) -> do
+        log $ "Slant range (" ++ (show a) ++ "--" ++ (show b) ++ ")"
+        return True
+    slantValue <- Unary.modelValue s numSlants
+    addClause s [numSlants Unary..<= slantValue]
+    b2 <- Optimize.solveOptimize s [] numHoriz $ \(a,b) -> do
+        log $ "Horiz range (" ++ (show a) ++ "--" ++ (show b) ++ ")"
+        return True
+    getSolution s p (w,h)
+    
 
 -- toJson
 --
@@ -315,9 +357,3 @@ collectEdges g = go startSet []
     go ((s,pts):starts) ended = case getNode (last pts) of 
                                    Just nd -> go starts ((((s,nd),pts)):ended)
                                    Nothing -> go ((s,(pts ++ (rightEdges (last pts)))):starts) ended
-
-main = do
-  g <- draw ex2Nodes (6,2)
-  case g of
-    Just g -> putStrLn $ toSvg 100 g
-    Nothing -> return ()
