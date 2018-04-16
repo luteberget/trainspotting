@@ -11,7 +11,7 @@ This repository contains the following programs:
 
 1. Install Rust stable version >= 1.24
 2. Run `make` in `rolling` directory
-3. Install Haskell
+3. Install Haskell compiler and package tool
 4. Install Haskell packages `cabal install megaparsec` and `cabal install cmdargs`
 5. Put [satplus](https://github.com/koengit/satplus.git) in subfolder of `railperfcheck` and `gridvis` directories
 6. Run `make` in `railperfcheck` directory
