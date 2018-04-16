@@ -58,7 +58,7 @@ solve x = go 2
          -- putStrLn $ "trying dim " ++ (show dim)
          sol <- S.draw x (dim,dim `div` 3) logmsg
          case sol of
-           Just x -> minSol (dim+3,(dim `div` 3)+1)
+           Just x -> minSol (dim+1,(dim `div` 3)+1)
            Nothing -> if dim > 100 then error "No solution" else go (dim+1)
     reduceY (w,h) sol = do
          -- putStrLn $ "reducing height " ++ (show (w,h))
