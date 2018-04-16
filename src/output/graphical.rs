@@ -25,6 +25,13 @@ pub enum GNode {
     Sw(SwitchPosition, SwDir, usize, (usize,usize)),
 }
 
+#[derive(Debug, Fail)]
+enum GraphicalError {
+#[fail(display = "no model boundary found")]
+NoModelBoundary, 
+}
+
+
 #[derive(Debug,Clone)]
 pub enum GSNode {
     StartNode(String),
@@ -35,7 +42,7 @@ pub enum GSNode {
 
 pub fn graphical(inf :&StaticInfrastructure) -> Result<String,Error> {
     let boundaries = inf.nodes.iter().enumerate().filter_map(|(i,ref n)| { if let Edges::ModelBoundary = n.edges { return Some(i); } else { return None; }} ).collect::<Vec<_>>();
-    let boundary = boundaries[0];
+    let boundary = *boundaries.iter().nth(0).ok_or(GraphicalError::NoModelBoundary)?;
     println!("Selected boundary {:?}", boundary);
 
     // Selected boundary is now on "down" side of double node.

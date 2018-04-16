@@ -103,7 +103,15 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
             }
             '-' => {
                 input.next().unwrap();
-                tokens.push(Token::Arrow);
+                let mut comment = false;
+                if let Some(&x) = input.peek() {
+                    if x == '-' { 
+                        // Comment 
+                        consume_while(&mut input, |a| a != '\n');
+                        comment = true;
+                    }
+                }
+                if !comment { tokens.push(Token::Arrow); }
             }
             ' ' | '\r' | '\t' => {
                 input.next().unwrap();

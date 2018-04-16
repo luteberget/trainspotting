@@ -23,10 +23,10 @@ switch spv22 right n32a-(n31b 50.0, nvx22end 50.0)
 node nvx22end-nvx22endstop
 node n32a-n32b
 linear n32b-n33a 50.0
-node n33a(enter a202, exit a204, signal hs11016)-n33b(exit a202, enter a204)
+node n33a(enter a202, exit a204, signal hs11016)-n33b(exit a202, enter a204, sight hs11065 422.0)
 linear n33b-n34a 422.0
-node n34a(enter a204, exit a206)-n34b(exit a204, enter a206, signal hs11065)
--- Skip the crossing for now. Joining 206-208-210 into 206
+node n34a(enter a204, exit a206)-n34b(exit a204, enter a206, signal hs11065, sight hs11075 371.0)
+-- Ignoring the crossing for now. Joining 206-208-210 into 206
 linear n34b-n35a 271.0
 node n35a(enter a206, exit a212)-n35b(exit a206, enter a212)
 switch spv4 left n36a-(n91b 111.0, n35b 111.0)
@@ -83,13 +83,13 @@ linear n21b-n22a 100.0
 node n22a(enter a244, exit a248)-n22b(enter a244, exit a248)
 node n23a-n23b
 switch spv6 left n23a-(n62b 150.0, n22b 50.0)
-
+linear n23b-n24a 50.0
 node n24a(enter a248, exit a250)-n24b(exit a248, enter a250)
 linear n24b-n25a 50.0
 node n25a-n25b
 switch spv15 left n25b-(n91a 50.0, n26a 500.0)
 node n26a(enter a250, exit a217)-n26b(exit a250, enter a217, signal hs11035)
-linear n25b-n2xa 100.0
+linear n26b-n2xa 100.0
 node n2xa-n2xb
 
 -- S: Track "6" (unnamed) mid

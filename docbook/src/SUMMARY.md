@@ -20,9 +20,10 @@
   - [Overtaking](./examples/overtaking.md)
   - [Crossing](./examples/crossing.md)
 - [Case studies](./casestudies.md)
-  - [Regional single track + suburban pendulum](./case/c1.md)
-  - [Other](./case/cother.md)
-  - [Other](./case/c2.md)
+  - [Case A](./examples/case_a.md)
+- [Additional tools](./tools.md)
+  - [railML conversion example](./examples/convtest.md)
+  - [railML Arna A20](./examples/convarna.md)
 
 <!--
   - [Through train + pendulum](./examples/pendulum.md)

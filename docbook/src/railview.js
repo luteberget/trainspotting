@@ -26,14 +26,15 @@ var lines = [];
 var points = [];
 for (var edge in edges) {
     var node_names = edge.split("-");
+    var nonzero_lines = edges[edge]["lines"].filter((l) => l[1][0] - l[0][0] > 0.0 || l[1][1]-l[0][1] > 0.0);
     var node1_pt      = edges[edge]["lines"][0][0];
-    var node1_tangent = edges[edge]["lines"][0];
+    var node1_tangent = nonzero_lines[0];
     var node2_pt      = last(edges[edge]["lines"])[1];
-    var node2_tangent = reverse_line(last(edges[edge]["lines"]));
+    var node2_tangent = reverse_line(last(nonzero_lines));
     data.infrastructure.nodes[node_names[0]].pt = node1_pt;
-    data.infrastructure.nodes[node_names[0]].tangent = normalize_vector(line_to_vector(node1_tangent));
+    data.infrastructure.nodes[node_names[0]].tangent = line_to_vector(node1_tangent);
     data.infrastructure.nodes[node_names[1]].pt = node2_pt;
-    data.infrastructure.nodes[node_names[1]].tangent = normalize_vector(line_to_vector(node2_tangent));
+    data.infrastructure.nodes[node_names[1]].tangent = line_to_vector(node2_tangent);
     for (var l in edges[edge]["lines"]) {
         lines.push(edges[edge]["lines"][l]);
     }
@@ -106,6 +107,10 @@ var y = d3.scaleLinear()
 
     let train_snapshots = [];
     for (var k in data.trains) { train_snapshots.push(...(data.trains[k].events)); }
+    for (var k in data.trains) { 
+        for (var j in data.trains[k].events) { 
+            train_snapshots.push(Object.assign(Object.assign({}, data.trains[k].events[j]), {"x": data.trains[k].events[j].x - data.trains[k].params.length })); 
+    } }
 
 	x.domain(d3.extent(train_snapshots, function(d) { return d.time }));
 	y.domain(d3.extent(train_snapshots, function(d) { return d.x}));
@@ -198,47 +203,51 @@ var slider = timeslidersvg.append("g")
 .attr("class", "slider")
 .attr("transform", "translate(" + 0 + "," + margin.top / 2 + ")");
 
+var slider_x = d3.scaleLinear()
+    .rangeRound([margin.left, width-margin.right]).clamp(true)
+    .domain(x.domain());
+
 slider.append("line")
     .attr("class", "track")
-    .attr("x1", x.range()[0])
-    .attr("x2", x.range()[1])
+    .attr("x1", slider_x.range()[0])
+    .attr("x2", slider_x.range()[1])
   .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
     .attr("class", "track-inset")
   .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
     .attr("class", "track-overlay")
     .call(d3.drag()
         .on("start.interrupt", function() { slider.interrupt(); })
-        .on("start drag", function() { set_t(x.invert(d3.event.x)); }));
+        .on("start drag", function() { set_t(slider_x.invert(d3.event.x)); }));
 
 slider.insert("g", ".track-overlay")
     .attr("class", "ticks")
     .attr("transform", "translate(0," + 18 + ")")
   .selectAll("text")
-  .data(x.ticks(10))
+  .data(slider_x.ticks(10))
   .enter().append("text")
-    .attr("x", x)
+    .attr("x", slider_x)
     .attr("text-anchor", "middle")
     .text(function(d) { return d + " s"; });
 
 var handle = slider.insert("circle", ".track-overlay")
     .attr("class", "handle")
     .attr("r", 9)
-    .attr("cx", x(0.0));
+    .attr("cx", slider_x(0.0));
 
 var t_line = timeline.insert("line")
   .attr("vector-effect","non-scaling-stroke")
   .attr("class","tline")
-  .attr("x1",x(0.0))
-  .attr("x2",x(0.0))
-  .attr("y1",y.range()[0])
-  .attr("y2",y.range()[1])
+  .attr("x1",x(0.0)-1000)
+  .attr("x2",x(0.0)+1000)
+  .attr("y1",y.range()[0]-1000)
+  .attr("y2",y.range()[1]+1000)
 ;
 
 
 function set_t(t) {
     console.log("SET T");
     console.log(t);
-  handle.attr("cx",x(t));
+  handle.attr("cx",slider_x(t));
   t_line.attr("x1",x(t)).attr("x2",x(t));
 
   var signals = [];
@@ -256,7 +265,7 @@ function set_t(t) {
           }
           signals.push({ "name":obj_i, "green": green, 
               "pt": data.infrastructure.nodes[obj.node].pt,
-              "tangent": data.infrastructure.nodes[obj.node].tangent
+              "offset": normalize_vector(y_vector(rotate_right(data.infrastructure.nodes[obj.node].tangent)))
           });
       }
   }
@@ -268,8 +277,14 @@ function set_t(t) {
   var s = signalgroup.selectAll("*").data(signals);
   s.exit().remove();
   s.enter().append("rect").merge(s)
-      .attr("x", function(d) { return gridx(d.pt[0] + offset*rotate_right(d.tangent)[0]); })
-      .attr("y", function(d) { return gridy(-(d.pt[1]) + offset*rotate_right(d.tangent)[1]); })
+      .attr("x", function(d) { 
+        var halfwidth = 10.0/2.0; 
+        if(d.green) { halfwidth = 17.0/2.0; }
+        return gridx(d.pt[0] + offset*d.offset[0]) - halfwidth; })
+      .attr("y", function(d) { 
+          var halfwidth = 10.0/2.0; 
+          if(d.green) { halfwidth = 17.0/2.0; }
+          return gridy(-(d.pt[1] - offset*d.offset[1])) - halfwidth; })
       .attr("width", function(d) { if(d.green) { return 17; } else { return 10; }})
       .attr("height", function(d) { if(d.green) { return 17; } else { return 10; }})
       .attr("rx", function(d) { if(d.green) { return 17; } else { return 0; }})
@@ -501,5 +516,7 @@ function line_to_vector(a) {
 function lerp(a,b,x) {
     return a + (b-a)*x;
 }
+
+function y_vector(a) { return [0.0, a[1]]; }
 
 set_t(0.0);

@@ -131,10 +131,10 @@ fn run(opt :&Opt) -> AppResult<()> {
     if let Some(ref graphical) = opt.graphical {
         use std::fs::File;
         use std::io::BufWriter;
-        let mut file = File::create(graphical)?;
-        let mut writer = BufWriter::new(&file);
         let string = rolling::output::graphical::graphical(&infrastructure)?;
         use std::io::Write;
+        let mut file = File::create(graphical)?;
+        let mut writer = BufWriter::new(&file);
         write!(writer,"{}",string)?;
     }
 
