@@ -33,6 +33,66 @@ fn main() {
     }
 }
 
+fn run(input_fn: &Path, verbose: bool) -> Result<(), String> {
+    //
+    // 1. read xml
+    let (doc,ns) = get_xml(input_fn, verbose)?;
+    // 2. find infrastructur
+    let infrastructure = get_infrastructure_element(&doc,&ns)?;
+    // 3. convert infrastructure to dgraph
+    let mut dgraph = convert_infrastructure(infrastructure,&ns, verbose)?;
+    // 4. find detection sections
+    create_sections_from_detectors(&mut dgraph);
+    // 7. calculate sight nodes
+    // 5. Join zero-length edges
+    // 6. Join small edges within tolerance? (Signal and detector in same node?)
+    // 8. (create routes)
+    // 9. output infrastructure rolling dgraph format
+    print_rolling(&dgraph);
+
+    Ok(())
+}
+
+pub fn repr_partnodeobject(obj :&PartNodeObject) -> String {
+    use PartNodeObject::*;
+    match *obj {
+        Signal(ref x) => format!("signal {}",x),
+        TVDEnter(ref x) => format!("enter {}", x),
+        TVDExit(ref x) => format!("exit {}", x),
+    }
+}
+
+pub fn repr_partnode(objs :&[PartNodeObject]) -> String {
+        if objs.len() > 0 {
+            format!("({})",objs.iter().map(|o| repr_partnodeobject(o))
+                .collect::<Vec<_>>().join(", "))
+        } else { "".to_string() }
+}
+
+pub fn print_rolling(model :&Model) {
+    for n in &model.nodes {
+        println!("node {}{}-{}{}", n.a.name, repr_partnode(&n.a.objs)
+                 ,n.b.name, repr_partnode(&n.b.objs));
+    }
+    for e in &model.edges {
+        match *e {
+            Edge::Linear(a,(b,d)) => println!("linear {}-{} {}", 
+                          model.nodes[a.node_idx()].get_part(a.node_part()).name,
+                          model.nodes[b.node_idx()].get_part(b.node_part()).name,
+                          d),
+            Edge::Switch(ref name,side,n1,(n2,d2),(n3,d3)) => 
+                println!("switch {} {} {}-({} {}, {} {})", name, side.as_str(), 
+                         model.nodes[n1.node_idx()].get_part(n1.node_part()).name, 
+                         model.nodes[n2.node_idx()].get_part(n2.node_part()).name, 0.0,
+                         model.nodes[n3.node_idx()].get_part(n3.node_part()).name, 0.0),
+            Edge::Boundary(n) => println!("boundary {}", 
+                     model.nodes[n.node_idx()].get_part(n.node_part()).name),
+
+        }
+    }
+}
+
+
 
 fn get_xml(input_fn :&Path, verbose: bool) -> Result<(minidom::Element,String), String> {
     let mut f = File::open(input_fn).expect("file not found");
@@ -64,24 +124,6 @@ fn get_infrastructure_element<'a>(doc :&'a minidom::Element, ns:&str)
     }
 }
 
-fn run(input_fn: &Path, verbose: bool) -> Result<(), String> {
-    //
-    // 1. read xml
-    let (doc,ns) = get_xml(input_fn, verbose)?;
-    // 2. find infrastructur
-    let infrastructure = get_infrastructure_element(&doc,&ns)?;
-    // 3. convert infrastructure to dgraph
-    let dgraph = convert_infrastructure(infrastructure,&ns, verbose);
-    // 4. find detection sections
-    println!("DGRAPH {:?}", dgraph);
-    // 5. Join zero-length edges
-    // 6. Join small edges within tolerance? (Signal and detector in same node?)
-    // 7. (create routes)
-    // 8. output infrastructure rolling dgraph format
-
-    Ok(())
-}
-
 #[derive(Debug,Clone)]
 pub struct Model {
     nodes: Vec<DGraphNode>,
@@ -105,6 +147,15 @@ pub struct DGraphNode {
     both : Vec<TracksideObject>,
 }
 
+impl DGraphNode {
+    fn get_part(&self, p :NodePart) -> &PartNode {
+        match p {
+            NodePart::A => &self.a,
+            NodePart::B => &self.b,
+        }
+    }
+}
+
 #[derive(Debug,Clone)]
 pub struct PartNode {
     name :String,
@@ -115,6 +166,15 @@ pub struct PartNode {
 pub enum Side {
     Left,
     Right,
+}
+
+impl Side {
+    pub fn as_str(&self) -> &str {
+        match *self {
+            Side::Left => "left",
+            Side::Right => "right",
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -186,7 +246,7 @@ enum TracksideObject {
 }
 
 #[derive(Clone, Debug)]
-enum PartNodeObject {
+pub enum PartNodeObject {
     Signal(String),
     TVDEnter(String),
     TVDExit(String),
@@ -242,7 +302,7 @@ fn track_objects(track: &minidom::Element,
         })
         .unwrap_or_else(|| Vec::new());
 
-    let detectors = signal_elements.iter()
+    let detectors = detector_elements.iter()
         .map(|d| {
             let id = d.attr("id").unwrap();
             let _name = d.attr("name").unwrap();
@@ -285,7 +345,7 @@ impl PartNodeIdx {
 
     pub fn to_usize(&self) -> usize { self.0 }
 
-    pub fn node_idx(&self) -> usize { (self.0 -1 ) / 2 }
+    pub fn node_idx(&self) -> usize { (self.0 - 1 ) / 2 }
     pub fn node_part(&self) -> NodePart { if (self.0-1)%2 == 0 {
          NodePart::A } else {
              NodePart::B
@@ -307,6 +367,7 @@ fn create_sections_from_detectors(m :&mut Model) {
 
         let has_detector = node.both.iter().any(|x| if let TracksideObject::Detector = *x { true } else { false });
         if has_detector {
+            println!("Detector at {:?}", node);
         } else {
             sets.union(a_idx,b_idx);
         }
@@ -339,14 +400,20 @@ fn create_sections_from_detectors(m :&mut Model) {
             if a_section != sets.find(is_boundary_idx) {
                 node.a.objs.push(PartNodeObject::TVDEnter(a_section_name.clone()));
                 node.b.objs.push(PartNodeObject::TVDExit(a_section_name));
+            } else {
+                println!("Side A of detector {:?} is boundary", node);
             }
 
             if b_section != sets.find(is_boundary_idx) {
                 node.b.objs.push(PartNodeObject::TVDEnter(b_section_name.clone()));
                 node.a.objs.push(PartNodeObject::TVDExit(b_section_name));
+            } else {
+                println!("Side B of detector {:?} is boundary", node);
             }
         }
     }
+
+    println!("Union find is done: {:?}", sets);
 }
 
 fn empty_node(name :&str) -> DGraphNode {
@@ -422,6 +489,7 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
             .unwrap_or_else(|| Vec::new());
 
         objects.sort_by(|a, b| (a.0).partial_cmp(&b.0).expect("Object position NaN"));
+        //println!("OBJECTs on track: {:?}", objects);
         switches.sort_by(|a, b| (a.0).partial_cmp(&b.0).expect("Switch position NaN"));
 
         // println!("track {:?} with length {:?}", name, track_length);
@@ -522,13 +590,13 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
             length: track_length - start,
         });
 
-        // for x in &sections { println!("  sec {:?}", x); }
+        //for x in &sections { println!("  sec {:?}", x); }
         // for x in &sw_datas { println!("  sw {:?}", x); }
     }
 
     let mut continuations = Vec::new();
     let mut conn_nodes = HashMap::new();
-    let mut i = 1;
+    let mut i = 0;
     for s in &mut sections {
         //println!("node n{}a-n{}b -- {:?}", i, i, s.end_a);
         
@@ -581,6 +649,7 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
             //         obj_name);
 
             last_b = PartNodeIdx::from_node_part(i,NodePart::B);
+            last_pos = *obj_pos;
             i += 1;
         }
 
