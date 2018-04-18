@@ -34,6 +34,40 @@ fn main() {
     }
 }
 
+// fn copy_objects(nodes :&mut Vec<DGraphNode>, a :PartNodeIdx, b:PartNodeIdx) {
+// }
+//
+// fn join_nodes(model :&mut Model, tol :f64) {
+//     use Edge::*;
+//     let mut edges_to :HashMap<PartNodeIdx,()>= HashMap::new();
+//     for e in &model.edges {
+//         match *e {
+//             Edge::Linear(a,(b,d)) => {
+//             },
+//             Edge::Switch(ref name, _side, n1, (nl,dl),(nr,dr)) => {
+//             },
+//             Edge::Boundary(_) => {},
+//         }
+//     }
+//
+//     let mut edges = &mut model.edges;
+//     let mut nodes = &mut model.nodes;
+//
+//     edges.retain(|e| match *e {
+//             Edge::Linear(a,(b,d)) => {
+//                 if d < tol {
+//                     copy_objects(&mut nodes, b, a);
+//                     nodes[
+//                 }
+//                 true
+//             },
+//             Edge::Switch(ref name, _side, n1, (nl,dl),(nr,dr)) => {
+//                 true
+//             },
+//             Edge::Boundary(_) => true,
+//     });
+// }
+
 fn run(input_fn: &path::Path, verbose: bool) -> Result<(), String> {
     // 1. read xml
     let (doc, ns) = get_xml(input_fn, verbose)?;
@@ -46,13 +80,12 @@ fn run(input_fn: &path::Path, verbose: bool) -> Result<(), String> {
     // 7. calculate sight nodes
     // 5. Join zero-length edges
     // 6. Join small edges within tolerance? (Signal and detector in same node?)
+    // join_nodes(&mut dgraph, 1.0); // 1m tolerance
     // 8. (create routes)
     let routes = find_routes(&dgraph);
-    for r in &routes {
-        println!("ROUTE: {:?}", r);
-    }
     // 9. output infrastructure rolling dgraph format
     print_rolling(&dgraph);
+    print_routes(&dgraph, &routes);
 
     Ok(())
 }
@@ -69,7 +102,8 @@ pub struct Route {
     entry: RouteBoundary,
     exit: RouteBoundary,
     sections: Vec<String>,
-    switches: Vec<(String,Side)>,
+    switches: Vec<(String, Side)>,
+    length: f64,
 }
 
 #[derive(Debug, Clone)]
@@ -83,7 +117,7 @@ pub struct RouteEntry {
 pub struct Path {
     node: PartNodeIdx,
     section: Option<String>,
-    sections: Vec<String>,
+    sections: Vec<(String, f64)>,
     switches: Vec<(String, Side)>,
     length: f64,
 }
@@ -93,30 +127,31 @@ pub enum DirEdge {
     Linear(Link),
     FacingSwitch(String, Link, Link),
     TrailingSwitch(String, Side, Link),
-    Boundary
+    Boundary,
 }
 
 pub fn find_routes(model: &Model) -> Vec<Route> {
 
+    let section_tolerance = 3.0;
+
     let mut routes = Vec::new();
 
-    let mut dir_edges :HashMap<PartNodeIdx, DirEdge>= HashMap::new();
+    let mut dir_edges: HashMap<PartNodeIdx, DirEdge> = HashMap::new();
     for edge in &model.edges {
         match *edge {
-            Edge::Linear(a,(b,d)) => {
-                dir_edges.insert(a, DirEdge::Linear((b,d)));
-                dir_edges.insert(b, DirEdge::Linear((a,d)));
+            Edge::Linear(a, (b, d)) => {
+                dir_edges.insert(a, DirEdge::Linear((b, d)));
+                dir_edges.insert(b, DirEdge::Linear((a, d)));
             }
-            Edge::Switch(ref name, _side, n1, (nl,dl),(nr,dr)) => {
-                dir_edges.insert(n1, DirEdge::FacingSwitch(name.clone(), 
-                                                           (nl,dl), (nr,dr)));
-                dir_edges.insert(nl, DirEdge::TrailingSwitch(name.clone(), 
-                                                             Side::Left, (n1,dl)));
-                dir_edges.insert(nr, DirEdge::TrailingSwitch(name.clone(), 
-                                                             Side::Right, (n1,dr)));
+            Edge::Switch(ref name, _side, n1, (nl, dl), (nr, dr)) => {
+                dir_edges.insert(n1, DirEdge::FacingSwitch(name.clone(), (nl, dl), (nr, dr)));
+                dir_edges.insert(nl,
+                                 DirEdge::TrailingSwitch(name.clone(), Side::Left, (n1, dl)));
+                dir_edges.insert(nr,
+                                 DirEdge::TrailingSwitch(name.clone(), Side::Right, (n1, dr)));
             }
             Edge::Boundary(n) => {
-                dir_edges.insert(n,DirEdge::Boundary);
+                dir_edges.insert(n, DirEdge::Boundary);
             }
         }
     }
@@ -144,7 +179,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
             let entry = entry_stack.pop().unwrap();
             let mut search_stack = Vec::new();
 
-            println!("Entry from {:?}",entry);
+            println!("Entry from {:?}", entry);
 
             // A route path may only visit a given switch in a given direction
             // (trailing or facing) once, because using a given switch
@@ -163,7 +198,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
 
             search_stack.push(Path {
                 node: entry.node,
-                sections: entry.section.iter().cloned().collect(),
+                sections: entry.section.iter().map(|x| (x.clone(), 0.0)).collect(),
                 section: entry.section,
                 switches: vec![],
                 length: 0.0,
@@ -176,7 +211,6 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                     let mut is_exit = false;
                     if curr_state.node != entry.node {
 
-                        //
                         // Check what is in here
                         //
                         let node = model.nodes[curr_state.node.node_idx()]
@@ -189,8 +223,16 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                                     routes.push(Route {
                                         entry: entry.entry.clone(),
                                         exit: RouteBoundary::Signal(x.clone()),
-                                        sections: curr_state.sections.clone(),
+                                        sections: curr_state.sections
+                                            .iter()
+                                            .filter_map(|&(ref x, d)| if d > section_tolerance {
+                                                Some(x.clone())
+                                            } else {
+                                                None
+                                            })
+                                            .collect(),
                                         switches: curr_state.switches.clone(),
+                                        length: curr_state.length,
                                     });
 
                                     if entry_visited.insert(curr_state.node) {
@@ -206,7 +248,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                                 }
                                 TVDEnter(ref x) => {
                                     curr_state.section = Some(x.clone());
-                                    curr_state.sections.push(x.clone());
+                                    curr_state.sections.push((x.clone(), 0.0));
                                 }
                                 TVDExit(ref x) => {
                                     if curr_state.section == Some(x.clone()) {
@@ -221,11 +263,23 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                         (false, Some(DirEdge::Linear((other, d)))) => {
                             curr_state.node = other.opposite();
                             curr_state.length += d;
+                            if let Some(&mut (ref s, ref mut l)) =
+                                curr_state.sections.iter_mut().last() {
+                                if Some(s) == curr_state.section.as_ref() {
+                                    *l += d;
+                                }
+                            }
                         }
                         (false, Some(DirEdge::TrailingSwitch(sw, pos, (other, d)))) => {
                             curr_state.node = other.opposite();
                             curr_state.length += d;
                             curr_state.switches.push((sw, pos));
+                            if let Some(&mut (ref s, ref mut l)) =
+                                curr_state.sections.iter_mut().last() {
+                                if Some(s) == curr_state.section.as_ref() {
+                                    *l += d;
+                                }
+                            }
                             if !switches_path_visited.insert(curr_state.switches.clone()) {
                                 break;
                             }
@@ -235,10 +289,22 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
 
                             curr_state.node = other1.opposite();
                             curr_state.length += d1;
+                            if let Some(&mut (ref s, ref mut l)) =
+                                curr_state.sections.iter_mut().last() {
+                                if Some(s) == curr_state.section.as_ref() {
+                                    *l += d1;
+                                }
+                            }
                             curr_state.switches.push((sw.clone(), Side::Left));
 
                             right_state.node = other2.opposite();
                             right_state.length += d2;
+                            if let Some(&mut (ref s, ref mut l)) =
+                                right_state.sections.iter_mut().last() {
+                                if Some(s) == right_state.section.as_ref() {
+                                    *l += d2;
+                                }
+                            }
                             right_state.switches.push((sw, Side::Right));
 
                             if switches_path_visited.insert(right_state.switches.clone()) {
@@ -252,11 +318,19 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                             routes.push(Route {
                                 entry: entry.entry.clone(),
                                 exit: RouteBoundary::ModelBoundary(curr_state.node),
-                                sections: curr_state.sections.clone(),
+                                sections: curr_state.sections
+                                    .iter()
+                                    .filter_map(|&(ref x, d)| if d > section_tolerance {
+                                        Some(x.clone())
+                                    } else {
+                                        None
+                                    })
+                                    .collect(),
                                 switches: curr_state.switches.clone(),
+                                length: curr_state.length,
                             });
                             break;
-                        },
+                        }
                         _ => break,
                     }
                 }
@@ -286,6 +360,66 @@ pub fn repr_partnode(objs: &[PartNodeObject]) -> String {
                     .join(", "))
     } else {
         "".to_string()
+    }
+}
+
+pub fn print_resources(_model: &Model, route: &Route) {
+    println!("  sections [{}]", route.sections.join(", "));
+    println!("  switches [{}]",
+             route.switches
+                 .iter()
+                 .map(|&(ref sw, pos)| format!("{} {}", sw, pos.as_str()))
+                 .collect::<Vec<_>>()
+                 .join(", "));
+    println!("  contains []");
+}
+
+pub fn print_routes(model: &Model, routes: &Vec<Route>) {
+    let mut i = 1;
+    for r in routes {
+        use RouteBoundary::*;
+        match (&r.entry, &r.exit) {
+            (&ModelBoundary(ref b), &Signal(ref s)) => {
+                println!("modelentry r{} from {} {{",
+                         i,
+                         model.nodes[b.node_idx()].get_part(b.node_part()).name);
+                println!("  exit {}", s);
+                println!("  length {}", r.length);
+                print_resources(model, r);
+                println!("}}");
+            }
+            (&Signal(ref s), &ModelBoundary(ref b)) => {
+                println!("modelexit r{} to {} {{",
+                         i,
+                         model.nodes[b.node_idx()].get_part(b.node_part()).name);
+                println!("  entry {}", s);
+                if let Some(s) = r.sections.get(0) {
+                    println!("  entrysection {}", s);
+                }
+                println!("  length {}", r.length);
+                print_resources(model, r);
+                println!("}}");
+            }
+            (&Signal(ref s1), &Signal(ref s2)) => {
+                println!("route r{} {{", i);
+                println!("  entry {}", s1);
+                println!("  length {}", r.length);
+                if let Some(s) = r.sections.get(0) {
+                    println!("  entrysection {}", s);
+                }
+                println!("  exit {}", s2);
+                print_resources(model, r);
+                println!("}}");
+            }
+            (&ModelBoundary(ref b1), &ModelBoundary(ref b2)) => {
+                println!("Warning: boundaries {:?} to {:?} are reachable without passing a \
+                          signal.",
+                         b1,
+                         b2);
+            }
+        }
+
+        i += 1;
     }
 }
 
@@ -378,6 +512,7 @@ pub struct DGraphNode {
     a: PartNode,
     b: PartNode,
     both: Vec<TracksideObject>,
+    removed: bool,
 }
 
 impl DGraphNode {
@@ -689,6 +824,7 @@ fn create_sections_from_detectors(m: &mut Model) {
 
 fn empty_node(name: &str) -> DGraphNode {
     DGraphNode {
+        removed: false,
         name: None,
         a: PartNode {
             name: format!("{}a", name),
