@@ -7,3 +7,4 @@ authors = ["Bjørnar Luteberget <luteberget@gmail.com>"]
 quick-xml = "*"
 minidom = "*"
 clap = "*"
+petgraph="*"
