@@ -12,8 +12,8 @@ use std::collections::HashSet;
 
 struct Opts<'a> {
     input_fn: &'a path::Path,
-    infrastructure_fn :Option<&'a path::Path>,
-    routes_fn :Option<&'a path::Path>,
+    infrastructure_fn: Option<&'a path::Path>,
+    routes_fn: Option<&'a path::Path>,
     verbose: bool,
 }
 
@@ -28,18 +28,18 @@ fn main() {
             .short("v")
             .help("Level of verbosity"))
         .arg(Arg::with_name("infrastructure")
-             .long("infrastructure")
-             .short("o")
-             .value_name("FILE")
-             .help("Output rolling d-graph format infrastructure to file"))
+            .long("infrastructure")
+            .short("o")
+            .value_name("FILE")
+            .help("Output rolling d-graph format infrastructure to file"))
         .arg(Arg::with_name("routes")
-             .short("r")
-             .long("routes")
-             .value_name("FILE")
-             .help("Output rolling routes to file"))
+            .short("r")
+            .long("routes")
+            .value_name("FILE")
+            .help("Output rolling routes to file"))
         .get_matches();
 
-    let opts  = Opts {
+    let opts = Opts {
         input_fn: opts.value_of("INPUT").map(|x| path::Path::new(x)).unwrap(),
         infrastructure_fn: opts.value_of("infrastructure").map(|x| path::Path::new(x)),
         routes_fn: opts.value_of("routes").map(|x| path::Path::new(x)),
@@ -99,21 +99,29 @@ fn run(opts: &Opts) -> Result<(), String> {
     // 4. find detection sections
     create_sections_from_detectors(&mut dgraph);
     // 7. calculate sight nodes
+    // create_sight(&mut dgraph);
+
     // 5. Join zero-length edges
+    //  ---> instead of removing zero-length edges,
+    //  it could better be viewed as removing empty nodes, because they have no use.
+    //
     // 6. Join small edges within tolerance? (Signal and detector in same node?)
     // join_nodes(&mut dgraph, 1.0); // 1m tolerance
-    // 8. (create routes)
+    //
+    // 8. create routes
     let routes = find_routes(&dgraph);
+
     // 9. output infrastructure rolling dgraph format
     if let Some(f) = opts.infrastructure_fn {
         let mut buffer = File::create(f).map_err(|e| e.to_string())?;
         print_rolling(&mut buffer, &dgraph).map_err(|e| e.to_string())?;
     }
+
+    // 10. output routes
     if let Some(f) = opts.routes_fn {
         let mut buffer = File::create(f).map_err(|e| e.to_string())?;
         print_routes(&mut buffer, &dgraph, &routes).map_err(|e| e.to_string())?;
     }
-    //print_routes(&dgraph, &routes);
 
     Ok(())
 }
@@ -248,7 +256,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                             use PartNodeObject::*;
                             match *obj {
                                 Signal(ref x) => {
-                                    routes.push(Route {
+                                    let route = Route {
                                         entry: entry.entry.clone(),
                                         exit: RouteBoundary::Signal(x.clone()),
                                         sections: curr_state.sections
@@ -261,7 +269,13 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                                             .collect(),
                                         switches: curr_state.switches.clone(),
                                         length: curr_state.length,
-                                    });
+                                    };
+
+                                    if route.length < section_tolerance {
+                                        println!("Warning: route is too short. {:?}", route);
+                                    } else {
+                                        routes.push(route);
+                                    }
 
                                     if entry_visited.insert(curr_state.node) {
                                         entry_stack.push(RouteEntry {
@@ -283,6 +297,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                                         curr_state.section = None;
                                     }
                                 }
+                                Sight(_,_) => {}
                             }
                         }
                     }
@@ -343,7 +358,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                             }
                         }
                         (false, Some(DirEdge::Boundary)) => {
-                            routes.push(Route {
+                            let route = Route {
                                 entry: entry.entry.clone(),
                                 exit: RouteBoundary::ModelBoundary(curr_state.node),
                                 sections: curr_state.sections
@@ -356,7 +371,14 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                                     .collect(),
                                 switches: curr_state.switches.clone(),
                                 length: curr_state.length,
-                            });
+                            };
+
+                            if route.length < section_tolerance {
+                                println!("Warning: route is too short. {:?}", route);
+                            } else {
+                                routes.push(route);
+                            }
+
                             break;
                         }
                         _ => break,
@@ -376,6 +398,7 @@ pub fn repr_partnodeobject(obj: &PartNodeObject) -> String {
         Signal(ref x) => format!("signal {}", x),
         TVDEnter(ref x) => format!("enter {}", x),
         TVDExit(ref x) => format!("exit {}", x),
+        Sight(ref x, l) => format!("sight {} {}",x,l),
     }
 }
 
@@ -391,54 +414,63 @@ pub fn repr_partnode(objs: &[PartNodeObject]) -> String {
     }
 }
 
-pub fn print_resources<W: std::io::Write>(buf :&mut W, _model: &Model, route: &Route) -> std::io::Result<()> {
-    writeln!(buf,"  sections [{}]", route.sections.join(", "))?;
-    writeln!(buf,"  switches [{}]",
+pub fn print_resources<W: std::io::Write>(buf: &mut W,
+                                          _model: &Model,
+                                          route: &Route)
+                                          -> std::io::Result<()> {
+    writeln!(buf, "  sections [{}]", route.sections.join(", "))?;
+    writeln!(buf,
+             "  switches [{}]",
              route.switches
                  .iter()
                  .map(|&(ref sw, pos)| format!("{} {}", sw, pos.as_str()))
                  .collect::<Vec<_>>()
                  .join(", "))?;
-    writeln!(buf,"  contains []")?;
+    writeln!(buf, "  contains []")?;
     Ok(())
 }
 
-pub fn print_routes<W: std::io::Write>(buf: &mut W, model :&Model, routes: &Vec<Route>) -> std::io::Result<()> {
+pub fn print_routes<W: std::io::Write>(buf: &mut W,
+                                       model: &Model,
+                                       routes: &Vec<Route>)
+                                       -> std::io::Result<()> {
     let mut i = 1;
     for r in routes {
         use RouteBoundary::*;
         match (&r.entry, &r.exit) {
             (&ModelBoundary(ref b), &Signal(ref s)) => {
-                writeln!(buf,"modelentry r{} from {} {{",
+                writeln!(buf,
+                         "modelentry r{} from {} {{",
                          i,
                          model.nodes[b.node_idx()].get_part(b.node_part()).name)?;
-                writeln!(buf,"  exit {}", s)?;
-                writeln!(buf,"  length {}", r.length)?;
+                writeln!(buf, "  exit {}", s)?;
+                writeln!(buf, "  length {}", r.length)?;
                 print_resources(buf, model, r)?;
-                writeln!(buf,"}}")?;
+                writeln!(buf, "}}")?;
             }
             (&Signal(ref s), &ModelBoundary(ref b)) => {
-                writeln!(buf,"modelexit r{} to {} {{",
+                writeln!(buf,
+                         "modelexit r{} to {} {{",
                          i,
                          model.nodes[b.node_idx()].get_part(b.node_part()).name)?;
-                writeln!(buf,"  entry {}", s)?;
+                writeln!(buf, "  entry {}", s)?;
                 if let Some(s) = r.sections.get(0) {
-                    writeln!(buf,"  entrysection {}", s)?;
+                    writeln!(buf, "  entrysection {}", s)?;
                 }
-                writeln!(buf,"  length {}", r.length)?;
+                writeln!(buf, "  length {}", r.length)?;
                 print_resources(buf, model, r)?;
-                writeln!(buf,"}}")?;
+                writeln!(buf, "}}")?;
             }
             (&Signal(ref s1), &Signal(ref s2)) => {
-                writeln!(buf,"route r{} {{", i)?;
-                writeln!(buf,"  entry {}", s1)?;
-                writeln!(buf,"  exit {}", s2)?;
+                writeln!(buf, "route r{} {{", i)?;
+                writeln!(buf, "  entry {}", s1)?;
+                writeln!(buf, "  exit {}", s2)?;
                 if let Some(s) = r.sections.get(0) {
-                    writeln!(buf,"  entrysection {}", s)?;
+                    writeln!(buf, "  entrysection {}", s)?;
                 }
-                writeln!(buf,"  length {}", r.length)?;
+                writeln!(buf, "  length {}", r.length)?;
                 print_resources(buf, model, r)?;
-                writeln!(buf,"}}")?;
+                writeln!(buf, "}}")?;
             }
             (&ModelBoundary(ref b1), &ModelBoundary(ref b2)) => {
                 println!("Warning: boundaries {:?} to {:?} are reachable without passing a \
@@ -453,9 +485,10 @@ pub fn print_routes<W: std::io::Write>(buf: &mut W, model :&Model, routes: &Vec<
     Ok(())
 }
 
-pub fn print_rolling<W: std::io::Write>(buf :&mut W, model: &Model) -> std::io::Result<()>{
+pub fn print_rolling<W: std::io::Write>(buf: &mut W, model: &Model) -> std::io::Result<()> {
     for n in &model.nodes {
-        writeln!(buf,"node {}{}-{}{}",
+        writeln!(buf,
+                 "node {}{}-{}{}",
                  n.a.name,
                  repr_partnode(&n.a.objs),
                  n.b.name,
@@ -464,13 +497,15 @@ pub fn print_rolling<W: std::io::Write>(buf :&mut W, model: &Model) -> std::io::
     for e in &model.edges {
         match *e {
             Edge::Linear(a, (b, d)) => {
-                writeln!(buf,"linear {}-{} {}",
+                writeln!(buf,
+                         "linear {}-{} {}",
                          model.nodes[a.node_idx()].get_part(a.node_part()).name,
                          model.nodes[b.node_idx()].get_part(b.node_part()).name,
                          d)?
             }
             Edge::Switch(ref name, side, n1, (n2, d2), (n3, d3)) => {
-                writeln!(buf,"switch {} {} {}-({} {}, {} {})",
+                writeln!(buf,
+                         "switch {} {} {}-({} {}, {} {})",
                          name,
                          side.as_str(),
                          model.nodes[n1.node_idx()].get_part(n1.node_part()).name,
@@ -480,7 +515,8 @@ pub fn print_rolling<W: std::io::Write>(buf :&mut W, model: &Model) -> std::io::
                          d3)?
             }
             Edge::Boundary(n) => {
-                writeln!(buf,"boundary {}",
+                writeln!(buf,
+                         "boundary {}",
                          model.nodes[n.node_idx()].get_part(n.node_part()).name)?
             }
 
@@ -577,7 +613,7 @@ impl Side {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 enum Direction {
     Up,
     Down,
@@ -595,7 +631,7 @@ pub struct Switch {
 #[derive(Debug,Clone)]
 pub enum Connection {
     Stop,
-    Boundary,
+    Boundary(Option<String>),
     Connection(String),
 }
 
@@ -628,8 +664,9 @@ fn endpoint(refside: RefSide, node: &minidom::Element, ns: &str) -> Connection {
         return Connection::Stop;
     }
 
-    if let Some(_) = node.get_child("openEnd", ns) {
-        return Connection::Boundary;
+    if let Some(e) = node.get_child("openEnd", ns) {
+        let name = e.attr("id");
+        return Connection::Boundary(name.map(|x| x.to_string()));
     }
 
     // TODO stderr
@@ -641,7 +678,8 @@ fn endpoint(refside: RefSide, node: &minidom::Element, ns: &str) -> Connection {
 
 #[derive(Clone, Debug)]
 enum TracksideObject {
-    Signal(Direction),
+    Signal(Direction, f64),
+    Sight(Direction, String, f64),
     Detector,
 }
 
@@ -650,6 +688,7 @@ pub enum PartNodeObject {
     Signal(String),
     TVDEnter(String),
     TVDExit(String),
+    Sight(String,f64),
 }
 
 
@@ -668,6 +707,12 @@ fn track_objects(track: &minidom::Element,
             let _name = s.attr("name").unwrap();
             let name = id;
             let pos = s.attr("pos").unwrap().parse::<f64>().unwrap();
+            let sight = s.attr("sight")
+                .map(|x| x.parse::<f64>().unwrap())
+                .unwrap_or_else(|| {
+                    println!("Warning: no sight info for signal {:?}", name);
+                    200.0
+                });
             let dir = match s.attr("dir") {
                 Some("up") => Direction::Up,
                 Some("down") => Direction::Down,
@@ -687,7 +732,7 @@ fn track_objects(track: &minidom::Element,
             };
 
             if relevant_type {
-                Some((pos, name.to_string(), TracksideObject::Signal(dir)))
+                Some((pos, name.to_string(), TracksideObject::Signal(dir, sight)))
             } else {
                 None
             }
@@ -870,6 +915,90 @@ fn empty_node(name: &str) -> DGraphNode {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+enum SectionEnd {
+    Begin, End,
+}
+
+
+fn mk_sight(sections: &mut [LinearSection], links: &HashMap<(usize,SectionEnd),(usize,SectionEnd)>) {
+    let signals = sections.iter()
+        .enumerate()
+        .flat_map(|(i, x)| {
+            x.objects
+                .iter()
+                .filter_map(|&(pos, ref name, ref obj)| {
+                    if let TracksideObject::Signal(dir, l) = *obj {
+                        Some((i, pos, l, dir, name.clone()))
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+
+    for (mut sec,mut pos,mut l,mut dir,name) in signals.into_iter() {
+        loop {
+            match dir {
+                Direction::Up => {
+                    if pos - l > 0.0  {
+                        sections[sec].objects.push((pos-l, "".to_string(), 
+                            TracksideObject::Sight(dir,name, l)));
+                        break;
+                    } else {
+                        match links.get(&(sec,SectionEnd::Begin)) {
+                            Some(&(x, SectionEnd::End)) => {
+                                l -= pos;
+                                pos = sections[x].length;
+                                sec = x;
+                            },
+                            Some(&(x, SectionEnd::Begin)) => {
+                                l -= pos;
+                                pos = 0.0;
+                                sec = x;
+                                dir = Direction::Up;
+                            },
+                            None => {
+                                println!("Warning: sighting distance for \"{}\" truncated from {} to {}", name, l, pos);
+                                sections[sec].objects.push((0.0, "".to_string(), 
+                                    TracksideObject::Sight(dir,name,pos)));
+                                break;
+                            }
+                        }
+                    }
+                },
+                Direction::Down => {
+                    if pos + l < sections[sec].length {
+                        sections[sec].objects.push((pos+l, "".to_string(), 
+                            TracksideObject::Sight(dir, name, l)));
+                        break;
+                    } else {
+                        match links.get(&(sec, SectionEnd::End)) {
+                            Some(&(x,SectionEnd::Begin)) => {
+                                l -= sections[sec].length - pos;
+                                pos = 0.0;
+                                sec = x;
+                            },
+                            Some(&(x,SectionEnd::End)) => {
+                                l -= sections[sec].length - pos;
+                                pos = sections[x].length;
+                                sec = x;
+                                dir = Direction::Down;
+                            },
+                            None => {
+                                println!("Warning: sighting distance for \"{}\" truncated from {} to {}", name, l, sections[sec].length - pos);
+                                sections[sec].objects.push((sections[sec].length, "".to_string(), 
+                                    TracksideObject::Sight(dir,name,sections[sec].length - pos)));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 fn convert_infrastructure(infrastructure: &minidom::Element,
                           ns: &str,
@@ -883,10 +1012,6 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
 
     let mut sections = Vec::new();
     let mut sw_datas = Vec::new();
-    let mut model = Model {
-        nodes: Vec::new(),
-        edges: Vec::new(),
-    };
 
     // map[Detector] = Node
     // name of detectore and index of its node
@@ -927,7 +1052,6 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
             })
             .unwrap_or_else(|| Vec::new());
 
-        objects.sort_by(|a, b| (a.0).partial_cmp(&b.0).expect("Object position NaN"));
         // println!("OBJECTs on track: {:?}", objects);
         switches.sort_by(|a, b| (a.0).partial_cmp(&b.0).expect("Switch position NaN"));
 
@@ -1033,6 +1157,53 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
         // for x in &sw_datas { println!("  sw {:?}", x); }
     }
 
+    let mut conn_nodes1 = HashMap::new();
+    let mut links = HashMap::new();
+    for (i,s) in sections.iter().enumerate() {
+        if let Connection::Connection(ref end_a) = s.end_a {
+            let this = (i,SectionEnd::Begin);
+            if  conn_nodes1.get(end_a).is_some() {
+                let other_node = conn_nodes1.remove(end_a).unwrap();
+                links.insert(other_node,this);
+                links.insert(this,other_node);
+            } else  {
+                conn_nodes1.insert(end_a.clone(), this);
+            }
+        }
+        if let Connection::Connection(ref end_b) = s.end_b {
+            let this = (i,SectionEnd::End);
+            if  conn_nodes1.get(end_b).is_some() {
+                let other = conn_nodes1.remove(end_b).unwrap();
+                links.insert(other,this);
+                links.insert(this,other);
+            } else  {
+                conn_nodes1.insert(end_b.clone(), this);
+            }
+        }
+    }
+    for sw in &sw_datas {
+        let n1 = conn_nodes1.remove(&sw.trailnode).unwrap();
+        let n2 = conn_nodes1.remove(&sw.leftnode).unwrap();
+        let n3 = conn_nodes1.remove(&sw.rightnode).unwrap();
+        links.insert(n1,n2);
+        links.insert(n1,n3);
+        // Don't go from legs to trunk because many signals
+        // would be sighted from the same track, which would cause
+        // confusion for driver.
+    }
+
+    mk_sight(&mut sections, &links);
+
+    // SOrt objects by pos
+    for s in &mut sections {
+        s.objects.sort_by(|a, b| (a.0).partial_cmp(&b.0).expect("Object position NaN"));
+    }
+
+
+    let mut model = Model {
+        nodes: Vec::new(),
+        edges: Vec::new(),
+    };
     let mut continuations = Vec::new();
     let mut conn_nodes = HashMap::new();
     let mut i = 0;
@@ -1049,9 +1220,14 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
                 conn_nodes.insert(end_a.clone(), PartNodeIdx::from_node_part(i, NodePart::A));
             }
         }
-        if let Connection::Boundary = s.end_a {
+        if let Connection::Boundary(ref name) = s.end_a {
             // println!("boundary n{}a", i);
-            model.edges.push(Edge::Boundary(PartNodeIdx::from_node_part(i, NodePart::A)));
+            let n = PartNodeIdx::from_node_part(i, NodePart::A);
+            model.edges.push(Edge::Boundary(n));
+
+            if let Some(ref name) = *name {
+                model.nodes[n.node_idx()].a.name = name.clone();
+            }
         }
 
         let mut last_b = PartNodeIdx::from_node_part(i, NodePart::B);
@@ -1068,13 +1244,15 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
             let mut node = empty_node(&format!("n{}", i));
 
             match *obj_data {
-                TracksideObject::Signal(Direction::Down) => {
-                    node.a.objs.push(PartNodeObject::Signal(obj_name.to_string()))
-                }
-                TracksideObject::Signal(Direction::Up) => {
-                    node.b.objs.push(PartNodeObject::Signal(obj_name.to_string()))
-                }
+                TracksideObject::Signal(Direction::Down, _) => 
+                    node.a.objs.push(PartNodeObject::Signal(obj_name.to_string())),
+                TracksideObject::Signal(Direction::Up, _) => 
+                    node.b.objs.push(PartNodeObject::Signal(obj_name.to_string())),
                 TracksideObject::Detector => node.both.push(TracksideObject::Detector),
+                TracksideObject::Sight(Direction::Down, ref sig_name, l) => 
+                    node.a.objs.push(PartNodeObject::Sight(sig_name.to_string(), l)),
+                TracksideObject::Sight(Direction::Up, ref sig_name, l) => 
+                    node.b.objs.push(PartNodeObject::Sight(sig_name.to_string(), l)),
             };
 
             model.nodes.push(node);
@@ -1108,8 +1286,13 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
             }
         }
 
-        if let Connection::Boundary = s.end_b {
-            model.edges.push(Edge::Boundary(PartNodeIdx::from_node_part(i, NodePart::B)));
+        if let Connection::Boundary(ref name) = s.end_b {
+            let n = PartNodeIdx::from_node_part(i, NodePart::B);
+            model.edges.push(Edge::Boundary(n));
+
+            if let Some(ref name) = *name {
+                model.nodes[n.node_idx()].b.name = name.clone();
+            }
         }
 
         i += 1;
