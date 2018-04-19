@@ -10,6 +10,13 @@ use std::path;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+struct Opts<'a> {
+    input_fn: &'a path::Path,
+    infrastructure_fn :Option<&'a path::Path>,
+    routes_fn :Option<&'a path::Path>,
+    verbose: bool,
+}
+
 fn main() {
     let opts = App::new("railML 2.3 to Rolling converter")
         .about("Convert railML 2.3 files to rolling D-graph format")
@@ -20,12 +27,26 @@ fn main() {
         .arg(Arg::with_name("v")
             .short("v")
             .help("Level of verbosity"))
+        .arg(Arg::with_name("infrastructure")
+             .long("infrastructure")
+             .short("o")
+             .value_name("FILE")
+             .help("Output rolling d-graph format infrastructure to file"))
+        .arg(Arg::with_name("routes")
+             .short("r")
+             .long("routes")
+             .value_name("FILE")
+             .help("Output rolling routes to file"))
         .get_matches();
 
-    let input_fn = opts.value_of("INPUT").unwrap();
-    let verbose = opts.occurrences_of("v") > 0;
+    let opts  = Opts {
+        input_fn: opts.value_of("INPUT").map(|x| path::Path::new(x)).unwrap(),
+        infrastructure_fn: opts.value_of("infrastructure").map(|x| path::Path::new(x)),
+        routes_fn: opts.value_of("routes").map(|x| path::Path::new(x)),
+        verbose: opts.occurrences_of("v") > 0,
+    };
 
-    match run(path::Path::new(input_fn), verbose) {
+    match run(&opts) {
         Ok(()) => {}
         Err(e) => {
             println!("Failed: {}", e);
@@ -68,13 +89,13 @@ fn main() {
 //     });
 // }
 
-fn run(input_fn: &path::Path, verbose: bool) -> Result<(), String> {
+fn run(opts: &Opts) -> Result<(), String> {
     // 1. read xml
-    let (doc, ns) = get_xml(input_fn, verbose)?;
+    let (doc, ns) = get_xml(opts.input_fn, opts.verbose)?;
     // 2. find infrastructur
     let infrastructure = get_infrastructure_element(&doc, &ns)?;
     // 3. convert infrastructure to dgraph
-    let mut dgraph = convert_infrastructure(infrastructure, &ns, verbose)?;
+    let mut dgraph = convert_infrastructure(infrastructure, &ns, opts.verbose)?;
     // 4. find detection sections
     create_sections_from_detectors(&mut dgraph);
     // 7. calculate sight nodes
@@ -84,8 +105,15 @@ fn run(input_fn: &path::Path, verbose: bool) -> Result<(), String> {
     // 8. (create routes)
     let routes = find_routes(&dgraph);
     // 9. output infrastructure rolling dgraph format
-    print_rolling(&dgraph);
-    print_routes(&dgraph, &routes);
+    if let Some(f) = opts.infrastructure_fn {
+        let mut buffer = File::create(f).map_err(|e| e.to_string())?;
+        print_rolling(&mut buffer, &dgraph).map_err(|e| e.to_string())?;
+    }
+    if let Some(f) = opts.routes_fn {
+        let mut buffer = File::create(f).map_err(|e| e.to_string())?;
+        print_routes(&mut buffer, &dgraph, &routes).map_err(|e| e.to_string())?;
+    }
+    //print_routes(&dgraph, &routes);
 
     Ok(())
 }
@@ -363,53 +391,54 @@ pub fn repr_partnode(objs: &[PartNodeObject]) -> String {
     }
 }
 
-pub fn print_resources(_model: &Model, route: &Route) {
-    println!("  sections [{}]", route.sections.join(", "));
-    println!("  switches [{}]",
+pub fn print_resources<W: std::io::Write>(buf :&mut W, _model: &Model, route: &Route) -> std::io::Result<()> {
+    writeln!(buf,"  sections [{}]", route.sections.join(", "))?;
+    writeln!(buf,"  switches [{}]",
              route.switches
                  .iter()
                  .map(|&(ref sw, pos)| format!("{} {}", sw, pos.as_str()))
                  .collect::<Vec<_>>()
-                 .join(", "));
-    println!("  contains []");
+                 .join(", "))?;
+    writeln!(buf,"  contains []")?;
+    Ok(())
 }
 
-pub fn print_routes(model: &Model, routes: &Vec<Route>) {
+pub fn print_routes<W: std::io::Write>(buf: &mut W, model :&Model, routes: &Vec<Route>) -> std::io::Result<()> {
     let mut i = 1;
     for r in routes {
         use RouteBoundary::*;
         match (&r.entry, &r.exit) {
             (&ModelBoundary(ref b), &Signal(ref s)) => {
-                println!("modelentry r{} from {} {{",
+                writeln!(buf,"modelentry r{} from {} {{",
                          i,
-                         model.nodes[b.node_idx()].get_part(b.node_part()).name);
-                println!("  exit {}", s);
-                println!("  length {}", r.length);
-                print_resources(model, r);
-                println!("}}");
+                         model.nodes[b.node_idx()].get_part(b.node_part()).name)?;
+                writeln!(buf,"  exit {}", s)?;
+                writeln!(buf,"  length {}", r.length)?;
+                print_resources(buf, model, r)?;
+                writeln!(buf,"}}")?;
             }
             (&Signal(ref s), &ModelBoundary(ref b)) => {
-                println!("modelexit r{} to {} {{",
+                writeln!(buf,"modelexit r{} to {} {{",
                          i,
-                         model.nodes[b.node_idx()].get_part(b.node_part()).name);
-                println!("  entry {}", s);
+                         model.nodes[b.node_idx()].get_part(b.node_part()).name)?;
+                writeln!(buf,"  entry {}", s)?;
                 if let Some(s) = r.sections.get(0) {
-                    println!("  entrysection {}", s);
+                    writeln!(buf,"  entrysection {}", s)?;
                 }
-                println!("  length {}", r.length);
-                print_resources(model, r);
-                println!("}}");
+                writeln!(buf,"  length {}", r.length)?;
+                print_resources(buf, model, r)?;
+                writeln!(buf,"}}")?;
             }
             (&Signal(ref s1), &Signal(ref s2)) => {
-                println!("route r{} {{", i);
-                println!("  entry {}", s1);
-                println!("  length {}", r.length);
+                writeln!(buf,"route r{} {{", i)?;
+                writeln!(buf,"  entry {}", s1)?;
+                writeln!(buf,"  length {}", r.length)?;
                 if let Some(s) = r.sections.get(0) {
-                    println!("  entrysection {}", s);
+                    writeln!(buf,"  entrysection {}", s)?;
                 }
-                println!("  exit {}", s2);
-                print_resources(model, r);
-                println!("}}");
+                writeln!(buf,"  exit {}", s2)?;
+                print_resources(buf, model, r)?;
+                writeln!(buf,"}}")?;
             }
             (&ModelBoundary(ref b1), &ModelBoundary(ref b2)) => {
                 println!("Warning: boundaries {:?} to {:?} are reachable without passing a \
@@ -421,41 +450,44 @@ pub fn print_routes(model: &Model, routes: &Vec<Route>) {
 
         i += 1;
     }
+    Ok(())
 }
 
-pub fn print_rolling(model: &Model) {
+pub fn print_rolling<W: std::io::Write>(buf :&mut W, model: &Model) -> std::io::Result<()>{
     for n in &model.nodes {
-        println!("node {}{}-{}{}",
+        writeln!(buf,"node {}{}-{}{}",
                  n.a.name,
                  repr_partnode(&n.a.objs),
                  n.b.name,
-                 repr_partnode(&n.b.objs));
+                 repr_partnode(&n.b.objs))?;
     }
     for e in &model.edges {
         match *e {
             Edge::Linear(a, (b, d)) => {
-                println!("linear {}-{} {}",
+                writeln!(buf,"linear {}-{} {}",
                          model.nodes[a.node_idx()].get_part(a.node_part()).name,
                          model.nodes[b.node_idx()].get_part(b.node_part()).name,
-                         d)
+                         d)?
             }
             Edge::Switch(ref name, side, n1, (n2, d2), (n3, d3)) => {
-                println!("switch {} {} {}-({} {}, {} {})",
+                writeln!(buf,"switch {} {} {}-({} {}, {} {})",
                          name,
                          side.as_str(),
                          model.nodes[n1.node_idx()].get_part(n1.node_part()).name,
                          model.nodes[n2.node_idx()].get_part(n2.node_part()).name,
                          d2,
                          model.nodes[n3.node_idx()].get_part(n3.node_part()).name,
-                         d3)
+                         d3)?
             }
             Edge::Boundary(n) => {
-                println!("boundary {}",
-                         model.nodes[n.node_idx()].get_part(n.node_part()).name)
+                writeln!(buf,"boundary {}",
+                         model.nodes[n.node_idx()].get_part(n.node_part()).name)?
             }
 
         }
     }
+
+    Ok(())
 }
 
 
