@@ -399,7 +399,7 @@ pub fn print_resources<W: std::io::Write>(buf :&mut W, _model: &Model, route: &R
                  .map(|&(ref sw, pos)| format!("{} {}", sw, pos.as_str()))
                  .collect::<Vec<_>>()
                  .join(", "))?;
-    writeln!(buf,"  contains []")?;
+    writeln!(buf,"  contains []")?;
     Ok(())
 }
 
@@ -432,11 +432,11 @@ pub fn print_routes<W: std::io::Write>(buf: &mut W, model :&Model, routes: &Vec<
             (&Signal(ref s1), &Signal(ref s2)) => {
                 writeln!(buf,"route r{} {{", i)?;
                 writeln!(buf,"  entry {}", s1)?;
-                writeln!(buf,"  length {}", r.length)?;
+                writeln!(buf,"  exit {}", s2)?;
                 if let Some(s) = r.sections.get(0) {
                     writeln!(buf,"  entrysection {}", s)?;
                 }
-                writeln!(buf,"  exit {}", s2)?;
+                writeln!(buf,"  length {}", r.length)?;
                 print_resources(buf, model, r)?;
                 writeln!(buf,"}}")?;
             }
