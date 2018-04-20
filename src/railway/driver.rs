@@ -22,7 +22,7 @@ struct Train {
     location: (NodeId, (Option<NodeId>, f64)),
     velocity: f64,
     params: TrainParams,
-    under_train: SmallVec<[(ObjectId, f64); 4]>,
+    under_train: SmallVec<[(NodeId, f64); 4]>,
 }
 
 pub struct Driver {
@@ -77,8 +77,8 @@ impl Driver {
                 sim.start_process(p);
             }
             self.arrive_front(sim, obj);
-            self.train.under_train.push((obj, self.train.params.length));
         }
+        self.train.under_train.push((node, self.train.params.length));
     }
 
     fn arrive_front(&mut self, sim: &Sim, obj: ObjectId) {
@@ -134,13 +134,17 @@ impl Driver {
         // the remembered authority is updated.
         self.authority -= update.dx;
 
-        self.train.under_train.retain(|&mut (obj, ref mut dist)| {
+        self.train.under_train.retain(|&mut (node, ref mut dist)| {
             *dist -= update.dx;
             if *dist < 1e-4 {
                 // Cleared a node.
-                if let Some(p) = sim.world.statics.objects[obj].arrive_back() {
-                    sim.start_process(p);
+                
+                for obj in sim.world.statics.nodes[node].objects.clone() {
+                    if let Some(p) = sim.world.statics.objects[obj].arrive_back() {
+                        sim.start_process(p);
+                    }
                 }
+
                 false
             } else {
                 true
