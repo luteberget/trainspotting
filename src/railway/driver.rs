@@ -43,19 +43,9 @@ impl Driver {
                logger: Box<Fn(TrainLogEvent)>)
                -> Self {
 
-        // The starting node is actually the opposite node of the
-        // boundary node given as input here.
-        logger(TrainLogEvent::Node(node));
-        let node = sim.world.statics.nodes[node].other_node;
-        logger(TrainLogEvent::Node(node));
-        let next = match sim.world.edge_from(node) {
-            Some(x) => x,
-            None => panic!("Derailed in first node"),
-        };
-
         let train = Train {
             params: params,
-            location: (node, next),
+            location: (0, (Some(node),0.0)),
             velocity: 0.0,
             under_train: SmallVec::new(),
         };
@@ -76,12 +66,8 @@ impl Driver {
         if *sim.time() > 0.0 {
             (self.logger)(TrainLogEvent::Wait(*sim.time()));
         }
-        (self.logger)(TrainLogEvent::Edge(self.train.location.0, 
-                                        (self.train.location.1).0));
-
         self.step = (DriverAction::Coast, *sim.time());
-        let loc = self.train.location.0;
-        self.goto_node(sim, loc);
+        self.move_train_discrete(sim);
     }
 
     fn goto_node(&mut self, sim: &mut Sim, node: NodeId) {
@@ -114,13 +100,24 @@ impl Driver {
     }
 
     fn move_train(&mut self, sim: &mut Sim) -> ModelContainment {
-        let (action, action_time) = self.step;
-        let dt = *sim.time() - action_time;
-
+        let dt = *sim.time() - self.step.1;
         if dt <= 1e-4 {
             return ModelContainment::Inside;
         }
 
+        self.move_train_continuous(sim);
+        self.move_train_discrete(sim);
+
+        if (self.train.location.1).0.is_none() && self.train.under_train.len() == 0 {
+            ModelContainment::Outside
+        } else {
+            ModelContainment::Inside
+        }
+    }
+
+    fn move_train_continuous(&mut self, sim :&mut Sim) {
+        let (action, action_time) = self.step;
+        let dt = *sim.time() - action_time;
         let update = dynamic_update(&self.train.params, self.train.velocity, 
                                     DriverPlan { action: action, dt: dt, });
 
@@ -159,11 +156,13 @@ impl Driver {
             !lost
         });
         }
+    }
 
+    fn move_train_discrete(&mut self, sim :&mut Sim) {
+        loop {
+            let (_, (end_node, dist)) = self.train.location;
+            if dist > 1e-4 || end_node.is_none() { break; }
 
-
-        let (_, (end_node, dist)) = self.train.location;
-        if dist < 1e-4 && end_node.is_some() {
             let new_start = sim.world.statics.nodes[end_node.unwrap()].other_node;
             (self.logger)(TrainLogEvent::Node(end_node.unwrap()));
             self.goto_node(sim, new_start);
@@ -179,12 +178,6 @@ impl Driver {
                 }
                 None => panic!("Derailed"),
             }
-        }
-
-        if (self.train.location.1).0.is_none() && self.train.under_train.len() == 0 {
-            ModelContainment::Outside
-        } else {
-            ModelContainment::Inside
         }
     }
 
