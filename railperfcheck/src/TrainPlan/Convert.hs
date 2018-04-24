@@ -145,6 +145,6 @@ dispatchPlan (routes,_,trains,_) plan = print [actions x | x <- succPairs ([Noth
     activeRoutes Nothing = Set.empty
 
     print :: [[String]] -> String
-    print = (intercalate "\n").(fmap (intercalate "\n"))
+    print = (intercalate "\nwait\n").(fmap (intercalate "\n"))
 
 
