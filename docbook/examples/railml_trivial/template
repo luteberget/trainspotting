@@ -1,0 +1,23 @@
+# Conversion from railML
+
+## Trivial handwritten example/test file
+
+```xml
+$RAILWAYRAILMLINFRASTRUCTURE
+```
+
+## Generated output
+
+### Infrastructure
+```haskell
+$RAILWAYINFRASTRUCTURE
+```
+
+### Routes 
+```haskell
+$RAILWAYROUTES
+```
+
+## View
+
+$RAILWAYVIEW

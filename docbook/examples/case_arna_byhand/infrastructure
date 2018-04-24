@@ -1,0 +1,116 @@
+-- TODO sight
+--
+-- Leftmost node is free-standing distant signal Fs11001
+--
+-- S: Entry section
+boundary b1
+node b1(exit a114a)-ne1b(sight hs11001 1225.0, enter a114a)
+linear ne1b-ne2a 1225.0
+node ne2a(enter a114a, exit a201)-ne2b(exit a114a, enter a201, signal hs1101)
+linear ne2b-ne3a 250.0
+node ne3a(enter a201, exit a203, signal hs11004)-ne3b(exit a201, enter a203)
+linear ne3b-ne4a 395.0 -- 645 - 250
+node ne4a-ne4b
+
+-- SPV 1
+-- 719 - 395
+switch spv1 left ne4b-(n31a 162.0, n11a 100.0)
+
+-- S: Track 3 (top)
+node n31a(enter a205,exit a202)-n31b(exit a205,enter a202)
+--linear n31b-n32a 50.0
+switch spv22 right n32a-(n31b 50.0, nvx22end 50.0)
+node nvx22end-nvx22endstop
+node n32a-n32b
+linear n32b-n33a 50.0
+node n33a(enter a202, exit a204, signal hs11016)-n33b(exit a202, enter a204, sight hs11065 422.0)
+linear n33b-n34a 422.0
+node n34a(enter a204, exit a206)-n34b(exit a204, enter a206, signal hs11065, sight hs11075 371.0)
+-- Ignoring the crossing for now. Joining 206-208-210 into 206
+linear n34b-n35a 271.0
+node n35a(enter a206, exit a212)-n35b(exit a206, enter a212)
+switch spv4 left n36a-(n91b 111.0, n35b 111.0)
+node n91a(enter a250, exit a212)-n91b(enter a212, exit a250)
+node n36a-n36b
+linear n36b-n37a 100.0
+-- Skip 214
+node n37a(enter a212, exit a216)-n37b(enter a216, exit a212, signal hs11075)
+linear n37b-n38a 250.0
+node n38a(enter a216, exit a218, signal hs11006)-n38b(exit a216, enter a218)
+linear n38b-n39a 250.0
+node n39a(enter a218)-n39b(exit a218)
+linear n39b-n310a 750.0
+node n310a-b2iii
+boundary b2iii
+-- Exit on upper track to BRG
+
+-- S: Track 1 (mid)
+node n11a-n11b
+switch spv3 right n11b-(n12a 52.0, n41a 53.0)
+node n12a(enter a205, exit a207,signal hs11036)-n13b(enter a207, exit a205)
+linear n13b-n14a 396.0
+node n14a(enter a207, exit a209)-n14b(enter a209, exit a207, signal hs11005)
+switch spv10 left n15a-(n46b 50.0,n14b 50.0)
+node n15a-n15b
+linear n15b-n16a 50.0
+node n16a(enter a209, exit a211)-n16b(enter a211, exit a209)
+linear n16b-n17a 50.0
+node n17a-n17b
+switch spv11 left n17b-(n61a 50.0, n18a 50.0)
+node n18a(enter a211, exit a213)-n18b(enter a213, exit a211)
+linear n18b-n19a 50.0
+node n19a(enter a213, exit a215, signal hs11066)-n19b(enter a215, exit a213)
+linear n19b-n110a 844.0
+node n110a(exit a217, enter a215)-n110b(enter a217, exit a215, signal hs11015)
+--linear n110b-n111a 371.0
+switch spv2 right n111a-(n110b 371.0, n2xb 106.0)
+node n111a-n111b
+linear n111b-n112a 40.0
+-- JOIN a219 into a217)
+node n112a(enter a217, exit a221, signal hs11056)-n112b(enter a221, exit a217)
+linear n112b-n113a 250.0
+node n113a(enter a221)-n113b(exit a221)
+linear n113b-n114a 750.0
+node n114a-b2i
+boundary b2i
+
+
+-- TRACK 2
+node n20a-n20b
+linear n20b-n21a 253.0
+node n21a(enter a240)-n21b(exit a240, enter a244)
+linear n21b-n22a 100.0
+node n22a(enter a244, exit a248)-n22b(enter a244, exit a248)
+node n23a-n23b
+switch spv6 left n23a-(n62b 150.0, n22b 50.0)
+linear n23b-n24a 50.0
+node n24a(enter a248, exit a250)-n24b(exit a248, enter a250)
+linear n24b-n25a 50.0
+node n25a-n25b
+switch spv15 left n25b-(n91a 50.0, n26a 500.0)
+node n26a(enter a250, exit a217)-n26b(exit a250, enter a217, signal hs11035)
+linear n26b-n2xa 100.0
+node n2xa-n2xb
+
+-- S: Track "6" (unnamed) mid
+-- join a239 into a241
+node n61a(enter a211, exit a241)-n61b(exit a211, enter a241)
+linear n61b-n62a 100.0 
+node n62a(enter a241, exit a248, signal hs11026)-n62b(enter a248, exit a241)
+
+
+-- S: Track 4
+node n41a(enter a205, exit a231)-n41b(exit a205, enter a231)
+linear n41b-n42a 53.0
+node n42a-n42b
+switch spv5 left n42b-(n43a 53.0, n50a 200.0)
+node n50a-n50b -- dead end
+node n43a(enter a231, exit a233, signal hs11046)-n43b(exit a231, enter a233)
+linear n43b-n44a 281.0
+node n44a(enter a233, exit a235)-n44b(exit a233, enter a235, signal hs11045)
+-- Join to track 1
+switch spv12 right n45a-(n59b 200.0, n44b 50.0)
+node n59a-n59b -- dead end
+node n45a-n45b
+linear n45b-n46a 50.0
+node n46a(enter a235, exit a209)-n46b(enter a209, exit a235)
