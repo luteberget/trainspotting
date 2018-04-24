@@ -58,8 +58,11 @@ lexeme = L.lexeme sc
 symbol :: String -> Parser String
 symbol = L.symbol sc
 
+--  number :: Parser Double
+--  number = lexeme L.float
 number :: Parser Double
-number = lexeme L.float
+number =  (try (lexeme L.float)) <|> (do x <- lexeme L.decimal ; return (fromIntegral x))
+
 
 identifier :: Parser String
 identifier = lexeme ((:) <$> letterChar <*> many bodyChar)
