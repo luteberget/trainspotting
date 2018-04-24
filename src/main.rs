@@ -192,8 +192,6 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
         }
     }
 
-    println!("DIR EDGES {:?}", dir_edges);
-
     let boundary_nodes = model.edges.iter().filter_map(|x| if let Edge::Boundary(n) = *x {
         Some(n)
     } else {
@@ -457,7 +455,7 @@ pub fn print_routes<W: std::io::Write>(buf: &mut W,
                 if let Some(s) = r.sections.get(0) {
                     writeln!(buf, "  entrysection {}", s)?;
                 }
-                writeln!(buf, "  length {}", r.length)?;
+                writeln!(buf, "  length {}", r.length + 1000.0)?;
                 print_resources(buf, model, r)?;
                 writeln!(buf, "}}")?;
             }
@@ -921,15 +919,15 @@ enum SectionEnd {
 }
 
 
-fn mk_sight(sections: &mut [LinearSection], links: &HashMap<(usize,SectionEnd),(usize,SectionEnd)>) {
-    let signals = sections.iter()
+fn mk_sight(sections: &mut [LinearSection], links: &HashMap<(usize,SectionEnd),Vec<(usize,SectionEnd)>>) {
+    let mut signals = sections.iter()
         .enumerate()
         .flat_map(|(i, x)| {
             x.objects
                 .iter()
                 .filter_map(|&(pos, ref name, ref obj)| {
                     if let TracksideObject::Signal(dir, l) = *obj {
-                        Some((i, pos, l, dir, name.clone()))
+                        Some((i, pos, l,l, dir, name.clone()))
                     } else {
                         None
                     }
@@ -938,65 +936,65 @@ fn mk_sight(sections: &mut [LinearSection], links: &HashMap<(usize,SectionEnd),(
         })
         .collect::<Vec<_>>();
 
-    for (mut sec,mut pos,mut l,mut dir,name) in signals.into_iter() {
-        loop {
-            match dir {
-                Direction::Up => {
-                    if pos - l > 0.0  {
-                        sections[sec].objects.push((pos-l, "".to_string(), 
-                            TracksideObject::Sight(dir,name, l)));
-                        break;
-                    } else {
-                        match links.get(&(sec,SectionEnd::Begin)) {
-                            Some(&(x, SectionEnd::End)) => {
-                                l -= pos;
-                                pos = sections[x].length;
-                                sec = x;
-                            },
-                            Some(&(x, SectionEnd::Begin)) => {
-                                l -= pos;
-                                pos = 0.0;
-                                sec = x;
-                                dir = Direction::Up;
-                            },
-                            None => {
-                                println!("Warning: sighting distance for \"{}\" truncated from {} to {}", name, l, pos);
-                                sections[sec].objects.push((0.0, "".to_string(), 
-                                    TracksideObject::Sight(dir,name,pos)));
-                                break;
+    while signals.len() > 0 {
+        let (sec,pos,sight_dist,remaining_dist,dir,name) = signals.pop().unwrap();
+        match dir {
+            Direction::Up => {
+                if pos - remaining_dist > 0.0  {
+                    sections[sec].objects.push((pos- remaining_dist, "".to_string(), 
+                        TracksideObject::Sight(dir,name, sight_dist)));
+                } else {
+                    match links.get(&(sec,SectionEnd::Begin)) {
+                        Some(pts) => {
+                            for pt in pts {
+                                match pt {
+                                    &(newsec, SectionEnd::End) => {
+                                        signals.push((newsec, sections[newsec].length, sight_dist, remaining_dist - pos, dir, name.clone()));
+                                    },
+                                    &(newsec, SectionEnd::Begin) => {
+                                        signals.push((newsec, 0.0, sight_dist, remaining_dist - pos, Direction::Up, name.clone()));
+                                    },
+                                }
                             }
+                        },
+                        None => {
+                            let deficiency = remaining_dist - pos;
+                            println!("Warning: sighting distance for \"{}\" truncated by {} from {} to {}", name, deficiency, sight_dist, sight_dist - deficiency);
+                            sections[sec].objects.push((0.0, "".to_string(), 
+                                TracksideObject::Sight(dir,name,sight_dist - deficiency)));
                         }
                     }
-                },
-                Direction::Down => {
-                    if pos + l < sections[sec].length {
-                        sections[sec].objects.push((pos+l, "".to_string(), 
-                            TracksideObject::Sight(dir, name, l)));
-                        break;
-                    } else {
-                        match links.get(&(sec, SectionEnd::End)) {
-                            Some(&(x,SectionEnd::Begin)) => {
-                                l -= sections[sec].length - pos;
-                                pos = 0.0;
-                                sec = x;
-                            },
-                            Some(&(x,SectionEnd::End)) => {
-                                l -= sections[sec].length - pos;
-                                pos = sections[x].length;
-                                sec = x;
-                                dir = Direction::Down;
-                            },
-                            None => {
-                                println!("Warning: sighting distance for \"{}\" truncated from {} to {}", name, l, sections[sec].length - pos);
-                                sections[sec].objects.push((sections[sec].length, "".to_string(), 
-                                    TracksideObject::Sight(dir,name,sections[sec].length - pos)));
-                                break;
+                }
+            },
+            Direction::Down => {
+                if pos + remaining_dist < sections[sec].length {
+                    sections[sec].objects.push((pos+remaining_dist, "".to_string(), 
+                        TracksideObject::Sight(dir, name, sight_dist)));
+                } else {
+                    match links.get(&(sec, SectionEnd::End)) {
+                        Some(pts) => {
+                            for pt in pts {
+                                match pt {
+                                    &(newsec, SectionEnd::Begin) => {
+                                        signals.push((newsec, 0.0, sight_dist, remaining_dist - (sections[sec].length - pos), dir, name.clone()));
+                                    },
+                                    &(newsec, SectionEnd::End) => {
+                                        signals.push((newsec, sections[newsec].length, sight_dist, remaining_dist - (sections[sec].length - pos), Direction::Down, name.clone()));
+                                    },
+                                }
                             }
+                        },
+                        None => {
+                            let deficiency = remaining_dist - (sections[sec].length - pos);
+                            println!("Warning: sighting distance for \"{}\" truncated by {} from {} to {}", name, deficiency, sight_dist, sight_dist - deficiency);
+                            sections[sec].objects.push((sections[sec].length, "".to_string(), 
+                                TracksideObject::Sight(dir,name,sight_dist - deficiency)));
                         }
                     }
                 }
             }
         }
+
     }
 }
 
@@ -1086,10 +1084,10 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
 
             let conn = conn[0];
 
-            let conn_ref = conn.attr("ref").unwrap().to_string();
-            let conn_id = conn.attr("id").unwrap().to_string();
-            let orientation = conn.attr("orientation").unwrap();
-            let course = conn.attr("course").unwrap();
+            let conn_ref = conn.attr("ref").expect("switch connection without reference").to_string();
+            let conn_id = conn.attr("id").expect("switch connection without id").to_string();
+            let orientation = conn.attr("orientation").expect("switch connection without orientation");
+            let course = conn.attr("course").expect("switch connection without course");
 
             let before_name = format!("spv-{}-{}-down", name, i);
             let after_name = format!("spv-{}-{}-up", name, i);
@@ -1164,8 +1162,8 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
             let this = (i,SectionEnd::Begin);
             if  conn_nodes1.get(end_a).is_some() {
                 let other_node = conn_nodes1.remove(end_a).unwrap();
-                links.insert(other_node,this);
-                links.insert(this,other_node);
+                links.insert(other_node,vec![this]);
+                links.insert(this,vec![other_node]);
             } else  {
                 conn_nodes1.insert(end_a.clone(), this);
             }
@@ -1174,8 +1172,8 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
             let this = (i,SectionEnd::End);
             if  conn_nodes1.get(end_b).is_some() {
                 let other = conn_nodes1.remove(end_b).unwrap();
-                links.insert(other,this);
-                links.insert(this,other);
+                links.insert(other,vec![this]);
+                links.insert(this,vec![other]);
             } else  {
                 conn_nodes1.insert(end_b.clone(), this);
             }
@@ -1185,8 +1183,7 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
         let n1 = conn_nodes1.remove(&sw.trailnode).unwrap();
         let n2 = conn_nodes1.remove(&sw.leftnode).unwrap();
         let n3 = conn_nodes1.remove(&sw.rightnode).unwrap();
-        links.insert(n1,n2);
-        links.insert(n1,n3);
+        links.insert(n1,vec![n2,n3]);
         // Don't go from legs to trunk because many signals
         // would be sighted from the same track, which would cause
         // confusion for driver.
