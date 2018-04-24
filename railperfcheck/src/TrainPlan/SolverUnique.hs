@@ -45,6 +45,8 @@ rId = routePartName
 tId = trainName
 
 succPairs x = zip x (tail x)
+
+nubOrd :: Ord a => [a] -> [a]
 nubOrd = Set.toList . Set.fromList
 
 endingIn   routes x = filter (\r -> (routePartExit r)  == x) routes 
@@ -106,7 +108,7 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
   let progress = fromMaybe allFalseProgress (fmap progressBefore prevState)
   progressFuture <- sequence [ do 
       p <- sequence [ do
-          p <- allocateAhead s routes route train (fmap occupation prevState, occ) progressBefore
+          p <- allocateAhead s routes partialroutes route train (fmap occupation prevState, occ) progressBefore
           return (route, p)
         | (route, progressBefore) <- trainProgress ]
       return (train, p)
@@ -115,7 +117,7 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
   let allFalseBorn = [ (t, false) | t <- trains ]
   let born = fromMaybe allFalseBorn (fmap bornBefore prevState)
   bornFuture <- sequence [ do
-       b <- bornCondition s nodeMap routes train (fmap occupation prevState, occ) born
+       b <- bornCondition s nodeMap routes partialroutes train (fmap occupation prevState, occ) born
        return (train,b)
      | (train, born) <- born ]
 
@@ -181,8 +183,13 @@ allocateRoute s routes route train (s1,s2) = case routePartEntry route of
     addClause s $ catMaybes 
       ([fmap neg becomesAllocated, wasAllocated] ++ previousIsAllocated)
 
-allocateAhead :: Solver -> [RoutePart] -> RoutePart -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
-allocateAhead s routes route train (prevState,state) progressBefore = case routePartExit route of
+wholeRouteConflicts :: [RoutePart] -> [[RoutePartId]] -> RoutePart -> [RoutePartId]
+wholeRouteConflicts routes partialroutes route = nubOrd $ join [ routePartConflicts r | r <- parts ]
+  where parts = fmap (\x -> head [ r | r <- routes, rId r == x ]) partIds
+        partIds = head [ whole | whole <- partialroutes, (rId route) `elem` whole ]
+
+allocateAhead :: Solver -> [RoutePart] -> [[RoutePartId]] ->  RoutePart -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
+allocateAhead s routes partialroutes route train (prevState,state) progressBefore = case routePartExit route of
   Nothing -> return true -- Not relevant for boundary exit routes
   Just signal -> do
     let isAllocated = state .! (rId route) .= Just (tId train)
@@ -196,13 +203,13 @@ allocateAhead s routes route train (prevState,state) progressBefore = case route
                             neg (prev .! (rId nextRoute) .= Just (tId train)),
                             state .! (rId nextRoute) .= Just (tId train) ]
                         | nextRoute <- nextRs
-                        , conflicting <- ( (rId nextRoute) : (routePartConflicts nextRoute)) ]
+                        , conflicting <- ( (rId nextRoute) : (wholeRouteConflicts routes partialroutes nextRoute)) ]
       conflictResolved <- mapM (andl s) hadConflict
       addClause s ([progressBefore, progressFuture] ++ conflictResolved)
     return (neg progressFuture)
 
-bornCondition :: Solver -> NodeMap -> [RoutePart] -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
-bornCondition s nodeMap routes train (prevState,state) bornBefore = do
+bornCondition :: Solver -> NodeMap -> [RoutePart] -> [[RoutePartId]] -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
+bornCondition s nodeMap routes partialroutes train (prevState,state) bornBefore = do
    -- Is this train born in this step?
    let trainBirthPlaces = [ route
                           | rid <- nodesToRoutes nodeMap (head (trainVisits train))
@@ -229,7 +236,7 @@ bornCondition s nodeMap routes train (prevState,state) bornBefore = do
                                neg (prev .! (rId trainBirthPlace) .= Just (tId train)),
                                state .! (rId trainBirthPlace) .= Just (tId train) ]
                            | conflicting <- ((rId trainBirthPlace):
-                                            (routePartConflicts trainBirthPlace)) ]
+                                            (wholeRouteConflicts routes partialroutes trainBirthPlace)) ]
          conflictResolved <- mapM (andl s) hadConflict
          -- conflictResolved :: [Lit] is a list of ways that the given
          -- birth place could have had a conflict which is resolved.
