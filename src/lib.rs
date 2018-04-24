@@ -36,14 +36,22 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
     let mut sim = eventsim::Simulation::new_with_scheduler(world, scheduler);
     sim.set_time_log(time_log);
 
+    let mut events = Vec::new();
+
     for action in &dispatch.actions {
         use input::dispatch::DispatchAction::*;
         match *action {
-            Wait(t) => sim.advance_by(t),
+            Wait(Some(t)) => sim.advance_by(t),
+            Wait(None) =>  {
+                for e in events.drain(0..) {
+                    sim.advance_to(e);
+                }
+            },
             Route(ref route_name) => match routes.get(route_name) {
                 Some(route) => {
-                    sim.start_process(Box::new(
+                    let proc_ = sim.start_process(Box::new(
                         railway::route::ActivateRoute::new(route.clone())));
+                    events.push(proc_);
                 },
                 _ => panic!("Unknown route \"{}\"", route_name),
             },
@@ -61,6 +69,8 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
                     },
                     _ => panic!("Unkoown route \"{}\"", route_name),
                 };
+
+                events.push(activated);
 
                 let train_log = Rc::new(RefCell::new(Vec::new()));
                 train_logs.push((name.clone(), params.clone(), train_log.clone()));

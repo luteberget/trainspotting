@@ -230,7 +230,7 @@ impl Driver {
         // Static maximum speed profile ahead from current position
         // TODO: other speed limitations
         let static_speed_profile = StaticMaximumVelocityProfile {
-            local_max_velocity: 20.0, //self.train.params.max_vel,
+            local_max_velocity: self.train.params.max_vel,
             max_velocity_ahead: SmallVec::from_slice(&[DistanceVelocity {
                dx: self.authority, v: 0.0}]),
         };
