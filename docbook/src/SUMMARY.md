@@ -22,7 +22,9 @@
 - [Case studies](./casestudies.md)
   - [Case A](./examples/case_a.md)
 - [Additional tools](./tools.md)
+  - [railML conversion trivial example](./examples/convtrivial.md)
   - [railML conversion example](./examples/convtest.md)
+  - [Converted Valebø ](./examples/convvalebo.md)
   - [railML Arna A20](./examples/convarna.md)
 
 <!--

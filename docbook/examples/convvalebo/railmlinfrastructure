@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<railml version="2.2" xmlns="http://www.railml.org/schemas/2013" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.railml.org/schemas/2013 http://schemas.railml.org/2013/railML-2.2/railML.xsd">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+        <dc:source>by hand cut-out from JBV national network railml -- orignal: OpenTrack (http://www.opentrack.ch) Version 1.8.3 (2016-01-06) JBV mode</dc:source>
+        <dc:date>Fri Feb 26 15:54:11 CET 2016</dc:date>
+    </metadata>
+    <infrastructure id="mo-BRB" name="BRB">
+        <tracks>
+            <track id="tr18" name="M01">
+                <trackTopology>
+                    <trackBegin id="x1715" pos="0.000000" absPos="146745">
+                        <openEnd id="sb1" code="ext-SB1__oe23677"/>
+                    </trackBegin>
+                    <trackEnd id="y1250" pos="33117.000000" absPos="179762">
+                        <!--<connection id="co1250" ref="co1252"/>-->
+                        <openEnd id="skien" />
+                    </trackEnd>
+                    <connections>
+                        <switch id="sw1057" pos="9135.000000" absPos="155880" name="SPV-1 1:9 H">
+                            <connection id="co1059_1" ref="co1059_2" orientation="outgoing" course="left"/>
+                        </switch>
+                        <switch id="sw1097" pos="9641.000000" absPos="156386" name="SPV-2 1:9 V">
+                            <connection id="co1097_1" ref="co1097_2" orientation="incoming" course="right"/>
+                        </switch>
+                    </connections>
+                    <crossSections>
+                        <crossSection id="cs1010" pos="3405.000000" absPos="150150" name="Dalsvatn" ocpRef="ocp-DAV"/>
+                        <crossSection id="cs1078" pos="9345.000000" absPos="156090" name="Valebø stasjon" ocpRef="ocp-VB__216_"/>
+                        <crossSection id="cs1175" pos="21675.000000" absPos="168420" name="Nisterud" ocpRef="ocp-NTR"/>
+                        <crossSection id="cs1186" pos="21755.000000" absPos="168500" name="B" ocpRef="ocp-NIS"/>
+                    </crossSections>
+                </trackTopology>
+                <trackElements>
+                    <speedChanges>
+                        <speedChange id="spu984" pos="0.000000" absPos="146745" name="LBP" dir="up" profileRef="sppr3" vMax="200"/>
+                        <speedChange id="spd986" pos="618.000000" absPos="147363" name="HAS (opp)" dir="down" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spu988" pos="618.000000" absPos="147363" name="HAS (ned 147,887)" dir="up" profileRef="sppr5" vMax="200"/>
+                        <speedChange id="spd995" pos="2220.000000" absPos="148965" name="HAS (ned 148,619)" dir="down" profileRef="sppr5" vMax="200"/>
+                        <speedChange id="spu997" pos="2220.000000" absPos="148965" name="HAS (opp)" dir="up" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spd999" pos="2340.000000" absPos="149085" name="HAS (opp)" dir="down" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spu1001" pos="2340.000000" absPos="149085" name="HAS (ned 149,335)" dir="up" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spd1019" pos="3730.000000" absPos="150475" name="HAS (ned 150,187)" dir="down" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spu1021" pos="3730.000000" absPos="150475" name="HAS (opp)" dir="up" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spd1023" pos="4303.000000" absPos="151048" name="HAS (opp)" dir="down" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spu1025" pos="4303.000000" absPos="151048" name="HAS (ned 151,32)" dir="up" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spd1027" pos="5275.000000" absPos="152020" name="HAS (ned 151,761)" dir="down" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spu1029" pos="5275.000000" absPos="152020" name="HAS (opp)" dir="up" profileRef="sppr8" vMax="200"/>
+                        <speedChange id="spd1048" pos="8705.000000" absPos="155450" name="HAS (ned 155,19)" dir="down" profileRef="sppr5" vMax="200"/>
+                        <speedChange id="spu1050" pos="8705.000000" absPos="155450" name="HAS (opp)" dir="up" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spd1057" pos="9135.000000" absPos="155880" name="SPV-1 1:9 H" dir="down" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spd1080" pos="9375.000000" absPos="156120" name="STOP HAS (ned 155,86)" dir="down" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spu1082" pos="9375.000000" absPos="156120" name="STOP HAS (ned 155,86)" dir="up" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spd1087" pos="9418.000000" absPos="156163" name="ATC REP VBØU783" dir="down" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spu1089" pos="9418.000000" absPos="156163" name="ATC REP VBØU783" dir="up" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spd1092" pos="9581.000000" absPos="156326" name="01" dir="down" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spu1094" pos="9581.000000" absPos="156326" name="01" dir="up" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spd1097_2" pos="9641.000000" absPos="156386" name="SPV-2 1:9 V" dir="down" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spu1099" pos="9641.000000" absPos="156386" name="SPV-2 1:9 V" dir="up" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spd1101" pos="9775.000000" absPos="156520" name="HAS (opp)" dir="down" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spu1103" pos="9775.000000" absPos="156520" name="HAS (opp)" dir="up" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spd1118" pos="11337.000000" absPos="158082" name="HAS (ned 157,607)" dir="down" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spu1120" pos="11337.000000" absPos="158082" name="HAS (opp)" dir="up" profileRef="sppr9" vMax="200"/>
+                        <speedChange id="spd1122" pos="11755.000000" absPos="158500" name="HAS (opp)" dir="down" profileRef="sppr9" vMax="200"/>
+                        <speedChange id="spu1124" pos="11755.000000" absPos="158500" name="HAS (ned 159)" dir="up" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spd1135" pos="14905.000000" absPos="161650" name="HAS (opp)" dir="down" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spu1137" pos="14905.000000" absPos="161650" name="HAS (ned 161,9)" dir="up" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spd1155" pos="19003.000000" absPos="165748" name="HAS (ned 165,233)" dir="down" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spu1157" pos="19003.000000" absPos="165748" name="HAS (opp)" dir="up" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spd1164" pos="21502.000000" absPos="168247" name="HAS (opp)" dir="down" profileRef="sppr4" vMax="200"/>
+                        <speedChange id="spu1166" pos="21502.000000" absPos="168247" name="HAS (ned 168,7)" dir="up" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spd1197" pos="23393.000000" absPos="170138" name="HAS (ned 169,87)" dir="down" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spu1199" pos="23393.000000" absPos="170138" name="HAS (opp)" dir="up" profileRef="sppr8" vMax="200"/>
+                        <speedChange id="spd1209" pos="25023.000000" absPos="171768" name="HAS (opp)" dir="down" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spu1211" pos="25023.000000" absPos="171768" name="HAS (ned 172,304)" dir="up" profileRef="sppr5" vMax="200"/>
+                        <speedChange id="spd1213" pos="26170.000000" absPos="172915" name="HAS (ned 172,437)" dir="down" profileRef="sppr5" vMax="200"/>
+                        <speedChange id="spu1215" pos="26170.000000" absPos="172915" name="HAS (opp)" dir="up" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spd1217" pos="26560.000000" absPos="173305" name="HAS (opp)" dir="down" profileRef="sppr7" vMax="200"/>
+                        <speedChange id="spu1219" pos="26560.000000" absPos="173305" name="HAS (ned 173,57)" dir="up" profileRef="sppr10" vMax="200"/>
+                        <speedChange id="spd1225" pos="27530.000000" absPos="174275" name="HAS (ned 173,815)" dir="down" profileRef="sppr10" vMax="200"/>
+                        <speedChange id="spu1227" pos="27530.000000" absPos="174275" name="HAS (opp)" dir="up" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spd1229" pos="28375.000000" absPos="175120" name="HAS (opp)" dir="down" profileRef="sppr6" vMax="200"/>
+                        <speedChange id="spu1231" pos="28375.000000" absPos="175120" name="HAS (ned 175,37)" dir="up" profileRef="sppr5" vMax="200"/>
+                        <speedChange id="spd1233" pos="29347.000000" absPos="176092" name="HAS (ned 175,915)" dir="down" profileRef="sppr10" vMax="200"/>
+                        <speedChange id="spu1235" pos="29347.000000" absPos="176092" name="HAS (ned 175,915)" dir="up" profileRef="sppr11" vMax="200"/>
+                        <speedChange id="spd1237" pos="29447.000000" absPos="176192" name="HAS (opp)" dir="down" profileRef="sppr10" vMax="200"/>
+                        <speedChange id="spu1239" pos="29447.000000" absPos="176192" name="HAS (opp)" dir="up" profileRef="sppr11" vMax="200"/>
+                        <speedChange id="spd1241" pos="29625.000000" absPos="176370" name="HAS (opp)" dir="down" profileRef="sppr11" vMax="200"/>
+                        <speedChange id="spu1243" pos="29625.000000" absPos="176370" name="HAS (ned 176,87)" dir="up" profileRef="sppr10" vMax="200"/>
+                        <speedChange id="spd1250" pos="33017.000000" absPos="179762" name="A" dir="down" profileRef="sppr10" vMax="200"/>
+                    </speedChanges>
+                    <gradientChanges>
+                        <gradientChange id="gr984" pos="0.000000" absPos="146745" name="LBP" slope="14.000"/>
+                        <gradientChange id="gr988" pos="618.000000" absPos="147363" name="HAS (ned 147,887)" slope="13.000"/>
+                        <gradientChange id="gr992" pos="647.000000" absPos="147392" name="(D)" slope="16.000"/>
+                        <gradientChange id="gr997" pos="2220.000000" absPos="148965" name="HAS (opp)" slope="15.000"/>
+                        <gradientChange id="gr1001" pos="2340.000000" absPos="149085" name="HAS (ned 149,335)" slope="13.300"/>
+                        <gradientChange id="gr1005" pos="3362.000000" absPos="150107" name="STOP" slope="3.000"/>
+                        <gradientChange id="gr1010" pos="3405.000000" absPos="150150" name="Dalsvatn" slope="5.000"/>
+                        <gradientChange id="gr1021" pos="3730.000000" absPos="150475" name="HAS (opp)" slope="8.000"/>
+                        <gradientChange id="gr1029" pos="5275.000000" absPos="152020" name="HAS (opp)" slope="3.000"/>
+                        <gradientChange id="gr1033" pos="6536.000000" absPos="153281" name="HBP" slope="-3.000"/>
+                        <gradientChange id="gr1037" pos="7455.000000" absPos="154200" name="HAS (ned 154,89)" slope="-9.000"/>
+                        <gradientChange id="gr1041" pos="7630.000000" absPos="154375" name="HAS (opp)" slope="-10.000"/>
+                        <gradientChange id="gr1045" pos="7787.000000" absPos="154532" name="(A)" slope="-13.000"/>
+                        <gradientChange id="gr1050" pos="8705.000000" absPos="155450" name="HAS (opp)" slope="-16.000"/>
+                        <gradientChange id="gr1054" pos="8781.000000" absPos="155526" name="A" slope="-17.000"/>
+                        <gradientChange id="gr1059_2" pos="9135.000000" absPos="155880" name="SPV-1 1:9 H" slope="-5.000"/>
+                        <gradientChange id="gr1063" pos="9172.000000" absPos="155917" name="01" slope="-3.000"/>
+                        <gradientChange id="gr1089" pos="9418.000000" absPos="156163" name="ATC REP VBØU783" slope="-6.000"/>
+                        <gradientChange id="gr1094" pos="9581.000000" absPos="156326" name="01" slope="-19.000"/>
+                        <gradientChange id="gr1103" pos="9775.000000" absPos="156520" name="HAS (opp)" slope="-15.000"/>
+                        <gradientChange id="gr1107" pos="9879.000000" absPos="156624" name="Valebø 1" slope="-13.000"/>
+                        <gradientChange id="gr1111" pos="10212.000000" absPos="156957" name="Valebø 1" slope="-6.000"/>
+                        <gradientChange id="gr1115" pos="10714.000000" absPos="157459" name="B" slope="4.000"/>
+                        <gradientChange id="gr1120" pos="11337.000000" absPos="158082" name="HAS (opp)" slope="13.000"/>
+                        <gradientChange id="gr1124" pos="11755.000000" absPos="158500" name="HAS (ned 159)" slope="18.000"/>
+                        <gradientChange id="gr1128" pos="11814.000000" absPos="158559" name="(B)" slope="7.600"/>
+                        <gradientChange id="gr1133" pos="14058.000000" absPos="160803" name="HBP" slope="-9.000"/>
+                        <gradientChange id="gr1137" pos="14905.000000" absPos="161650" name="HAS (ned 161,9)" slope="-16.000"/>
+                        <gradientChange id="gr1141" pos="15342.000000" absPos="162087" name="LBP" slope="1.000"/>
+                        <gradientChange id="gr1145" pos="16206.000000" absPos="162951" name="HBP" slope="-12.000"/>
+                        <gradientChange id="gr1149" pos="17097.000000" absPos="163842" name="LBP" slope="6.000"/>
+                        <gradientChange id="gr1153" pos="17833.000000" absPos="164578" name="HBP" slope="-16.000"/>
+                        <gradientChange id="gr1157" pos="19003.000000" absPos="165748" name="HAS (opp)" slope="-14.000"/>
+                        <gradientChange id="gr1166" pos="21502.000000" absPos="168247" name="HAS (ned 168,7)" slope="-7.000"/>
+                        <gradientChange id="gr1170" pos="21635.000000" absPos="168380" name="STOP" slope="-4.000"/>
+                        <gradientChange id="gr1175" pos="21675.000000" absPos="168420" name="Nisterud" slope="0.000"/>
+                        <gradientChange id="gr1192" pos="22556.000000" absPos="169301" name="(B)" slope="-15.000"/>
+                        <gradientChange id="gr1199" pos="23393.000000" absPos="170138" name="HAS (opp)" slope="-16.000"/>
+                        <gradientChange id="gr1203" pos="24050.000000" absPos="170795" name="HAS (ned 171,045)" slope="-17.000"/>
+                        <gradientChange id="gr1211" pos="25023.000000" absPos="171768" name="HAS (ned 172,304)" slope="-18.000"/>
+                        <gradientChange id="gr1215" pos="26170.000000" absPos="172915" name="HAS (opp)" slope="-17.000"/>
+                        <gradientChange id="gr1219" pos="26560.000000" absPos="173305" name="HAS (ned 173,57)" slope="-18.000"/>
+                        <gradientChange id="gr1223" pos="27329.000000" absPos="174074" name="LBP" slope="1.000"/>
+                        <gradientChange id="gr1227" pos="27530.000000" absPos="174275" name="HAS (opp)" slope="14.000"/>
+                        <gradientChange id="gr1231" pos="28375.000000" absPos="175120" name="HAS (ned 175,37)" slope="0.000"/>
+                        <gradientChange id="gr1235" pos="29347.000000" absPos="176092" name="HAS (ned 175,915)" slope="-1.000"/>
+                        <gradientChange id="gr1239" pos="29447.000000" absPos="176192" name="HAS (opp)" slope="-5.000"/>
+                        <gradientChange id="gr1243" pos="29625.000000" absPos="176370" name="HAS (ned 176,87)" slope="3.000"/>
+                        <gradientChange id="gr1247" pos="32165.000000" absPos="178910" name="(A)" slope="6.000"/>
+                    </gradientChanges>
+                    <radiusChanges>
+                        <radiusChange id="ra984" pos="0.000000" absPos="146745" name="LBP" radius="0.000000"/>
+                    </radiusChanges>
+                    <tunnels>
+                        <tunnel id="tn1107" pos="9879.000000" absPos="156624" name="Valebø 1" dir="up" length="333.000000" crossSection="40.000000"/>
+                    </tunnels>
+                </trackElements>
+                <ocsElements>
+                    <signals>
+                        <signal id="si992" pos="647.000000" absPos="147392" dir="down" name="D 327" type="distant" sight="50" virtual="false" code="3"/>
+                        <signal id="si1043" pos="7787.000000" absPos="154532" dir="up" name="A 781" type="distant" sight="50" virtual="false" code="3"/>
+                        <signal id="si1052" pos="8781.000000" absPos="155526" dir="up" name="A 781" ocpStationRef="ocp-VB__216_" type="combined" function="home" sight="50" virtual="false" code="2"/>
+                        <signal id="si1063" pos="9172.000000" absPos="155917" dir="down" name="M 784" ocpStationRef="ocp-VB__216_" type="main" function="exit" sight="50" virtual="false" code="1"/>
+                        <signal id="si1092" pos="9581.000000" absPos="156326" dir="up" name="L 783" ocpStationRef="ocp-VB__216_" type="main" function="exit" sight="50" virtual="false" code="1"/>
+                        <signal id="si1115" pos="10714.000000" absPos="157459" dir="down" name="B 782" ocpStationRef="ocp-VB__216_" type="combined" function="home" sight="50" virtual="false" code="2"/>
+                        <signal id="si1128" pos="11814.000000" absPos="158559" dir="down" name="B 782" type="distant" sight="50" virtual="false" code="3"/>
+                        <signal id="si1159" pos="20803.000000" absPos="167548" dir="up" name="A 767" type="distant" sight="50" virtual="false" code="3"/>
+                        <signal id="si1184" pos="21755.000000" absPos="168500" dir="up" name="A 767" ocpStationRef="ocp-NIS" type="main" function="blocking" sight="50" virtual="false" code="1"/>
+                        <signal id="si1186" pos="21755.000000" absPos="168500" dir="down" name="B 788" ocpStationRef="ocp-NIS" type="main" function="blocking" sight="50" virtual="false" code="1"/>
+                        <signal id="si1192" pos="22556.000000" absPos="169301" dir="down" name="B 788" type="distant" sight="7" virtual="false" code="3"/>
+                        <signal id="si1245" pos="32165.000000" absPos="178910" dir="up" name="A 761" type="distant" sight="50" virtual="false" code="3"/>
+                        <signal id="si1250" pos="33017.000000" absPos="179762" dir="up" name="A 761" ocpStationRef="ocp-SKN" type="combined" function="home" sight="50" virtual="false" code="2"/>
+                    </signals>
+                    <trainDetectionElements>
+                        <trackCircuitBorder id="detector-exit-sb1" pos="0.000000" name="784" dir="both" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1052" pos="8781.000000" absPos="155526" name="784" dir="down" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1054" pos="8781.000000" absPos="155526" name="A" dir="up" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1061" pos="9172.000000" absPos="155917" name="A" dir="down" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1063" pos="9172.000000" absPos="155917" name="01" dir="up" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1092" pos="9581.000000" absPos="156326" name="01" dir="down" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1094" pos="9581.000000" absPos="156326" name="B" dir="up" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1113" pos="10714.000000" absPos="157459" name="B" dir="down" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1115" pos="10714.000000" absPos="157459" name="788" dir="up" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1184" pos="21755.000000" absPos="168500" name="788" dir="down" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1186" pos="21755.000000" absPos="168500" name="764" dir="up" ocpStationRef="ocp-SKN"/>
+                        <trackCircuitBorder id="tcb1250" pos="33017.000000" absPos="179762" name="764" dir="down" ocpStationRef="ocp-SKN"/>
+                        <trackCircuitBorder id="detector-exit-skien" pos="33117.000000" absPos="179762" name="764" dir="both" ocpStationRef="ocp-SKN"/>
+                    </trainDetectionElements>
+                    <balises>
+                        <balise id="ba1066" pos="9289.000000" absPos="156034" dir="up" name="ATC REP VBØR784"/>
+                        <balise id="ba1087" pos="9418.000000" absPos="156163" dir="up" name="ATC REP VBØU783"/>
+                    </balises>
+                    <stopPosts>
+                        <stopPost id="sp1005" pos="3362.000000" absPos="150107" dir="down" name="STOP" trainLength="300" code="10"/>
+                        <stopPost id="sp1012" pos="3424.000000" absPos="150169" dir="up" name="STOP" trainLength="300" code="10"/>
+                        <stopPost id="sp1073" pos="9321.000000" absPos="156066" dir="down" name="STOP" trainLength="300" code="10"/>
+                        <stopPost id="sp1080" pos="9375.000000" absPos="156120" dir="up" name="STOP HAS (ned 155,86)" trainLength="300" code="10"/>
+                        <stopPost id="sp2717" pos="21155.000000" absPos="167900" dir="down" trainLength="300" code="10"/>
+                        <stopPost id="sp1177" pos="21693.000000" absPos="168438" dir="up" name="STOP" code="6"/>
+                    </stopPosts>
+                </ocsElements>
+            </track>
+            <track id="tr6" name="02">
+                <trackTopology>
+                    <trackBegin id="x1059" pos="0.000000" absPos="155880">
+                        <connection id="co1059_2" ref="co1059_1"/>
+                    </trackBegin>
+                    <trackEnd id="y1097" pos="506.000000" absPos="156386">
+                        <connection id="co1097_2" ref="co1097_1"/>
+                    </trackEnd>
+                    <crossSections>
+                        <crossSection id="cs1740" pos="210.000000" absPos="156090" name="Valebø stasjon" ocpRef="ocp-VB__216_"/>
+                    </crossSections>
+                </trackTopology>
+                <trackElements>
+                    <speedChanges>
+                        <speedChange id="spu1059" pos="0.000000" absPos="155880" name="SPV-1 1:9 H" dir="up" profileRef="sppr0" vMax="200"/>
+                        <speedChange id="spd1097" pos="506.000000" absPos="156386" name="SPV-2 1:9 V" dir="down" profileRef="sppr0" vMax="200"/>
+                    </speedChanges>
+                    <gradientChanges>
+                        <gradientChange id="gr1059" pos="0.000000" absPos="155880" name="SPV-1 1:9 H" slope="-5.000"/>
+                        <gradientChange id="gr1725" pos="37.000000" absPos="155917" name="02" slope="-3.000"/>
+                        <gradientChange id="gr1740" pos="210.000000" absPos="156090" name="Valebø stasjon" slope="-5.072"/>
+                        <gradientChange id="gr1754" pos="446.000000" absPos="156326" name="02" slope="-19.000"/>
+                    </gradientChanges>
+                    <radiusChanges>
+                        <radiusChange id="ra1059" pos="0.000000" absPos="155880" name="SPV-1 1:9 H" radius="0.000000"/>
+                    </radiusChanges>
+                </trackElements>
+                <ocsElements>
+                    <signals>
+                        <signal id="si1725" pos="37.000000" absPos="155917" dir="down" name="O 784" ocpStationRef="ocp-VB__216_" type="main" function="exit" sight="50" virtual="false" code="1"/>
+                        <signal id="si1752" pos="446.000000" absPos="156326" dir="up" name="N 783" ocpStationRef="ocp-VB__216_" type="main" function="exit" sight="50" virtual="false" code="1"/>
+                    </signals>
+                    <trainDetectionElements>
+                        <trackCircuitBorder id="tcb1723" pos="37.000000" absPos="155917" name="A" dir="down" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1725" pos="37.000000" absPos="155917" name="02" dir="up" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1752" pos="446.000000" absPos="156326" name="02" dir="down" ocpStationRef="ocp-VB__216_"/>
+                        <trackCircuitBorder id="tcb1754" pos="446.000000" absPos="156326" name="B" dir="up" ocpStationRef="ocp-VB__216_"/>
+                    </trainDetectionElements>
+                </ocsElements>
+            </track>
+        </tracks>
+    </infrastructure>
+</railml>

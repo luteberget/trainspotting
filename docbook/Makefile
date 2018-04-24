@@ -6,25 +6,27 @@ example_vis     = $(patsubst %.md,%-vis.js, $(examples))
 
 ROLLING = ../target/debug/rolling
 GRIDVIS = ../../linearschematic/gridjson
-RAILPERFCHECK = ../trainspotting/railperfcheck
+RAILPERFCHECK = ../../trainspotting/railperfcheck/railperfcheck
+ROLLINGRAILML = ../../rollingrailml/target/debug/rollingrailml
 
 .PHONY: book
 book: $(examples) $(example_history) $(example_vis)
 	mdbook build
 
-src/%.md: src/%-history.js src/%-vis.js src/%.md.template %/infrastructure %/routes %/plan
+src/%.md: src/%-history.js src/%-vis.js %/template %/infrastructure %/routes %/plan
 	sed \
 	    -e "/RAILWAYINFRASTRUCTURE/ {r $*/infrastructure" -e 'd }' \
 	    -e "/RAILWAYROUTES/ {r $*/routes" -e 'd }' \
 	    -e "/RAILWAYDISPATCH/ {r $*/plan" -e 'd }' \
 	    -e "/RAILWAYUSAGE/ {r $*/usage" -e 'd }' \
+	    -e "/RAILWAYRAILMLINFRASTRUCTURE/ {r $*/railmlinfrastructure" -e 'd }' \
 	    -e '/RAILWAYVIEW/ { i <div id="railview"></div>'  \
 	    -e 'i <script src="d3/d3.js"></script>' \
 	    -e 'i <script src="$*-history.js"></script>' \
 	    -e 'i <script src="$*-vis.js"></script>' \
 	    -e 'i <script src="railview.js"></script>' \
 	    -e 'd }' \
-	    src/$*.md.template > src/$*.md
+	    $*/template > src/$*.md
 
 src/%-history.js %/graph: $(ROLLING) %/infrastructure %/routes %/plan
 	$(ROLLING) $*/infrastructure $*/routes $*/plan -vv \
@@ -36,8 +38,6 @@ src/%-vis.js: $(GRIDVIS) %/graph
 %/plan: $(RAILPERFCHECK) %/infrastructure %/routes %/usage
 	$(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan
 
-.PHONY: cleanexamples
-cleanexamples:
-	rm examples/*/history.js
-	rm examples/*/graph
-	rm examples/*/vis.js
+%/infrastructure %/routes: $(ROLLINGRAILML) %/railmlinfrastructure
+	$(ROLLINGRAILML) $*/railmlinfrastructure -o $*/infrastructure -r $*/routes
+

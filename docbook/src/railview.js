@@ -44,7 +44,11 @@ for (var node in data.infrastructure.nodes) {
     var n = data.infrastructure.nodes;
     if (n[node].pt == null) {
         n[node].pt = n[n[node].other_node].pt;
-        n[node].tangent = reverse_vector(n[n[node].other_node].tangent);
+        if (n[n[node].other_node].tangent != null) {
+            n[node].tangent = reverse_vector(n[n[node].other_node].tangent);
+        } else {
+            n[node].tangent = [1.0,0];
+        }
     }
 }
 
