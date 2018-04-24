@@ -19,13 +19,12 @@
   - [Consecutive train frequency](./examples/frequency.md)
   - [Overtaking](./examples/overtaking.md)
   - [Crossing](./examples/crossing.md)
+- [Input conversion from railML](./tools.md)
+  - [railML trivial example](./examples/railml_trivial.md)
+  - [railML two track](./examples/railml_twotrack.md)
 - [Case studies](./casestudies.md)
-  - [Case A](./examples/case_a.md)
-- [Additional tools](./tools.md)
-  - [railML conversion trivial example](./examples/convtrivial.md)
-  - [railML conversion example](./examples/convtest.md)
-  - [Converted Valebø ](./examples/convvalebo.md)
-  - [railML Arna A20](./examples/convarna.md)
+  - [Valebø](./examples/case_valebo.md)
+  - [Arna A20 by hand](./examples/case_arna_byhand.md)
 
 <!--
   - [Through train + pendulum](./examples/pendulum.md)
