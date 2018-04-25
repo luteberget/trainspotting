@@ -72,60 +72,62 @@ fn run(opt :&Opt) -> AppResult<()> {
         }
     }
 
-    // Routes
-    let routes = get_routes(&opt.routes, &infrastructure)?;
-    if opt.verbose >= 2 {
-        println!("Routes:");
-        for x in &routes { println!("  - {:?}", x); }
-    }
+    if opt.graphical.is_none() {
+        // Routes
+        let routes = get_routes(&opt.routes, &infrastructure)?;
+        if opt.verbose >= 2 {
+            println!("Routes:");
+            for x in &routes { println!("  - {:?}", x); }
+        }
 
-    // Dispatch
-    let dispatch = get_dispatch(&opt.dispatch)?;
-    if opt.verbose >= 1 {
-        println!("Dispatch:");
-        for x in &dispatch.actions { println!("  - {:?}", x); }
-        println!("");
-    }
+        // Dispatch
+        let dispatch = get_dispatch(&opt.dispatch)?;
+        if opt.verbose >= 1 {
+            println!("Dispatch:");
+            for x in &dispatch.actions { println!("  - {:?}", x); }
+            println!("");
+        }
 
-    // Eval -> history
-    let history = rolling::evaluate_plan(&infrastructure, &routes, &dispatch);
+        // Eval -> history
+        let history = rolling::evaluate_plan(&infrastructure, &routes, &dispatch);
 
-    // Print
-    println!("# Infrastructure history:");
-    for x in &history.inf {
-        println!("> {:?}", x);
-    }
-    for &(ref name,ref params, ref x) in &history.trains {
-        println!("## Train \"{}\" {:?}:", name, params);
-        for x in x {
+        // Print
+        println!("# Infrastructure history:");
+        for x in &history.inf {
             println!("> {:?}", x);
         }
-    }
+        for &(ref name,ref params, ref x) in &history.trains {
+            println!("## Train \"{}\" {:?}:", name, params);
+            for x in x {
+                println!("> {:?}", x);
+            }
+        }
 
-    if let Some(ref json) = opt.json {
-        use std::fs::File;
-        use std::io::BufWriter;
-        let mut file = File::create(json)?;
-        let mut writer = BufWriter::new(&file);
-        rolling::output::json::json_history(&infrastructure, &history, &mut writer)?;
-    }
+        if let Some(ref json) = opt.json {
+            use std::fs::File;
+            use std::io::BufWriter;
+            let mut file = File::create(json)?;
+            let mut writer = BufWriter::new(&file);
+            rolling::output::json::json_history(&infrastructure, &history, &mut writer)?;
+        }
 
-    if let Some(ref javascript) = opt.javascript {
-        use std::fs::File;
-        use std::io::BufWriter;
-        let mut file = File::create(javascript)?;
-        let mut writer = BufWriter::new(&file);
-        rolling::output::json::javascript_history(&infrastructure, &history, &mut writer)?;
-    }
-    
-    if let Some(ref visits) = opt.visits {
-        use std::fs::File;
-        use std::io::BufWriter;
-        let mut file = File::create(visits)?;
-        let mut writer = BufWriter::new(&file);
-        let string = rolling::output::history::visits(&infrastructure, &history)?;
-        use std::io::Write;
-        write!(writer,"{}",string)?;
+        if let Some(ref javascript) = opt.javascript {
+            use std::fs::File;
+            use std::io::BufWriter;
+            let mut file = File::create(javascript)?;
+            let mut writer = BufWriter::new(&file);
+            rolling::output::json::javascript_history(&infrastructure, &history, &mut writer)?;
+        }
+        
+        if let Some(ref visits) = opt.visits {
+            use std::fs::File;
+            use std::io::BufWriter;
+            let mut file = File::create(visits)?;
+            let mut writer = BufWriter::new(&file);
+            let string = rolling::output::history::visits(&infrastructure, &history)?;
+            use std::io::Write;
+            write!(writer,"{}",string)?;
+        }
     }
 
     if let Some(ref graphical) = opt.graphical {

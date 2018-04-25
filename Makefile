@@ -1,5 +1,9 @@
 .PHONY: rolling rollingrailml gridvis docs railperfcheck
 
+docs: rolling rollingrailml gridvis railperfcheck
+	$(MAKE) -C docs
+
+
 rolling:
 	$(MAKE) -C rolling 
 
@@ -8,9 +12,6 @@ railperfcheck: rolling
 
 gridvis:
 	$(MAKE) -C gridvis
-
-docs: rolling rollingrailml gridvis railperfcheck
-	$(MAKE) -C docs
 
 rollingrailml:
 	$(MAKE) -C rollingrailml

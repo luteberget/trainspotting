@@ -5,7 +5,7 @@ example_history = $(patsubst %.md,%-history.js, $(examples))
 example_vis     = $(patsubst %.md,%-vis.js, $(examples))
 
 ROLLING = ../rolling/target/debug/rolling
-GRIDVIS = ../linearschematic/gridjson
+GRIDVIS = ../gridvis/gridjson
 RAILPERFCHECK = ../railperfcheck/railperfcheck
 ROLLINGRAILML = ../rollingrailml/target/debug/rollingrailml
 
