@@ -28,12 +28,15 @@ src/%.md: src/%-history.js src/%-vis.js %/template %/infrastructure %/routes %/p
 	    -e 'd }' \
 	    $*/template > src/$*.md
 
-src/%-history.js %/graph: $(ROLLING) %/infrastructure %/routes %/plan
+src/%-history.js: $(ROLLING) %/infrastructure %/routes %/plan
 	$(ROLLING) $*/infrastructure $*/routes $*/plan -vv \
-	    -J src/$*-history.js -g $*/graph
+	    -J src/$*-history.js
+
+%/graph: $(ROLLING) %/infrastructure
+	$(ROLLING) $*/infrastructure $*/routes $*/plan -vv -g $*/graph
 
 src/%-vis.js: $(GRIDVIS) %/graph
-	$(GRIDVIS) $*/graph > src/$*-vis.js
+	[ -f $*/nooptgrid ] && $(GRIDVIS) -n $*/graph > src/$*-vis.js || $(GRIDVIS) $*/graph > src/$*-vis.js
 
 %/plan: $(RAILPERFCHECK) %/infrastructure %/routes %/usage
 	$(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan
