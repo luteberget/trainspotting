@@ -1,5 +1,7 @@
-.PHONY: rolling
-rolling: target/release/rolling target/release/librolling.a
+.PHONY: rollinglib rollingbin rolling
+rolling: rollinglib rollingbin
+rollinglib: target/release/librolling.a
+rollingbin: target/debug/rolling
 
 target/release/rolling:
 	cargo build --release
