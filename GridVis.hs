@@ -1,3 +1,7 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# OPTIONS_GHC -fno-cse #-}
+
+--
 -- Visualization: 
 -- * parse infrastructure file (GraphParser.hs)
 -- * check if global up/down can be defined (later: find minimal set of up/down reversals to dag-ify)
@@ -9,7 +13,7 @@
 
 module Main where
 
-import System.Environment (getArgs)
+import System.Console.CmdArgs
 import System.IO (stderr,hPutStrLn)
 import System.Exit (exitFailure,exitSuccess)
 
@@ -47,18 +51,20 @@ convertInput stmts = ([ conv dat | (P.NodeStmt _ dat) <- stmts], idxToName)
     conv (P.Sw P.SwRight P.Incoming a (b,c)) = S.inRightSw (idx a) ((idx b),(idx c))
     conv (P.Sw P.SwLeft  P.Outgoing a (b,c)) = S.outLeftSw (idx a) ((idx b),(idx c))
     conv (P.Sw P.SwRight P.Outgoing a (b,c)) = S.outRightSw (idx a) ((idx b),(idx c))
+    conv (P.Sw P.SwUnknown P.Incoming a (b,c)) = S.inSw (idx a) ((idx b),(idx c))
+    conv (P.Sw P.SwUnknown P.Outgoing a (b,c)) = S.outSw (idx a) ((idx b),(idx c))
 
 reverseNames :: [String] -> Int -> String
 reverseNames = (!!)
 
-solve :: [S.Node] -> IO [S.Graphics]
-solve x = go 2
+solve :: Bool -> [S.Node] -> IO [S.Graphics]
+solve opt x = go 2
   where
     go dim = do
          -- putStrLn $ "trying dim " ++ (show dim)
          sol <- S.draw x (dim,dim `div` 3) logmsg
          case sol of
-           Just x -> minSol (dim+3,(dim `div` 3)+1)
+           Just x -> if opt then minSol (dim+3,(dim `div` 3)+1) else minSol (dim+1,(dim `div`3))
            Nothing -> if dim > 100 then error "No solution" else go (dim+1)
     reduceY (w,h) sol = do
          -- putStrLn $ "reducing height " ++ (show (w,h))
@@ -116,12 +122,24 @@ jsonNodeCoords xs = "{" ++ (intercalate ",\n" (fmap obj xs)) ++ "}"
 javascriptOutput :: String -> String
 javascriptOutput x = "var edges = " ++ x ++ ";"
 
+data Opts
+  = Opts
+  { graphInput :: FilePath
+  , noOptimize :: Bool
+  } deriving (Show, Data, Typeable)
+
+optSpec = Opts
+  { graphInput = def &= typ "GRAPHFILE" &= argPos 0
+  , noOptimize = def &= name "n" &= name "noopt" &= help "Do not optimize layout"
+  } &= summary "grdivis v0.1.0"
+
 main = do
-  args <- getArgs
-  let filename = args !! 0
+  opts <- cmdArgs optSpec
+  let filename = (graphInput opts)
+  let optimize = not (noOptimize opts)
   (Right graph) <- P.parseFile filename
   let (problem,names) = convertInput graph
-  sol <- solve problem
+  sol <- solve optimize problem
   let edges = S.collectEdges sol
   let edgesA = sortOn fst [((reverseNames names a, reverseNames names b, (mkLevel c)), c) | ((a,b),c) <- edges ]
   let edgesB = sortOn fst [ ((a,b,l),c) | (P.EdgeStmt (a,b) l c) <- graph ]

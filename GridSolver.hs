@@ -64,6 +64,9 @@ outRightSw x (y,z) = [ outRightSwHoriz x (y,z), rotLeft  $ outRightSwHoriz x (y,
 inRightSw x (y,z) = flip $ outLeftSw  x (z,y)
 inLeftSw  x (y,z) = flip $ outRightSw x (z,y)
 
+outSw x (y,z) = (outLeftSw x (y,z)) ++ (outRightSw x (y,z))
+inSw x (y,z) = (inLeftSw x (y,z)) ++ (inRightSw x (y,z))
+
 ex1Nodes = 
   [ startNode 1
   , outLeftSw 0 (2,2)
@@ -304,20 +307,25 @@ minimizeSolution :: [Node] -> Pt -> (String -> IO ()) -> IO (Maybe [Graphics])
 minimizeSolution nodes (w,h) log = do
   log $ "Preparing optimization (" ++ (show w) ++ "," ++ (show h) ++ ")"
   withProblem nodes (w,h) $ \s p -> do
+
     let slant = [ Unary.digit l 
                 | l <- (pUpLines p) ++ (pDownLines p) ]
     let horiz = [Unary.digit l | l <- pHorizLines p ]
+
     numSlants <- Unary.addList s slant
-    numHoriz  <- Unary.addList s horiz
     log $ "Solving optimization"
     b1 <- Optimize.solveOptimize s [] numSlants $ \(a,b) -> do
         log $ "Slant range (" ++ (show a) ++ "--" ++ (show b) ++ ")"
         return True
+
     slantValue <- Unary.modelValue s numSlants
     addClause s [numSlants Unary..<= slantValue]
-    b2 <- Optimize.solveOptimize s [] numHoriz $ \(a,b) -> do
+
+    numHoriz  <- Unary.addList s horiz
+    b2 <- Optimize.solveOptimize s [] (Unary.invert numHoriz) $ \(a,b) -> do
         log $ "Horiz range (" ++ (show a) ++ "--" ++ (show b) ++ ")"
         return True
+
     getSolution s p (w,h)
     
 
