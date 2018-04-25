@@ -12,7 +12,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Control.Monad (join)
 
-data Side = SwLeft | SwRight
+data Side = SwLeft | SwRight | SwUnknown
   deriving (Show, Eq, Ord)
 data Dir = Incoming | Outgoing
   deriving (Show, Eq, Ord)
@@ -97,6 +97,7 @@ swData :: Parser NodeData
 swData = do
   symbol "switch"
   side <- ((symbol "left" >> return SwLeft) <|> (symbol "right" >> return SwRight))
+          <|> (symbol "unknown" >> return SwUnknown)
   dir  <- ((symbol "incoming" >> return Incoming) <|> (symbol "outgoing" >> return Outgoing))
   n1 <- identifier
   n2 <- identifier
