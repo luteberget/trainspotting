@@ -139,6 +139,7 @@ pub struct Route {
     exit: RouteBoundary,
     sections: Vec<String>,
     switches: Vec<(String, Side)>,
+    releases: Vec<(String, f64, Vec<String>)>,
     length: f64,
 }
 
@@ -155,6 +156,9 @@ pub struct Path {
     section: Option<String>,
     sections: Vec<(String, f64)>,
     switches: Vec<(String, Side)>,
+    partial_length: f64,
+    partial_resources: Vec<String>,
+    releases: Vec<(String, f64, Vec<String>)>,
     length: f64,
 }
 
@@ -168,7 +172,7 @@ pub enum DirEdge {
 
 pub fn find_routes(model: &Model) -> Vec<Route> {
 
-    let section_tolerance = 3.0;
+    let section_tolerance = 15.0;
 
     let mut routes = Vec::new();
 
@@ -233,9 +237,12 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
             search_stack.push(Path {
                 node: entry.node,
                 sections: entry.section.iter().map(|x| (x.clone(), 0.0)).collect(),
-                section: entry.section,
+                section: entry.section.clone(),
                 switches: vec![],
+                releases: vec![],
                 length: 0.0,
+                partial_length: 0.0,
+                partial_resources: entry.section.iter().cloned().collect(),
             });
 
             while search_stack.len() > 0 {
@@ -254,6 +261,20 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                             use PartNodeObject::*;
                             match *obj {
                                 Signal(ref x) => {
+
+                                    let release_length = curr_state.releases.iter().map(|&(_,l,_)| l).sum();
+                                    if curr_state.length > release_length {
+                                        if curr_state.section.is_some() {
+                                            curr_state.releases.push(( curr_state.section.clone()
+                                                          .expect("route ends outside detection area"), 
+                                                          curr_state.partial_length,
+                                                          curr_state.partial_resources.drain(0..).collect()));
+                                        } else {
+                                            curr_state.releases.iter_mut().last().expect("no release sections").1
+                                                 += curr_state.length - release_length;
+                                        }
+                                    }
+
                                     let route = Route {
                                         entry: entry.entry.clone(),
                                         exit: RouteBoundary::Signal(x.clone()),
@@ -266,6 +287,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                                             })
                                             .collect(),
                                         switches: curr_state.switches.clone(),
+                                        releases: curr_state.releases.clone(),
                                         length: curr_state.length,
                                     };
 
@@ -289,10 +311,16 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                                 TVDEnter(ref x) => {
                                     curr_state.section = Some(x.clone());
                                     curr_state.sections.push((x.clone(), 0.0));
+                                    curr_state.partial_resources.push(x.clone());
                                 }
                                 TVDExit(ref x) => {
                                     if curr_state.section == Some(x.clone()) {
                                         curr_state.section = None;
+                                    }
+                                    if curr_state.sections.iter().any(|&(ref y, d)| x == y && d > section_tolerance) {
+                                        curr_state.releases.push((x.clone(), curr_state.partial_length,
+                                                                  curr_state.partial_resources.drain(0..).collect()));
+                                        curr_state.partial_length = 0.0;
                                     }
                                 }
                                 Sight(_,_) => {}
@@ -304,6 +332,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                         (false, Some(DirEdge::Linear((other, d)))) => {
                             curr_state.node = other.opposite();
                             curr_state.length += d;
+                            curr_state.partial_length += d;
                             if let Some(&mut (ref s, ref mut l)) =
                                 curr_state.sections.iter_mut().last() {
                                 if Some(s) == curr_state.section.as_ref() {
@@ -314,6 +343,8 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                         (false, Some(DirEdge::TrailingSwitch(sw, pos, (other, d)))) => {
                             curr_state.node = other.opposite();
                             curr_state.length += d;
+                            curr_state.partial_length += d;
+                            curr_state.partial_resources.push(sw.clone());
                             curr_state.switches.push((sw, pos));
                             if let Some(&mut (ref s, ref mut l)) =
                                 curr_state.sections.iter_mut().last() {
@@ -330,22 +361,26 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
 
                             curr_state.node = other1.opposite();
                             curr_state.length += d1;
+                            curr_state.partial_length += d1;
                             if let Some(&mut (ref s, ref mut l)) =
                                 curr_state.sections.iter_mut().last() {
                                 if Some(s) == curr_state.section.as_ref() {
                                     *l += d1;
                                 }
                             }
+                            curr_state.partial_resources.push(sw.clone());
                             curr_state.switches.push((sw.clone(), Side::Left));
 
                             right_state.node = other2.opposite();
                             right_state.length += d2;
+                            right_state.partial_length += d2;
                             if let Some(&mut (ref s, ref mut l)) =
                                 right_state.sections.iter_mut().last() {
                                 if Some(s) == right_state.section.as_ref() {
                                     *l += d2;
                                 }
                             }
+                            right_state.partial_resources.push(sw.clone());
                             right_state.switches.push((sw, Side::Right));
 
                             if switches_path_visited.insert(right_state.switches.clone()) {
@@ -356,6 +391,23 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                             }
                         }
                         (false, Some(DirEdge::Boundary)) => {
+                            let release_length = curr_state.releases.iter().map(|&(_,l,_)| l).sum();
+                            println!("BOUNDARY HERE");
+                            if curr_state.length > release_length {
+                                if curr_state.section.is_some() {
+                                    println!("ADDING SECTION");
+                                    curr_state.releases.push(( curr_state.section.clone()
+                                                  .expect("route ends outside detection area"), 
+                                                  curr_state.partial_length,
+                                                  curr_state.partial_resources.drain(0..).collect()));
+                                } else {
+                                    println!("EXTENDING SECTION");
+                                    curr_state.releases.iter_mut().last().expect("no release sections").1
+                                         += curr_state.length - release_length;
+                                }
+                            }
+                                    println!("{:#?}", curr_state);
+
                             let route = Route {
                                 entry: entry.entry.clone(),
                                 exit: RouteBoundary::ModelBoundary(curr_state.node),
@@ -368,12 +420,14 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                                     })
                                     .collect(),
                                 switches: curr_state.switches.clone(),
+                                releases: curr_state.releases.clone(),
                                 length: curr_state.length,
                             };
 
                             if route.length < section_tolerance {
                                 println!("Warning: route is too short. {:?}", route);
                             } else {
+                                println!("BOUNDARY ROUTE {:?}", route);
                                 routes.push(route);
                             }
 
@@ -383,6 +437,14 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                     }
                 }
             }
+        }
+    }
+
+    // Remove release of resources that were not aquired
+    for r in &mut routes {
+        let resources = r.sections.iter().chain(r.switches.iter().map(|&(ref sw,_)| sw)).collect::<Vec<_>>();
+        for &mut (_,_,ref mut res) in &mut r.releases {
+            res.retain(|x| resources.contains(&x));
         }
     }
 
@@ -428,6 +490,27 @@ pub fn print_resources<W: std::io::Write>(buf: &mut W,
     Ok(())
 }
 
+pub fn print_releases<W: std::io::Write>(buf: &mut W,
+                                         _model: &Model,
+                                         route :&Route)
+                                        -> std::io::Result<()> {
+
+
+    // Don't use partial release on exit routes.
+    // Just omit printing here, so that consumers will 
+    // create default release behavior.
+    let exit_route = if let RouteBoundary::ModelBoundary(_) = route.exit { true } else { false };
+
+    if !exit_route {
+        for &(ref trigger,length,ref resources) in &route.releases {
+            let reslist = resources.clone().join(", ");
+            writeln!(buf, "  release {{ length {} trigger {} resources [{}] }}", 
+                     length, trigger, reslist)?;
+        }
+    }
+    Ok(())
+}
+
 pub fn print_routes<W: std::io::Write>(buf: &mut W,
                                        model: &Model,
                                        routes: &Vec<Route>)
@@ -444,6 +527,7 @@ pub fn print_routes<W: std::io::Write>(buf: &mut W,
                 writeln!(buf, "  exit {}", s)?;
                 writeln!(buf, "  length {}", r.length)?;
                 print_resources(buf, model, r)?;
+                print_releases(buf, model, r)?;
                 writeln!(buf, "}}")?;
             }
             (&Signal(ref s), &ModelBoundary(ref b)) => {
@@ -457,6 +541,7 @@ pub fn print_routes<W: std::io::Write>(buf: &mut W,
                 }
                 writeln!(buf, "  length {}", r.length + 1000.0)?;
                 print_resources(buf, model, r)?;
+                print_releases(buf, model, r)?;
                 writeln!(buf, "}}")?;
             }
             (&Signal(ref s1), &Signal(ref s2)) => {
@@ -468,6 +553,7 @@ pub fn print_routes<W: std::io::Write>(buf: &mut W,
                 }
                 writeln!(buf, "  length {}", r.length)?;
                 print_resources(buf, model, r)?;
+                print_releases(buf, model, r)?;
                 writeln!(buf, "}}")?;
             }
             (&ModelBoundary(ref b1), &ModelBoundary(ref b2)) => {
@@ -505,7 +591,8 @@ pub fn print_rolling<W: std::io::Write>(buf: &mut W, model: &Model) -> std::io::
                 writeln!(buf,
                          "switch {} {} {}-({} {}, {} {})",
                          name,
-                         side.as_str(),
+                         match &side { &Some(ref s) => s.as_str(), 
+                             &None => "unknown" },
                          model.nodes[n1.node_idx()].get_part(n1.node_part()).name,
                          model.nodes[n2.node_idx()].get_part(n2.node_part()).name,
                          d2,
@@ -568,7 +655,7 @@ pub type Link = (PartNodeIdx, f64);
 #[derive(Debug,Clone)]
 pub enum Edge {
     Linear(PartNodeIdx, Link),
-    Switch(String, Side, PartNodeIdx, Link, Link),
+    Switch(String, Option<Side>, PartNodeIdx, Link, Link),
     Boundary(PartNodeIdx),
 }
 
@@ -623,7 +710,7 @@ pub struct Switch {
     trailnode: String,
     leftnode: String,
     rightnode: String,
-    side: Side,
+    side: Option<Side>,
 }
 
 #[derive(Debug,Clone)]
@@ -701,12 +788,13 @@ fn track_objects(track: &minidom::Element,
 
     let signals = signal_elements.iter()
         .filter_map(|s| {
-            let id = s.attr("id").unwrap();
-            let _name = s.attr("name").unwrap();
+            let id = s.attr("id").expect("signal id missing");
+            let _name = s.attr("name").expect("signal name missing");
             let name = id;
-            let pos = s.attr("pos").unwrap().parse::<f64>().unwrap();
+            let pos = s.attr("pos").expect("signal pos missing")
+                .parse::<f64>().expect("signal pos invalid number");
             let sight = s.attr("sight")
-                .map(|x| x.parse::<f64>().unwrap())
+                .map(|x| x.parse::<f64>().expect("signal sight invalid number"))
                 .unwrap_or_else(|| {
                     println!("Warning: no sight info for signal {:?}", name);
                     200.0
@@ -747,10 +835,11 @@ fn track_objects(track: &minidom::Element,
 
     let detectors = detector_elements.iter()
         .map(|d| {
-            let id = d.attr("id").unwrap();
-            let _name = d.attr("name").unwrap();
+            let id = d.attr("id").expect("detector id missing");
+            //let _name = d.attr("name").expect("detector name missing");
             let name = id;
-            let pos = d.attr("pos").unwrap().parse::<f64>().unwrap();
+            let pos = d.attr("pos").expect("detector pos missing")
+                .parse::<f64>().expect("detector pos number invalid");
 
             let _dir = match d.attr("dir") {
                 Some("up") | Some("down") => {
@@ -1035,10 +1124,10 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
         let mut objects = track_objects(track, ns, verbose)?;
         // println!("Objects: {:?}", objects);
 
-        let mut switches = topology.get_child("connections", ns)
+        let mut switchesandcrossings = topology.get_child("connections", ns)
             .map(|c| {
                 c.children()
-                    .filter(|x| x.name() == "switch")
+                    .filter(|x| x.name() == "switch" /*|| x.name() == "crossing"*/)
                     .map(|sw| {
                         let pos = sw.attr("pos")
                             .expect("No pos found on switch.")
@@ -1051,7 +1140,7 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
             .unwrap_or_else(|| Vec::new());
 
         // println!("OBJECTs on track: {:?}", objects);
-        switches.sort_by(|a, b| (a.0).partial_cmp(&b.0).expect("Switch position NaN"));
+        switchesandcrossings.sort_by( |a, b| (a.0).partial_cmp(&b.0).expect("Switch position NaN"));
 
         // println!("track {:?} with length {:?}", name, track_length);
 
@@ -1068,29 +1157,60 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
         let mut start = 0.0;
         let mut node = start_node;
 
-        for (i, sw) in switches.iter().enumerate() {
+        for (i, sw) in switchesandcrossings.iter().enumerate() {
             let pos = (sw.1).attr("pos").unwrap().parse::<f64>().unwrap();
-
-            let conn = (sw.1)
-                .children()
-                .filter(|x| x.name() == "connection")
-                .collect::<Vec<_>>();
-            if conn.len() == 0 {
-                return Err("No connection in switch.".to_string());
-            }
-            if conn.len() > 1 {
-                return Err("Multiple connections in switch.".to_string());
-            }
-
-            let conn = conn[0];
-
-            let conn_ref = conn.attr("ref").expect("switch connection without reference").to_string();
-            let conn_id = conn.attr("id").expect("switch connection without id").to_string();
-            let orientation = conn.attr("orientation").expect("switch connection without orientation");
-            let course = conn.attr("course").expect("switch connection without course");
 
             let before_name = format!("spv-{}-{}-down", name, i);
             let after_name = format!("spv-{}-{}-up", name, i);
+
+            if (sw.1).name() == "switch" {
+
+                let conn = (sw.1)
+                    .children()
+                    .filter(|x| x.name() == "connection")
+                    .collect::<Vec<_>>();
+                if conn.len() == 0 {
+                    return Err("No connection in switch.".to_string());
+                }
+                if conn.len() > 1 {
+                    return Err("Multiple connections in switch.".to_string());
+                }
+
+                let conn = conn[0];
+
+                let conn_ref = conn.attr("ref").expect("switch connection without reference").to_string();
+                let conn_id = conn.attr("id").expect("switch connection without id").to_string();
+                let orientation = conn.attr("orientation").expect("switch connection without orientation");
+                let course = conn.attr("course");
+
+                let (conn_node, trailnode, legnode) = match orientation {
+                    "outgoing" => (conn_ref.clone(), before_name.clone(), after_name.clone()),
+                    "incoming" => (conn_id.clone(), after_name.clone(), before_name.clone()),
+                    _ => panic!("incoming outgoing error"),
+                };
+
+                let (side, leftnode, rightnode) = match course {
+                    Some("left") => (Some(Side::Left), conn_node, legnode),
+                    Some("right") => (Some(Side::Right), legnode, conn_node),
+                    _ => (None, legnode, conn_node),
+                };
+
+                // let side = match (sw.1).attr("trackContinueCourse") {
+                //     Some("left") => Some(Side::Left),
+                //     Some("right") => Some(Side::Right),
+                //     _ => side
+                // };
+
+                let sw_data = Switch {
+                    trailnode: trailnode,
+                    leftnode: leftnode,
+                    rightnode: rightnode,
+                    side: side,
+                };
+                sw_datas.push(sw_data);
+            } else if (sw.1).name() == "crossing" {
+
+            }
 
             sections.push(LinearSection {
                 end_a: node,
@@ -1105,26 +1225,6 @@ fn convert_infrastructure(infrastructure: &minidom::Element,
                     .collect(),
                 length: pos - start,
             });
-
-            let (conn_node, trailnode, legnode) = match orientation {
-                "outgoing" => (conn_ref.clone(), before_name.clone(), after_name.clone()),
-                "incoming" => (conn_id.clone(), after_name.clone(), before_name.clone()),
-                _ => panic!("incoming outgoing error"),
-            };
-
-            let (side, leftnode, rightnode) = match course {
-                "left" => (Side::Left, conn_node, legnode),
-                "right" => (Side::Right, legnode, conn_node),
-                _ => panic!("left right error"),
-            };
-
-            let sw_data = Switch {
-                trailnode: trailnode,
-                leftnode: leftnode,
-                rightnode: rightnode,
-                side: side,
-            };
-            sw_datas.push(sw_data);
 
             // println!("  sw {:?} {:?} {:?} {:?} {:?}",
             //         (sw.1).attr("name"),
