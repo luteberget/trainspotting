@@ -1,1790 +1,1176 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<railml version="2.2" xmlns="http://www.railml.org/schemas/2013" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.railml.org/schemas/2013 http://schemas.railml.org/2013/railML-2.2/railML.xsd">
-  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:source>OpenTrack (http://www.opentrack.ch) Version 1.8.3 (2016-01-06) JBV mode</dc:source>
-    <dc:date>Fri Feb 26 15:52:41 CET 2016</dc:date>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<railml version="2.2" xmlns="http://www.railml.org/schemas/2013">
+  <metadata xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <creator xmlns="http://purl.org/dc/elements/1.1/">bjslu</creator>
+    <date xmlns="http://purl.org/dc/elements/1.1/">04/25/2018 10:52:26</date>
+    <source xmlns="http://purl.org/dc/elements/1.1/">RailCOMPLETE v0.12.7.0</source>
+    <format xmlns="http://purl.org/dc/elements/1.1/">railML v2.2</format>
+    <title xmlns="http://purl.org/dc/elements/1.1/">C:\Users\bjslu\Documents\asker.dwg</title>
   </metadata>
-  <infrastructure id="mo-DB2" name="DB2">
-    <infraAttrGroups>
-      <infraAttributes id="sppr0">
-        <speeds>
-          <speed trainCategory="Normal" vMax="40"/>
-          <speed trainCategory="Pluss" vMax="40"/>
-          <speed trainCategory="Krenge" vMax="40"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr1">
-        <speeds>
-          <speed trainCategory="Normal" vMax="80"/>
-          <speed trainCategory="Pluss" vMax="80"/>
-          <speed trainCategory="Krenge" vMax="80"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr2">
-        <speeds>
-          <speed trainCategory="Normal" vMax="100"/>
-          <speed trainCategory="Pluss" vMax="100"/>
-          <speed trainCategory="Krenge" vMax="100"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr3">
-        <speeds>
-          <speed trainCategory="Normal" vMax="70"/>
-          <speed trainCategory="Pluss" vMax="70"/>
-          <speed trainCategory="Krenge" vMax="70"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr4">
-        <speeds>
-          <speed trainCategory="Normal" vMax="60"/>
-          <speed trainCategory="Pluss" vMax="60"/>
-          <speed trainCategory="Krenge" vMax="60"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr5">
-        <speeds>
-          <speed trainCategory="Normal" vMax="50"/>
-          <speed trainCategory="Pluss" vMax="50"/>
-          <speed trainCategory="Krenge" vMax="50"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr6">
-        <speeds>
-          <speed trainCategory="Normal" vMax="160"/>
-          <speed trainCategory="Pluss" vMax="160"/>
-          <speed trainCategory="Krenge" vMax="160"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr7">
-        <speeds>
-          <speed trainCategory="Normal" vMax="130"/>
-          <speed trainCategory="Pluss" vMax="130"/>
-          <speed trainCategory="Krenge" vMax="130"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr8">
-        <speeds>
-          <speed trainCategory="Normal" vMax="90"/>
-          <speed trainCategory="Pluss" vMax="95"/>
-          <speed trainCategory="Krenge" vMax="95"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr9">
-        <speeds>
-          <speed trainCategory="Normal" vMax="95"/>
-          <speed trainCategory="Pluss" vMax="100"/>
-          <speed trainCategory="Krenge" vMax="100"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr10">
-        <speeds>
-          <speed trainCategory="Normal" vMax="60"/>
-          <speed trainCategory="Pluss" vMax="65"/>
-          <speed trainCategory="Krenge" vMax="65"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr11">
-        <speeds>
-          <speed trainCategory="Normal" vMax="20"/>
-          <speed trainCategory="Pluss" vMax="20"/>
-          <speed trainCategory="Krenge" vMax="20"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr12">
-        <speeds>
-          <speed trainCategory="Normal" vMax="110"/>
-          <speed trainCategory="Pluss" vMax="110"/>
-          <speed trainCategory="Krenge" vMax="110"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr13">
-        <speeds>
-          <speed trainCategory="Normal" vMax="40"/>
-          <speed trainCategory="Pluss" vMax="80"/>
-          <speed trainCategory="Krenge" vMax="40"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr14">
-        <speeds>
-          <speed trainCategory="Normal" vMax="100"/>
-          <speed trainCategory="Pluss" vMax="105"/>
-          <speed trainCategory="Krenge" vMax="105"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr15">
-        <speeds>
-          <speed trainCategory="Normal" vMax="90"/>
-          <speed trainCategory="Pluss" vMax="100"/>
-          <speed trainCategory="Krenge" vMax="100"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr16">
-        <speeds>
-          <speed trainCategory="Normal" vMax="115"/>
-          <speed trainCategory="Pluss" vMax="130"/>
-          <speed trainCategory="Krenge" vMax="130"/>
-        </speeds>
-      </infraAttributes>
-      <infraAttributes id="sppr17">
-        <speeds>
-          <speed trainCategory="Normal" vMax="40"/>
-          <speed trainCategory="Pluss" vMax="45"/>
-          <speed trainCategory="Krenge" vMax="45"/>
-        </speeds>
-      </infraAttributes>
-    </infraAttrGroups>
+  <infrastructure xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="inf0" name="C:\Users\bjslu\Documents\asker.dwg infrastructure" xmlns="http://www.railml.org/schemas/2013">
     <tracks>
-      <track id="tr0" name="01">
+      <track id="tr0" code="t1" name="[t1]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x25412" pos="0.000000" absPos="24400">
-            <bufferStop id="bs25412" name=""/>
+          <trackBegin id="beg0" pos="0" absPos="0">
+            <geoCoord coord="-810.120645486084 92.3352188109629" />
+            <openEnd id="DBinV" />
           </trackBegin>
-          <trackEnd id="y25402" pos="300.000000" absPos="24700">
-            <openEnd id="oe25402" code="ext-SPB__oe18660"/>
+          <trackEnd id="end0" pos="2780" absPos="2780">
+            <geoCoord coord="1970.22323524559 92.3837375567582" />
+            <connection id="co0" ref="co1" />
           </trackEnd>
           <connections>
-            <switch id="sw25381" pos="192.000000" absPos="24592" name="Sporveksel/sporkryss, 306, Asker stasjon">
-              <connection id="co25381_2" ref="co25381_1" orientation="incoming" course="left"/>
+            <switch id="sw0" name="V." pos="363" absPos="363" trackContinueCourse="right" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="-447.535870908363 92.456688679946978 0" />
+              <connection id="co5" ref="co4" course="left" orientation="incoming" />
+            </switch>
+            <switch id="sw1" name="V." pos="377" absPos="377" trackContinueCourse="right" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="-432.75299133046428 92.456688679946978 0" />
+              <connection id="co7" ref="co6" course="left" orientation="outgoing" />
+            </switch>
+            <switch id="sw2" name="V." pos="450" absPos="450" trackContinueCourse="left" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="-359.95198752431679 92.456688679946978 0" />
+              <connection id="co9" ref="co8" course="right" orientation="outgoing" />
+            </switch>
+            <switch id="sw3" name="V." pos="1301" absPos="1301" trackContinueCourse="left" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="490.68666445533017 92.456688679946978 0" />
+              <connection id="co11" ref="co10" course="right" orientation="incoming" />
+            </switch>
+            <switch id="sw4" name="V." pos="2446" absPos="2446" trackContinueCourse="right" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="1635.7913568689253 92.456688679946978 0" />
+              <connection id="co13" ref="co12" course="left" orientation="outgoing" />
             </switch>
           </connections>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu25412" pos="0.000000" absPos="24400" dir="up" profileRef="sppr0" vMax="200"/>
-            <speedChange id="spd25397" pos="218.000000" absPos="24618" name="LBP" dir="down" profileRef="sppr0" vMax="200"/>
-            <speedChange id="spu25396" pos="218.000000" absPos="24618" name="LBP" dir="up" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd25393" pos="300.000000" absPos="24700" dir="down" profileRef="sppr1" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr25412" pos="0.000000" absPos="24400" slope="-11.380"/>
-            <gradientChange id="gr25380" pos="192.000000" absPos="24592" name="Sporveksel/sporkryss, 306, Asker stasjon" slope="-1.200"/>
-            <gradientChange id="gr25396" pos="218.000000" absPos="24618" name="LBP" slope="0.000"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra25412" pos="0.000000" absPos="24400" radius="0.000000"/>
+            <radiusChange id="rc0" name="Start" pos="0" absPos="0" radius="0" />
           </radiusChanges>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb35163" pos="134.000000" absPos="24534" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35162" pos="134.000000" absPos="24534" name="892" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35175" pos="202.000000" absPos="24602" name="892" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35174" pos="202.000000" absPos="24602" name="894" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-        </ocsElements>
-      </track>
-      <track id="tr1" name="01">
-        <trackTopology>
-          <trackBegin id="x25160" pos="0.000000" absPos="24000">
-            <connection id="co25160" ref="co25162"/>
-          </trackBegin>
-          <trackEnd id="y24504" pos="546.000000" absPos="24546">
-            <connection id="co24504_1" ref="co24504_2"/>
-          </trackEnd>
-          <crossSections>
-            <crossSection id="cs25160" pos="0.000000" absPos="24000" ocpRef="ocp-ASR"/>
-          </crossSections>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu25160" pos="0.000000" absPos="24000" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24504" pos="546.000000" absPos="24546" name="Sporveksel/sporkryss, 308, Asker stasjon" dir="down" profileRef="sppr2" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr25160" pos="0.000000" absPos="24000" slope="-0.750"/>
-            <gradientChange id="gr24484" pos="100.000000" absPos="24100" name="HBP" slope="-3.730"/>
-            <gradientChange id="gr24494" pos="370.000000" absPos="24370" name="LBP" slope="2.870"/>
-            <gradientChange id="gr24498" pos="510.000000" absPos="24510" name="LBP" slope="3.790"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra25160" pos="0.000000" absPos="24000" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn24502" pos="514.000000" absPos="24514" name="Tunnel, LIERÅSEN, Asker stasjon" dir="up" length="32.000000" crossSection="40.000000"/>
-          </tunnels>
         </trackElements>
         <ocsElements>
           <signals>
-            <signal id="si24486" pos="256.000000" absPos="24256" dir="up" name="4605" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
+            <signal id="sig0" name="Hs." pos="32" absPos="32" dir="up" sight="250" type="main">
+              <geoCoord coord="-777.6870230365239 95.956688679946978 0" />
+            </signal>
+            <signal id="sig1" name="Hs." pos="80" absPos="80" dir="down" sight="250" type="main">
+              <geoCoord coord="-730.56815141676634 95.956688679946978 0" />
+            </signal>
+            <signal id="sig2" name="Hs." pos="1728" absPos="1728" dir="down" sight="250" type="main">
+              <geoCoord coord="917.51947696411116 99.276844632665416 0" />
+            </signal>
+            <signal id="sig3" name="Hs." pos="2374" absPos="2374" dir="up" sight="250" type="main">
+              <geoCoord coord="1563.6178662197144 85.577076053957171 0" />
+            </signal>
           </signals>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb24486" pos="256.000000" absPos="24256" name="851" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24488" pos="256.000000" absPos="24256" name="861" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb29154" pos="433.000000" absPos="24433" name="861" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb29153" pos="433.000000" absPos="24433" name="865" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba28277" pos="257.000000" absPos="24257" dir="up" name="Balise HS/FS 4605"/>
-            <balise id="ba29153" pos="433.000000" absPos="24433" dir="down" name="Balise Rep. HS/FS 4606"/>
-          </balises>
-          <stopPosts>
-            <stopPost id="sp24482" pos="100.000000" absPos="24100" dir="up" name="HBP" trainLength="300" code="10"/>
-          </stopPosts>
-        </ocsElements>
-      </track>
-      <track id="tr2" name="01-02">
-        <trackTopology>
-          <trackBegin id="x36099" pos="0.000000" absPos="23280">
-            <connection id="co36099_2" ref="co36099_1"/>
-          </trackBegin>
-          <trackEnd id="y36170" pos="118.000000" absPos="23398">
-            <connection id="co36170_2" ref="co36170_1"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu36099" pos="0.000000" absPos="23280" name="Sporveksel/sporkryss, 303, Asker stasjon" dir="up" profileRef="sppr3" vMax="200"/>
-            <speedChange id="spd36170" pos="118.000000" absPos="23398" name="Sporveksel/sporkryss, 330, Asker stasjon" dir="down" profileRef="sppr3" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr36099" pos="0.000000" absPos="23280" name="Sporveksel/sporkryss, 303, Asker stasjon" slope="11.390"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra36099" pos="0.000000" absPos="23280" name="Sporveksel/sporkryss, 303, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn36099" pos="0.000000" absPos="23280" name="Sporveksel/sporkryss, 303, Asker stasjon" dir="up" length="118.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb36431" pos="59.000000" absPos="23339" name="805" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36429" pos="59.000000" absPos="23339" name="806" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd0" name="Tp(-/-)" pos="7" absPos="7" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-803.24943306047169 91.585338717818274 0" />
+            </trainDetector>
+            <trainDetector id="trd1" name="Tp(-/-)" pos="32" absPos="32" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-777.683152656166 91.70640135014348 0" />
+            </trainDetector>
+            <trainDetector id="trd2" name="Tp(-/-)" pos="79" absPos="79" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-731.3281695076596 91.586593789008489 0" />
+            </trainDetector>
+            <trainDetector id="trd3" name="Tp(-/-)" pos="368" absPos="368" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-441.87573242334162 93.091644915938161 0" />
+            </trainDetector>
+            <trainDetector id="trd4" name="Tp(-/-)" pos="695" absPos="695" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-115.26175651949609 93.0973445348162 0" />
+            </trainDetector>
+            <trainDetector id="trd5" name="Tp(-/-)" pos="1133" absPos="1133" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="323.14950215860381 91.604995086219574 0" />
+            </trainDetector>
+            <trainDetector id="trd6" name="Tp(-/-)" pos="1323" absPos="1323" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="512.65655577728262 93.108302103477271 0" />
+            </trainDetector>
+            <trainDetector id="trd7" name="Tp(-/-)" pos="1727" absPos="1727" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="916.98243066858413 91.615357843539954 0" />
+            </trainDetector>
+            <trainDetector id="trd8" name="Tp(-/-)" pos="2374" absPos="2374" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1563.93985741702 91.626647656698069 0" />
+            </trainDetector>
           </trainDetectionElements>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr3" name="01-02">
+      <track id="tr1" code="t1111" name="[t1111]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x24466" pos="0.000000" absPos="23826">
-            <connection id="co24466_1" ref="co24466_2"/>
+          <trackBegin id="beg1" pos="0" absPos="0">
+            <geoCoord coord="-810.120645486084 61.6900926523349" />
+            <openEnd id="DBinH" />
           </trackBegin>
-          <trackEnd id="y25061" pos="93.000000" absPos="23919">
-            <connection id="co25061" ref="co25063"/>
+          <trackEnd id="end1" pos="3022" absPos="3022">
+            <geoCoord coord="2211.733058335 61.6802357513019" />
+            <connection id="co2" ref="co3" />
           </trackEnd>
           <connections>
-            <switch id="sw25061" pos="93.000000" absPos="23919" name="Sporveksel/sporkryss, 320, Asker stasjon">
-              <connection id="co25061_1" ref="co25061_2" orientation="incoming" course="left"/>
+            <switch id="sw5" name="V." pos="122" absPos="122" trackContinueCourse="right" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="-687.64345435973519 61.680235751301893 0" />
+              <connection id="co15" ref="co14" course="left" orientation="outgoing" />
+            </switch>
+            <switch id="sw6" name="V." pos="688" absPos="688" trackContinueCourse="left" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="-122.54431371430837 61.680235751301893 0" />
+              <connection id="co17" ref="co16" course="right" orientation="incoming" />
+            </switch>
+            <switch id="sw7" name="V." pos="352" absPos="352" trackContinueCourse="left" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="-457.91172463105977 61.680235751301893 0" />
+              <connection id="co19" ref="co18" course="right" orientation="outgoing" />
+            </switch>
+            <switch id="sw8" name="V." pos="707" absPos="707" trackContinueCourse="left" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="-103.48097926651826 61.680235751301893 0" />
+              <connection id="co21" ref="co20" course="right" orientation="outgoing" />
+            </switch>
+            <switch id="sw9" name="V." pos="2998" absPos="2998" trackContinueCourse="left" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="2188.3206562533878 61.680235751301893 0" />
+              <connection id="co23" ref="co22" course="right" orientation="incoming" />
             </switch>
           </connections>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu24466" pos="0.000000" absPos="23826" name="Sporveksel/sporkryss, 317, Asker stasjon" dir="up" profileRef="sppr4" vMax="200"/>
-            <speedChange id="spd25061" pos="93.000000" absPos="23919" name="Sporveksel/sporkryss, 320, Asker stasjon" dir="down" profileRef="sppr4" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24466" pos="0.000000" absPos="23826" name="Sporveksel/sporkryss, 317, Asker stasjon" slope="4.370"/>
-            <gradientChange id="gr25001" pos="81.000000" absPos="23907" name="HBP" slope="-0.750"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra24466" pos="0.000000" absPos="23826" name="Sporveksel/sporkryss, 317, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb25071" pos="48.000000" absPos="23874" name="809" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25070" pos="48.000000" absPos="23874" name="811" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-        </ocsElements>
-      </track>
-      <track id="tr4" name="02">
-        <trackTopology>
-          <trackBegin id="x25063" pos="0.000000" absPos="23919">
-            <connection id="co25063" ref="co25061"/>
-          </trackBegin>
-          <trackEnd id="y25194" pos="81.000000" absPos="24000">
-            <connection id="co25194" ref="co25196"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu25063" pos="0.000000" absPos="23919" name="Sporveksel/sporkryss, 320, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25194" pos="81.000000" absPos="24000" dir="down" profileRef="sppr2" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr25063" pos="0.000000" absPos="23919" name="Sporveksel/sporkryss, 320, Asker stasjon" slope="-0.750"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra25063" pos="0.000000" absPos="23919" name="Sporveksel/sporkryss, 320, Asker stasjon" radius="0.000000"/>
+            <radiusChange id="rc1" name="Start" pos="0" absPos="0" radius="0" />
           </radiusChanges>
         </trackElements>
         <ocsElements>
           <signals>
-            <signal id="si25044" pos="3.000000" absPos="23922" dir="down" name="4616" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
+            <signal id="sig4" name="Hs." pos="32" absPos="32" dir="up" sight="250" type="main">
+              <geoCoord coord="-777.6870230365239 58.180235751301893 0" />
+            </signal>
+            <signal id="sig5" name="Hs." pos="81" absPos="81" dir="down" sight="250" type="main">
+              <geoCoord coord="-728.62108223291943 58.180235751301893 0" />
+            </signal>
+            <signal id="sig6" name="Hs." pos="1727" absPos="1727" dir="down" sight="250" type="main">
+              <geoCoord coord="916.56657288267138 65.1802357513019 0" />
+            </signal>
+            <signal id="sig7" name="Hs." pos="2375" absPos="2375" dir="up" sight="250" type="main">
+              <geoCoord coord="1564.9205268261012 54.334403420610215 0" />
+            </signal>
           </signals>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb25046" pos="3.000000" absPos="23922" name="811" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25044" pos="3.000000" absPos="23922" name="853" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd9" name="Tp(-/-)" pos="33" absPos="33" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-777.41880258360288 62.430235751301893 0" />
+            </trainDetector>
+            <trainDetector id="trd10" name="Tp(-/-)" pos="7" absPos="7" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-803.24944471480387 60.940070239351122 0" />
+            </trainDetector>
+            <trainDetector id="trd11" name="Tp(-/-)" pos="81" absPos="81" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-728.9105164098371 62.43982775526456 0" />
+            </trainDetector>
+            <trainDetector id="trd12" name="Tp(-/-)" pos="339" absPos="339" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-471.39134197296647 62.438987760590656 0" />
+            </trainDetector>
+            <trainDetector id="trd13" name="Tp(-/-)" pos="692" absPos="692" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-118.19247108360258 62.43783567096073 0" />
+            </trainDetector>
+            <trainDetector id="trd14" name="Tp(-/-)" pos="1726" absPos="1726" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="915.98098186963443 60.934462329164624 0" />
+            </trainDetector>
+            <trainDetector id="trd15" name="Tp(-/-)" pos="2373" absPos="2373" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1563.0913618331058 62.432351537718773 0" />
+            </trainDetector>
+            <trainDetector id="trd16" name="Tp(-/-)" pos="2683" absPos="2683" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1872.7380227836427 60.931341509830126 0" />
+            </trainDetector>
           </trainDetectionElements>
-          <balises>
-            <balise id="ba28228" pos="2.000000" absPos="23921" dir="down" name="Balise HS/FS 4616"/>
-          </balises>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr5" name="02">
+      <track id="tr2" code="tx1" name="[tx1]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x24570" pos="0.000000" absPos="23760">
-            <connection id="co24570_2" ref="co24570_1"/>
+          <trackBegin id="beg2" pos="0" absPos="0">
+            <geoCoord coord="-687.643454359735 61.5507756523457" />
+            <connection id="co14" ref="co15" />
           </trackBegin>
-          <trackEnd id="y25061_2" pos="159.000000" absPos="23919">
-            <connection id="co25061_2" ref="co25061_1"/>
+          <trackEnd id="end2" pos="244" absPos="244">
+            <geoCoord coord="-447.535870908363 92.3652941790988" />
+            <connection id="co4" ref="co5" />
           </trackEnd>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu24570" pos="0.000000" absPos="23760" name="Sporveksel/sporkryss, 309, Asker stasjon" dir="up" profileRef="sppr4" vMax="200"/>
-            <speedChange id="spd25061_2" pos="159.000000" absPos="23919" name="Sporveksel/sporkryss, 320, Asker stasjon" dir="down" profileRef="sppr4" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24570" pos="0.000000" absPos="23760" name="Sporveksel/sporkryss, 309, Asker stasjon" slope="7.250"/>
-            <gradientChange id="gr24897" pos="26.000000" absPos="23786" name="HBP" slope="3.650"/>
-            <gradientChange id="gr25083" pos="147.000000" absPos="23907" name="HBP" slope="-0.750"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra24570" pos="0.000000" absPos="23760" name="Sporveksel/sporkryss, 309, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn24570" pos="0.000000" absPos="23760" name="Sporveksel/sporkryss, 309, Asker stasjon" dir="up" length="5.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb35035" pos="80.000000" absPos="23840" name="810" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35034" pos="80.000000" absPos="23840" name="811" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-        </ocsElements>
-      </track>
-      <track id="tr6" name="02-03">
-        <trackTopology>
-          <trackBegin id="x24514" pos="0.000000" absPos="24556">
-            <connection id="co24514_2" ref="co24514_1"/>
-          </trackBegin>
-          <trackEnd id="y24640" pos="72.000000" absPos="24628">
-            <connection id="co24640_2" ref="co24640_1"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu24514" pos="0.000000" absPos="24556" name="Sporveksel/sporkryss, 331, Asker stasjon" dir="up" profileRef="sppr5" vMax="200"/>
-            <speedChange id="spd24640" pos="72.000000" absPos="24628" name="Sporveksel/sporkryss, 304, Asker stasjon" dir="down" profileRef="sppr5" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24514" pos="0.000000" absPos="24556" name="Sporveksel/sporkryss, 331, Asker stasjon" slope="3.790"/>
-            <gradientChange id="gr25535" pos="33.000000" absPos="24589" name="Sporveksel/sporkryss, 331, Asker stasjon" slope="3.780"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra24514" pos="0.000000" absPos="24556" name="Sporveksel/sporkryss, 331, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn24514" pos="0.000000" absPos="24556" name="Sporveksel/sporkryss, 331, Asker stasjon" dir="up" length="72.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb35215" pos="36.000000" absPos="24592" name="873" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35214" pos="36.000000" absPos="24592" name="874" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-        </ocsElements>
-      </track>
-      <track id="tr7" name="03-02">
-        <trackTopology>
-          <trackBegin id="x24622" pos="0.000000" absPos="24345">
-            <connection id="co24622_2" ref="co24622_1"/>
-          </trackBegin>
-          <trackEnd id="y25443" pos="118.000000" absPos="24463">
-            <connection id="co25443_2" ref="co25443_1"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu24622" pos="0.000000" absPos="24345" name="Sporveksel/sporkryss, 329, Asker stasjon" dir="up" profileRef="sppr3" vMax="200"/>
-            <speedChange id="spd25443" pos="118.000000" absPos="24463" name="Sporveksel/sporkryss, 312, Asker stasjon" dir="down" profileRef="sppr3" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24622" pos="0.000000" absPos="24345" name="Sporveksel/sporkryss, 329, Asker stasjon" slope="-3.730"/>
-            <gradientChange id="gr25432" pos="24.000000" absPos="24369" name="LBP" slope="2.750"/>
-            <gradientChange id="gr25460" pos="64.000000" absPos="24409" name="Sporveksel/sporkryss, 312, Asker stasjon" slope="2.870"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra24622" pos="0.000000" absPos="24345" name="Sporveksel/sporkryss, 329, Asker stasjon" radius="0.000000"/>
+            <radiusChange id="rc2" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc3" name="OB" pos="64" absPos="64" radius="0" />
+            <radiusChange id="rc4" name="OB" pos="84" absPos="84" radius="0" />
+            <radiusChange id="rc5" name="OB" pos="99" absPos="99" radius="0" />
+            <radiusChange id="rc6" name="OB" pos="149" absPos="149" radius="0" />
+            <radiusChange id="rc7" name="OB" pos="166" absPos="166" radius="0" />
+            <radiusChange id="rc8" name="OB" pos="193" absPos="193" radius="0" />
           </radiusChanges>
         </trackElements>
         <ocsElements>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb25438" pos="54.000000" absPos="24399" name="866" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25436" pos="54.000000" absPos="24399" name="862" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd17" name="Tp(-/-)" pos="123" absPos="123" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-566.41221965758325 75.621485761387717 0" />
+            </trainDetector>
           </trainDetectionElements>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr8" name="03-04">
+      <track id="tr3" code="t3" name="[t3]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x24582" pos="0.000000" absPos="23806">
-            <connection id="co24582_2" ref="co24582_1"/>
+          <trackBegin id="beg3" pos="0" absPos="0">
+            <geoCoord coord="-432.752991330464 92.6999608250262" />
+            <connection id="co6" ref="co7" />
           </trackBegin>
-          <trackEnd id="y25226" pos="41.000000" absPos="23847">
-            <connection id="co25226_1" ref="co25226_2"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu24582" pos="0.000000" absPos="23806" name="Sporveksel/sporkryss, 313, Asker stasjon" dir="up" profileRef="sppr5" vMax="200"/>
-            <speedChange id="spd25226" pos="41.000000" absPos="23847" name="Sporveksel/sporkryss, 313, Asker stasjon" dir="down" profileRef="sppr5" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24582" pos="0.000000" absPos="23806" name="Sporveksel/sporkryss, 313, Asker stasjon" slope="3.650"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra24582" pos="0.000000" absPos="23806" name="Sporveksel/sporkryss, 313, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb24582" pos="0.000000" absPos="23806" name="812" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb30700" pos="40.000000" absPos="23846" name="812" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb30699" pos="40.000000" absPos="23846" name="815" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-        </ocsElements>
-      </track>
-      <track id="tr9" name="03-04">
-        <trackTopology>
-          <trackBegin id="x25228" pos="0.000000" absPos="23847">
-            <connection id="co25228_2" ref="co25228_1"/>
-          </trackBegin>
-          <trackEnd id="y24257" pos="33.000000" absPos="23880">
-            <connection id="co24257_2" ref="co24257_1"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu25228" pos="0.000000" absPos="23847" name="Sporveksel/sporkryss, 313, Asker stasjon" dir="up" profileRef="sppr5" vMax="200"/>
-            <speedChange id="spd24257" pos="33.000000" absPos="23880" name="Sporveksel/sporkryss, 324, Asker stasjon" dir="down" profileRef="sppr5" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr25228" pos="0.000000" absPos="23847" name="Sporveksel/sporkryss, 313, Asker stasjon" slope="5.772"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra25228" pos="0.000000" absPos="23847" name="Sporveksel/sporkryss, 313, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb30694" pos="1.000000" absPos="23848" name="815" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb30693" pos="1.000000" absPos="23848" name="841" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-        </ocsElements>
-      </track>
-      <track id="tr10" name="04">
-        <trackTopology>
-          <trackBegin id="x25204" pos="0.000000" absPos="24000">
-            <connection id="co25204" ref="co25202"/>
-          </trackBegin>
-          <trackEnd id="y25308" pos="250.000000" absPos="24250">
-            <bufferStop id="bs25308" name="Sporveksel/sporkryss, 323, Asker stasjon"/>
+          <trackEnd id="end3" pos="2963" absPos="2963">
+            <geoCoord coord="2526.54599153216 136.988505930856" />
+            <openEnd id="DBoutV" />
           </trackEnd>
           <connections>
-            <switch id="sw24283" pos="157.000000" absPos="24157" name="Sporveksel/sporkryss, 321, Asker stasjon">
-              <connection id="co24285_1" ref="co24285_2" orientation="outgoing" course="left"/>
-            </switch>
-            <switch id="sw24287" pos="196.000000" absPos="24196" name="Sporveksel/sporkryss, 323, Asker stasjon">
-              <connection id="co24289_1" ref="co24289_2" orientation="outgoing" course="right"/>
-            </switch>
-          </connections>
-          <crossSections>
-            <crossSection id="cs25204" pos="0.000000" absPos="24000" ocpRef="ocp-ASR"/>
-          </crossSections>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu25204" pos="0.000000" absPos="24000" dir="up" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd24283" pos="157.000000" absPos="24157" name="Sporveksel/sporkryss, 321, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd24287" pos="196.000000" absPos="24196" name="Sporveksel/sporkryss, 323, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd25308" pos="250.000000" absPos="24250" name="Sporveksel/sporkryss, 323, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr25204" pos="0.000000" absPos="24000" slope="-0.410"/>
-            <gradientChange id="gr24275" pos="37.000000" absPos="24037" name="LBP" slope="-3.730"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra25204" pos="0.000000" absPos="24000" radius="0.000000"/>
-          </radiusChanges>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si24277" pos="154.000000" absPos="24154" dir="up" name="4635" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb24277" pos="154.000000" absPos="24154" name="855" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24279" pos="154.000000" absPos="24154" name="881" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba29104" pos="134.000000" absPos="24134" dir="down" name="Balise Rep. HS/FS 4636"/>
-            <balise id="ba28306" pos="155.000000" absPos="24155" dir="up" name="Balise HS/FS 4635"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr11" name="04-03">
-        <trackTopology>
-          <trackBegin id="x24251" pos="0.000000" absPos="23806">
-            <connection id="co24251_2" ref="co24251_1"/>
-          </trackBegin>
-          <trackEnd id="y24588" pos="74.000000" absPos="23880">
-            <connection id="co24588_2" ref="co24588_1"/>
-          </trackEnd>
-          <connections>
-            <switch id="cr25266-1" pos="40.5">
-              <connection id="co25226_2" ref="co25226_1" orientation="incoming" course="left"/>
-            </switch>
-            <switch id="cr25266-2" pos="41.5">
-              <connection id="co25228_1" ref="co25228_2" orientation="outgoing" course="left"/>
+            <switch id="sw10" name="V." pos="2759" absPos="2759" trackContinueCourse="right" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="2322.4853296296669 136.00494708376561 0" />
+              <connection id="co25" ref="co24" course="left" orientation="incoming" />
             </switch>
           </connections>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu24251" pos="0.000000" absPos="23806" name="Sporveksel/sporkryss, 315, Asker stasjon" dir="up" profileRef="sppr3" vMax="200"/>
-            <speedChange id="spd25226_2" pos="41.000000" absPos="23847" name="Sporveksel/sporkryss, 313, Asker stasjon" dir="down" profileRef="sppr3" vMax="200"/>
-            <speedChange id="spu25228_2" pos="41.000000" absPos="23847" name="Sporveksel/sporkryss, 313, Asker stasjon" dir="up" profileRef="sppr5" vMax="200"/>
-            <speedChange id="spd24588" pos="74.000000" absPos="23880" name="Sporveksel/sporkryss, 322, Asker stasjon" dir="down" profileRef="sppr5" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24251" pos="0.000000" absPos="23806" name="Sporveksel/sporkryss, 315, Asker stasjon" slope="5.772"/>
-            <gradientChange id="gr25228_2" pos="41.000000" absPos="23847" name="Sporveksel/sporkryss, 313, Asker stasjon" slope="3.650"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra24251" pos="0.000000" absPos="23806" name="Sporveksel/sporkryss, 315, Asker stasjon" radius="0.000000"/>
+            <radiusChange id="rc9" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc10" name="OB" pos="55" absPos="55" radius="0" />
+            <radiusChange id="rc11" name="OB" pos="86" absPos="86" radius="0" />
+            <radiusChange id="rc12" name="OB" pos="128" absPos="128" radius="0" />
+            <radiusChange id="rc13" name="OB" pos="183" absPos="183" radius="0" />
           </radiusChanges>
         </trackElements>
         <ocsElements>
+          <signals>
+            <signal id="sig8" name="Hs." pos="1353" absPos="1353" dir="down" sight="250" type="main">
+              <geoCoord coord="916.25105143492976 132.72703184841748 0" />
+            </signal>
+            <signal id="sig9" name="Hs." pos="1995" absPos="1995" dir="up" sight="250" type="main">
+              <geoCoord coord="1558.3932864425444 128.82203349219924 0" />
+            </signal>
+          </signals>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb30706" pos="40.000000" absPos="23846" name="837" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb30705" pos="40.000000" absPos="23846" name="815" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb30688" pos="42.000000" absPos="23848" name="815" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb30687" pos="42.000000" absPos="23848" name="814" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd18" name="Tp(-/-)" pos="323" absPos="323" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-113.29619039463046 125.01465052922056 0" />
+            </trainDetector>
+            <trainDetector id="trd19" name="Tp(-/-)" pos="1352" absPos="1352" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="915.97053488976076 128.4756304100836 0" />
+            </trainDetector>
+            <trainDetector id="trd20" name="Tp(-/-)" pos="1995" absPos="1995" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1558.4447548893565 133.07233093390067 0" />
+            </trainDetector>
+            <trainDetector id="trd21" name="Tp(-/-)" pos="2811" absPos="2811" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="2374.2576293469324 137.00449484419235 0" />
+            </trainDetector>
+            <trainDetector id="trd22" name="Tp(-/-)" pos="2412" absPos="2412" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1975.1310026529604 133.58071356939902 0" />
+            </trainDetector>
           </trainDetectionElements>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr12" name="04-03">
+      <track id="tr4" code="tx4" name="[tx4]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x24289" pos="0.000000" absPos="24196">
-            <connection id="co24289_2" ref="co24289_1"/>
+          <trackBegin id="beg4" pos="0" absPos="0">
+            <geoCoord coord="-359.951987524317 92.347948423554" />
+            <connection id="co8" ref="co9" />
           </trackBegin>
-          <trackEnd id="y24612" pos="136.000000" absPos="24332">
-            <connection id="co24612_2" ref="co24612_1"/>
+          <trackEnd id="end4" pos="241" absPos="241">
+            <geoCoord coord="-122.544313714308 61.5199258186585" />
+            <connection id="co16" ref="co17" />
           </trackEnd>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu24289" pos="0.000000" absPos="24196" name="Sporveksel/sporkryss, 323, Asker stasjon" dir="up" profileRef="sppr3" vMax="200"/>
-            <speedChange id="spd24612" pos="136.000000" absPos="24332" name="Sporveksel/sporkryss, 314, Asker stasjon" dir="down" profileRef="sppr3" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24289" pos="0.000000" absPos="24196" name="Sporveksel/sporkryss, 323, Asker stasjon" slope="-3.730"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra24289" pos="0.000000" absPos="24196" name="Sporveksel/sporkryss, 323, Asker stasjon" radius="0.000000"/>
+            <radiusChange id="rc14" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc15" name="OB" pos="52" absPos="52" radius="0" />
+            <radiusChange id="rc16" name="OB" pos="91" absPos="91" radius="0" />
+            <radiusChange id="rc17" name="OB" pos="120" absPos="120" radius="0" />
+            <radiusChange id="rc18" name="OB" pos="145" absPos="145" radius="0" />
+            <radiusChange id="rc19" name="OB" pos="167" absPos="167" radius="0" />
           </radiusChanges>
         </trackElements>
         <ocsElements>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb25326" pos="82.000000" absPos="24278" name="881" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25328" pos="82.000000" absPos="24278" name="864" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd23" name="Tp(-/-)" pos="106" absPos="106" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-255.97228867703785 76.503377033562245 0" />
+            </trainDetector>
           </trainDetectionElements>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr14" name="04-05">
+      <track id="tr5" code="t7" name="[t7]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x24285" pos="0.000000" absPos="24157">
-            <connection id="co24285_2" ref="co24285_1"/>
+          <trackBegin id="beg5" pos="0" absPos="0">
+            <geoCoord coord="-457.91172463106 60.7662169843716" />
+            <connection id="co18" ref="co19" />
           </trackBegin>
-          <trackEnd id="y24393" pos="85.000000" absPos="24242">
-            <connection id="co24393_2" ref="co24393_1"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu24285" pos="0.000000" absPos="24157" name="Sporveksel/sporkryss, 321, Asker stasjon" dir="up" profileRef="sppr5" vMax="200"/>
-            <speedChange id="spd25355" pos="52.000000" absPos="24209" name="Sporveksel/sporkryss, 316/325, Asker stasjon" dir="down" profileRef="sppr5" vMax="200"/>
-            <speedChange id="spu25357" pos="52.000000" absPos="24209" name="Sporveksel/sporkryss, 316/325, Asker stasjon" dir="up" profileRef="sppr0" vMax="200"/>
-            <speedChange id="spd24393" pos="85.000000" absPos="24242" name="Sporveksel/sporkryss, 316/325, Asker stasjon" dir="down" profileRef="sppr0" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24285" pos="0.000000" absPos="24157" name="Sporveksel/sporkryss, 321, Asker stasjon" slope="-3.730"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra24285" pos="0.000000" absPos="24157" name="Sporveksel/sporkryss, 321, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb25355" pos="52.000000" absPos="24209" name="881" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25357" pos="52.000000" absPos="24209" name="884" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-        </ocsElements>
-      </track>
-      <track id="tr15" name="04-05">
-        <trackTopology>
-          <trackBegin id="x24231" pos="0.000000" absPos="23673">
-            <connection id="co24231_2" ref="co24231_1"/>
-          </trackBegin>
-          <trackEnd id="y24446" pos="30.000000" absPos="23703">
-            <connection id="co24446_2" ref="co24446_1"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu24231" pos="0.000000" absPos="23673" name="Sporveksel/sporkryss, 305, Asker stasjon" dir="up" profileRef="sppr0" vMax="200"/>
-            <speedChange id="spd24446" pos="30.000000" absPos="23703" name="Sporveksel/sporkryss, 305, Asker stasjon" dir="down" profileRef="sppr0" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24231" pos="0.000000" absPos="23673" name="Sporveksel/sporkryss, 305, Asker stasjon" slope="4.480"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra24231" pos="0.000000" absPos="23673" name="Sporveksel/sporkryss, 305, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn24231" pos="0.000000" absPos="23673" name="Sporveksel/sporkryss, 305, Asker stasjon" dir="up" length="30.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb30670" pos="29.000000" absPos="23702" name="823" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb30669" pos="29.000000" absPos="23702" name="835" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-        </ocsElements>
-      </track>
-      <track id="tr16" name="05">
-        <trackTopology>
-          <trackBegin id="x25208" pos="0.000000" absPos="24000">
-            <connection id="co25208" ref="co25206"/>
-          </trackBegin>
-          <trackEnd id="y24636" pos="524.000000" absPos="24524">
-            <connection id="co24636_2" ref="co24636_1"/>
+          <trackEnd id="end5" pos="2995" absPos="2995">
+            <geoCoord coord="2524.74278919725 -6.04126816260577" />
+            <openEnd id="ABoutH" />
           </trackEnd>
           <connections>
-            <switch id="sw24389" pos="194.000000" absPos="24194" name="Sporveksel/sporkryss, 318, Asker stasjon">
-              <connection id="co24389_1" ref="co24389_2" orientation="incoming" course="right"/>
+            <switch id="sw11" name="V." pos="948" absPos="948" trackContinueCourse="right" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="477.82224108769913 -1.3770305518874697 0" />
+              <connection id="co27" ref="co26" course="left" orientation="incoming" />
             </switch>
-            <switch id="cr24393-1" pos="241.5">
-              <connection id="co24393_1" ref="co24393_2" orientation="incoming" course="left"/>
+            <switch id="sw12" name="V." pos="955" absPos="955" trackContinueCourse="right" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="484.44143453525248 -1.3921134485144111 0" />
+              <connection id="co29" ref="co28" course="left" orientation="outgoing" />
             </switch>
-            <switch id="cr24393-1" pos="242.5">
-              <connection id="co24395_1" ref="co24395_2" orientation="outgoing" course="left"/>
+            <switch id="sw13" name="V." pos="1090" absPos="1090" trackContinueCourse="left" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="619.43400600021153 -1.699715729206716 0" />
+              <connection id="co31" ref="co30" course="right" orientation="outgoing" />
             </switch>
-          </connections>
-          <crossSections>
-            <crossSection id="cs25208" pos="0.000000" absPos="24000" ocpRef="ocp-ASR"/>
-          </crossSections>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu25208" pos="0.000000" absPos="24000" dir="up" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu24391" pos="194.000000" absPos="24194" name="Sporveksel/sporkryss, 318, Asker stasjon" dir="up" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd24393_2" pos="242.000000" absPos="24242" name="Sporveksel/sporkryss, 316/325, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu24395" pos="242.000000" absPos="24242" name="Sporveksel/sporkryss, 316/325, Asker stasjon" dir="up" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd25488" pos="470.000000" absPos="24470" name="Sporveksel/sporkryss, 310, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu25490" pos="470.000000" absPos="24470" name="Sporveksel/sporkryss, 310, Asker stasjon" dir="up" profileRef="sppr3" vMax="200"/>
-            <speedChange id="spd24636" pos="524.000000" absPos="24524" name="Sporveksel/sporkryss, 310, Asker stasjon" dir="down" profileRef="sppr3" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr25208" pos="0.000000" absPos="24000" slope="-0.420"/>
-            <gradientChange id="gr24381" pos="37.000000" absPos="24037" name="LBP" slope="-3.730"/>
-            <gradientChange id="gr24399" pos="370.000000" absPos="24370" name="LBP" slope="2.750"/>
-            <gradientChange id="gr25474" pos="509.000000" absPos="24509" name="LBP" slope="3.780"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra25208" pos="0.000000" absPos="24000" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn25478" pos="514.000000" absPos="24514" name="Tunnel, LIERÅSEN, Asker stasjon" dir="up" length="10.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si24383" pos="137.000000" absPos="24137" dir="up" name="4645" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb24383" pos="137.000000" absPos="24137" name="856" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24385" pos="137.000000" absPos="24137" name="883" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25348" pos="206.000000" absPos="24206" name="883" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25347" pos="206.000000" absPos="24206" name="884" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35139" pos="290.000000" absPos="24290" name="884" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35138" pos="290.000000" absPos="24290" name="886" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35151" pos="425.000000" absPos="24425" name="886" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35150" pos="425.000000" absPos="24425" name="868" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba28297" pos="138.000000" absPos="24138" dir="up" name="Balise HS/FS 4645"/>
-            <balise id="ba29122" pos="152.000000" absPos="24152" dir="down" name="Balise Rep. HS/FS 4646"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr17" name="05-01">
-        <trackTopology>
-          <trackBegin id="x24395" pos="0.000000" absPos="24242">
-            <connection id="co24395_2" ref="co24395_1"/>
-          </trackBegin>
-          <trackEnd id="y25381" pos="350.000000" absPos="24592">
-            <connection id="co25381_1" ref="co25381_2"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu24395_2" pos="0.000000" absPos="24242" name="Sporveksel/sporkryss, 316/325, Asker stasjon" dir="up" profileRef="sppr0" vMax="200"/>
-            <speedChange id="spd25381" pos="350.000000" absPos="24592" name="Sporveksel/sporkryss, 306, Asker stasjon" dir="down" profileRef="sppr0" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24395" pos="0.000000" absPos="24242" name="Sporveksel/sporkryss, 316/325, Asker stasjon" slope="-3.730"/>
-            <gradientChange id="gr25403" pos="48.000000" absPos="24290" name="LBP" slope="-11.380"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra24395" pos="0.000000" absPos="24242" name="Sporveksel/sporkryss, 316/325, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si25375" pos="289.000000" absPos="24531" dir="up" name="N 4623" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-            <signal id="si25374" pos="289.000000" absPos="24531" dir="down" name="4666" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb35127" pos="43.000000" absPos="24285" name="884" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35126" pos="43.000000" absPos="24285" name="890" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25375" pos="289.000000" absPos="24531" name="890" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25374" pos="289.000000" absPos="24531" name="892" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba28365" pos="288.000000" absPos="24530" dir="down" name="Balise HS/FS 4666"/>
-            <balise id="ba28376" pos="290.000000" absPos="24532" dir="up" name="Balise HS/FS 4623N"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr20" name="06">
-        <trackTopology>
-          <trackBegin id="x24359" pos="0.000000" absPos="23745">
-            <connection id="co24359_2" ref="co24359_1"/>
-          </trackBegin>
-          <trackEnd id="y24389" pos="449.000000" absPos="24194">
-            <connection id="co24389_2" ref="co24389_1"/>
-          </trackEnd>
-          <crossSections>
-            <crossSection id="cs25286" pos="255.000000" absPos="24000" ocpRef="ocp-ASR"/>
-          </crossSections>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu24359" pos="0.000000" absPos="23745" name="Sporveksel/sporkryss, 311, Asker stasjon" dir="up" profileRef="sppr4" vMax="200"/>
-            <speedChange id="spd25290" pos="45.000000" absPos="23790" name="Sporveksel/sporkryss, 328, Asker stasjon" dir="down" profileRef="sppr4" vMax="200"/>
-            <speedChange id="spu25288" pos="45.000000" absPos="23790" name="Sporveksel/sporkryss, 328, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd28267" pos="80.000000" absPos="23825" name="Balise HS/FS 4656" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu28266" pos="80.000000" absPos="23825" name="Balise HS/FS 4656" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25294" pos="416.000000" absPos="24161" name="Sporveksel/sporkryss, 318, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu25292" pos="416.000000" absPos="24161" name="Sporveksel/sporkryss, 318, Asker stasjon" dir="up" profileRef="sppr5" vMax="200"/>
-            <speedChange id="spd24389" pos="449.000000" absPos="24194" name="Sporveksel/sporkryss, 318, Asker stasjon" dir="down" profileRef="sppr5" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24359" pos="0.000000" absPos="23745" name="Sporveksel/sporkryss, 311, Asker stasjon" slope="6.790"/>
-            <gradientChange id="gr25260" pos="27.000000" absPos="23772" name="LBP" slope="3.580"/>
-            <gradientChange id="gr25264" pos="81.000000" absPos="23826" name="06" slope="2.030"/>
-            <gradientChange id="gr25269" pos="165.000000" absPos="23910" name="LBP" slope="-0.420"/>
-            <gradientChange id="gr25273" pos="292.000000" absPos="24037" name="LBP" slope="-3.730"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra24359" pos="0.000000" absPos="23745" name="Sporveksel/sporkryss, 311, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn24359" pos="0.000000" absPos="23745" name="Sporveksel/sporkryss, 311, Asker stasjon" dir="up" length="20.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si25264" pos="81.000000" absPos="23826" dir="down" name="4656" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
-            <signal id="si25275" pos="358.000000" absPos="24103" dir="up" name="4655" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb25282" pos="20.000000" absPos="23765" name="838" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25280" pos="20.000000" absPos="23765" name="839" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25262" pos="81.000000" absPos="23826" name="839" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25264" pos="81.000000" absPos="23826" name="857" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25275" pos="358.000000" absPos="24103" name="857" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25277" pos="358.000000" absPos="24103" name="882" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35111" pos="392.000000" absPos="24137" name="882" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35110" pos="392.000000" absPos="24137" name="883" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba28266" pos="80.000000" absPos="23825" dir="down" name="Balise HS/FS 4656"/>
-            <balise id="ba28287" pos="359.000000" absPos="24104" dir="up" name="Balise HS/FS 4655"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr21" name="07">
-        <trackTopology>
-          <trackBegin id="x25136" pos="0.000000" absPos="24190">
-            <connection id="co25136_1" ref="co25136_2"/>
-          </trackBegin>
-          <trackEnd id="y33750" pos="80.000000" absPos="24110">
-            <connection id="co33750_2" ref="co33750_1"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu25136" pos="0.000000" absPos="24190" name="Sporveksel/sporkryss, 342, Asker stasjon" dir="up" profileRef="sppr5" vMax="200"/>
-            <speedChange id="spd33750" pos="80.000000" absPos="24110" name="SPV-319" dir="down" profileRef="sppr5" vMax="50"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr25136" pos="0.000000" absPos="24190" name="Sporveksel/sporkryss, 342, Asker stasjon" slope="3.730"/>
-            <gradientChange id="gr25143" pos="33.000000" absPos="24157" name="Sporveksel/sporkryss, 342, Asker stasjon" slope="-3.730"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra25136" pos="0.000000" absPos="24190" name="Sporveksel/sporkryss, 342, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb25145" pos="33.000000" absPos="24157" name="859" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25143" pos="33.000000" absPos="24157" name="860" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-        </ocsElements>
-      </track>
-      <track id="tr22" name="07">
-        <trackTopology>
-          <trackBegin id="x25153" pos="0.000000" absPos="24110">
-            <bufferStop id="bs25153" name=""/>
-          </trackBegin>
-          <trackEnd id="y25114" pos="257.000000" absPos="24367">
-            <bufferStop id="bs25114" name="07"/>
-          </trackEnd>
-          <connections>
-            <switch id="sw25136" pos="80.000000" absPos="24190" name="Sporveksel/sporkryss, 342, Asker stasjon">
-              <connection id="co25136_2" ref="co25136_1" orientation="incoming" course="right"/>
+            <switch id="sw14" name="V." pos="2677" absPos="2677" trackContinueCourse="right" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="2206.8089760164557 -5.3168048459780186 0" />
+              <connection id="co33" ref="co32" course="left" orientation="incoming" />
             </switch>
           </connections>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu25153" pos="0.000000" absPos="24110" dir="up" profileRef="sppr5" vMax="200"/>
-            <speedChange id="spd25136" pos="80.000000" absPos="24190" name="Sporveksel/sporkryss, 342, Asker stasjon" dir="down" profileRef="sppr5" vMax="200"/>
-            <speedChange id="spu25135" pos="80.000000" absPos="24190" name="Sporveksel/sporkryss, 342, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25114" pos="257.000000" absPos="24367" name="07" dir="down" profileRef="sppr2" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr25153" pos="0.000000" absPos="24110" slope="-3.730"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra25153" pos="0.000000" absPos="24110" radius="0.000000"/>
+            <radiusChange id="rc20" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc21" name="OB" pos="52" absPos="52" radius="0" />
+            <radiusChange id="rc22" name="OB" pos="74" absPos="74" radius="0" />
+            <radiusChange id="rc23" name="OB" pos="103" absPos="103" radius="0" />
+            <radiusChange id="rc24" name="OB" pos="120" absPos="120" radius="0" />
+            <radiusChange id="rc25" name="OB" pos="163" absPos="163" radius="0" />
+            <radiusChange id="rc26" name="OB" pos="216" absPos="216" radius="0" />
+            <radiusChange id="rc27" name="OB" pos="448" absPos="448" radius="0" />
           </radiusChanges>
         </trackElements>
         <ocsElements>
           <signals>
-            <signal id="si33713" pos="83.000000" absPos="24193" dir="down" name="4716" ocpStationRef="ocp-ASR" type="main" function="exit" sight="50" virtual="true" code="1"/>
+            <signal id="sig10" name="Hs." pos="1392" absPos="1392" dir="down" sight="250" type="main">
+              <geoCoord coord="921.33017452583283 1.1123743928468208 0" />
+            </signal>
+            <signal id="sig11" name="Hs." pos="2043" absPos="2043" dir="up" sight="250" type="main">
+              <geoCoord coord="1572.7364989900816 -15.961613283869156 0" />
+            </signal>
           </signals>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb33714" pos="83.000000" absPos="24193" name="859" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb33713" pos="83.000000" absPos="24193" name="852" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd24" name="Tp(-/-)" pos="234" absPos="234" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-236.696002998052 -1.6839286291299449 0" />
+            </trainDetector>
+            <trainDetector id="trd25" name="Tp(-/-)" pos="952" absPos="952" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="481.15540324183524 -2.1346276449314123 0" />
+            </trainDetector>
+            <trainDetector id="trd26" name="Tp(-/-)" pos="1392" absPos="1392" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="921.32975919042485 -3.1376356943572952 0" />
+            </trainDetector>
+            <trainDetector id="trd27" name="Tp(-/-)" pos="2040" absPos="2040" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1569.2293782052402 -3.1139752633838995 0" />
+            </trainDetector>
+            <trainDetector id="trd28" name="Tp(-/-)" pos="2771" absPos="2771" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="2300.3707087557541 -6.2800022457233373 0" />
+            </trainDetector>
+            <trainDetector id="trd29" name="Tp(-/-)" pos="2341" absPos="2341" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1870.1290579228119 -5.2996274620680106 0" />
+            </trainDetector>
           </trainDetectionElements>
-          <stopPosts>
-            <stopPost id="sp25114" pos="257.000000" absPos="24367" dir="up" name="Butt" code="6"/>
-          </stopPosts>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr23" name="LM02">
+      <track id="tr6" code="t8" name="[t8]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x36236" pos="0.000000" absPos="21760">
-            <openEnd id="oe36236" code="ext-DB1__oe35462"/>
+          <trackBegin id="beg6" pos="0" absPos="0">
+            <geoCoord coord="-583.288390756607 -114.285168926177" />
           </trackBegin>
-          <trackEnd id="y36411" pos="996.000000" absPos="22756">
-            <connection id="co36411" ref="co36409"/>
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu36238" pos="0.000000" absPos="21760" name="Kjedebrudd, km 21,000V, Askerbanen Sandvika-Asker" dir="up" profileRef="sppr6" vMax="200"/>
-            <speedChange id="spd36411" pos="996.000000" absPos="22756" dir="down" profileRef="sppr6" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr36238" pos="0.000000" absPos="21760" name="Kjedebrudd, km 21,000V, Askerbanen Sandvika-Asker" slope="13.090"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra36238" pos="0.000000" absPos="21760" name="Kjedebrudd, km 21,000V, Askerbanen Sandvika-Asker" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn36238" pos="0.000000" absPos="21760" name="Kjedebrudd, km 21,000V, Askerbanen Sandvika-Asker" dir="up" length="996.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si36218" pos="986.000000" absPos="22746" dir="up" name="UA 4611" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb36403" pos="146.000000" absPos="21906" name="678" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36401" pos="146.000000" absPos="21906" name="680" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36411" pos="996.000000" absPos="22756" name="680" dir="down" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba36337" pos="100.000000" absPos="21860" dir="down" name="Balise Rep. HS/FS 4348"/>
-            <balise id="ba36349" pos="481.000000" absPos="22241" dir="up" name="Balise Rep. HS/FS 4611"/>
-            <balise id="ba36306" pos="987.000000" absPos="22747" dir="up" name="Balise HS 4611UA"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr24" name="LM03">
-        <trackTopology>
-          <trackBegin id="x36409" pos="0.000000" absPos="22756">
-            <connection id="co36409" ref="co36411"/>
-          </trackBegin>
-          <trackEnd id="y36242" pos="744.000000" absPos="23500">
-            <connection id="co36240" ref="co24693"/>
+          <trackEnd id="end6" pos="1324" absPos="1324">
+            <geoCoord coord="740.530697432303 -114.285168926177" />
+            <openEnd id="SBin" />
           </trackEnd>
           <connections>
-            <switch id="sw36170" pos="642.000000" absPos="23398" name="Sporveksel/sporkryss, 330, Asker stasjon">
-              <connection id="co36170_1" ref="co36170_2" orientation="incoming" course="left"/>
+            <switch id="sw15" name="V." pos="126" absPos="126" trackContinueCourse="right" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="-457.60197308166971 -114.285168926177 0" />
+              <connection id="co35" ref="co34" course="left" orientation="outgoing" />
             </switch>
           </connections>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu36409" pos="0.000000" absPos="22756" dir="up" profileRef="sppr6" vMax="200"/>
-            <speedChange id="spu36172" pos="642.000000" absPos="23398" name="Sporveksel/sporkryss, 330, Asker stasjon" dir="up" profileRef="sppr6" vMax="200"/>
-            <speedChange id="spd36232" pos="654.000000" absPos="23410" name="Hastighet, 160, Askerbanen, Sandvika-Asker" dir="down" profileRef="sppr6" vMax="200"/>
-            <speedChange id="spu36234" pos="654.000000" absPos="23410" name="Hastighet, 160, Askerbanen, Sandvika-Asker" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd36240" pos="744.000000" absPos="23500" dir="down" profileRef="sppr2" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr36409" pos="0.000000" absPos="22756" slope="13.090"/>
-            <gradientChange id="gr36230" pos="494.000000" absPos="23250" name="HBP" slope="11.390"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra36409" pos="0.000000" absPos="22756" radius="0.000000"/>
+            <radiusChange id="rc28" name="Start" pos="0" absPos="0" radius="0" />
           </radiusChanges>
-          <tunnels>
-            <tunnel id="tn36409" pos="0.000000" absPos="22756" dir="up" length="744.000000" crossSection="40.000000"/>
-          </tunnels>
         </trackElements>
         <ocsElements>
-          <signals>
-            <signal id="si36225" pos="4.000000" absPos="22760" dir="down" name="B 4604" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-          </signals>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb36409" pos="0.000000" absPos="22756" name="802" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36419" pos="512.000000" absPos="23268" name="802" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36417" pos="512.000000" absPos="23268" name="806" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36427" pos="664.000000" absPos="23420" name="806" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36425" pos="664.000000" absPos="23420" name="808" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd30" name="Tp(-/-)" pos="79" absPos="79" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-504.16461168607657 -113.535168926177 0" />
+            </trainDetector>
+            <trainDetector id="trd31" name="Tp(-/-)" pos="407" absPos="407" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-176.44459787688629 -115.035168926177 0" />
+            </trainDetector>
+            <trainDetector id="trd32" name="Tp(-/-)" pos="1239" absPos="1239" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="655.57386154806954 -115.035168926177 0" />
+            </trainDetector>
           </trainDetectionElements>
-          <balises>
-            <balise id="ba36312" pos="3.000000" absPos="22759" dir="down" name="Balise HS 4604M"/>
-            <balise id="ba36373" pos="499.000000" absPos="23255" dir="down" name="Balise Rep. HS/FS 4604"/>
-          </balises>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr25" name="LM03">
+      <track id="tr7" code="tx9" name="[tx9]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x24706" pos="0.000000" absPos="23500">
-            <connection id="co24693" ref="co36240"/>
+          <trackBegin id="beg7" pos="0" absPos="0">
+            <geoCoord coord="-457.60197308167 -114.670309558756" />
+            <connection id="co34" ref="co35" />
           </trackBegin>
-          <trackEnd id="y25618" pos="1638.000000" absPos="36605">
-            <connection id="co25618" ref="co25620"/>
+          <trackEnd id="end7" pos="957" absPos="957">
+            <geoCoord coord="477.822069836348 -1.45218493765788" />
+            <connection id="co26" ref="co27" />
           </trackEnd>
-          <mileageChanges>
-            <mileageChange id="mi24658" pos="1471.000000" name="Kjedebrudd, km 24,971V, Asker stasjon" absPosIn="24971" absPos="36438" type="overlapping"/>
-          </mileageChanges>
-          <connections>
-            <switch id="sw24568" pos="260.000000" absPos="23760" name="Sporveksel/sporkryss, 309, Asker stasjon">
-              <connection id="co24570_1" ref="co24570_2" orientation="outgoing" course="right"/>
-            </switch>
-            <switch id="sw24580" pos="306.000000" absPos="23806" name="Sporveksel/sporkryss, 313, Asker stasjon">
-              <connection id="co24582_1" ref="co24582_2" orientation="outgoing"/>
-            </switch>
-            <switch id="sw24588" pos="380.000000" absPos="23880" name="Sporveksel/sporkryss, 322, Asker stasjon">
-              <connection id="co24588_1" ref="co24588_2" orientation="incoming"/>
-            </switch>
-            <switch id="sw24612" pos="832.000000" absPos="24332" name="Sporveksel/sporkryss, 314, Asker stasjon">
-              <connection id="co24612_1" ref="co24612_2" orientation="incoming"/>
-            </switch>
-            <switch id="sw24620" pos="845.000000" absPos="24345" name="Sporveksel/sporkryss, 329, Asker stasjon">
-              <connection id="co24622_1" ref="co24622_2" orientation="outgoing"/>
-            </switch>
-            <switch id="sw24636" pos="1024.000000" absPos="24524" name="Sporveksel/sporkryss, 310, Asker stasjon">
-              <connection id="co24636_1" ref="co24636_2" orientation="incoming"/>
-            </switch>
-            <switch id="sw24640" pos="1128.000000" absPos="24628" name="Sporveksel/sporkryss, 304, Asker stasjon">
-              <connection id="co24640_1" ref="co24640_2" orientation="incoming"/>
-            </switch>
-          </connections>
-          <crossSections>
-            <crossSection id="cs25200" pos="500.000000" absPos="24000" ocpRef="ocp-ASR"/>
-          </crossSections>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu24693" pos="0.000000" absPos="23500" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24568" pos="260.000000" absPos="23760" name="Sporveksel/sporkryss, 309, Asker stasjon" dir="down" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24580" pos="306.000000" absPos="23806" name="Sporveksel/sporkryss, 313, Asker stasjon" dir="down" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spu24590" pos="380.000000" absPos="23880" name="Sporveksel/sporkryss, 322, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spu24614" pos="832.000000" absPos="24332" name="Sporveksel/sporkryss, 314, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24620" pos="845.000000" absPos="24345" name="Sporveksel/sporkryss, 329, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu24622_2" pos="845.000000" absPos="24345" name="Sporveksel/sporkryss, 329, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24624" pos="869.000000" absPos="24369" name="LBP" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu24626" pos="869.000000" absPos="24369" name="LBP" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25421" pos="899.000000" absPos="24399" name="Sporveksel/sporkryss, 329, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu25420" pos="899.000000" absPos="24399" name="Sporveksel/sporkryss, 329, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd35199" pos="925.000000" absPos="24425" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu35198" pos="925.000000" absPos="24425" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25465" pos="970.000000" absPos="24470" name="Sporveksel/sporkryss, 310, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu25464" pos="970.000000" absPos="24470" name="Sporveksel/sporkryss, 310, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24628" pos="1009.000000" absPos="24509" name="LBP" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu24630" pos="1009.000000" absPos="24509" name="LBP" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24632" pos="1014.000000" absPos="24514" name="Tunnel, LIERÅSEN, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu24634" pos="1014.000000" absPos="24514" name="Tunnel, LIERÅSEN, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24636_2" pos="1024.000000" absPos="24524" name="Sporveksel/sporkryss, 310, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu24638" pos="1024.000000" absPos="24524" name="Sporveksel/sporkryss, 310, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spu24642" pos="1128.000000" absPos="24628" name="Sporveksel/sporkryss, 304, Asker stasjon" dir="up" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spd25618" pos="1638.000000" absPos="36605" name="B, Asker - Brakerøya" dir="down" profileRef="sppr7" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24693" pos="0.000000" absPos="23500" slope="11.390"/>
-            <gradientChange id="gr24566" pos="150.000000" absPos="23650" name="HBP" slope="7.250"/>
-            <gradientChange id="gr24578" pos="286.000000" absPos="23786" name="HBP" slope="3.650"/>
-            <gradientChange id="gr24600" pos="409.000000" absPos="23909" name="HBP" slope="-0.410"/>
-            <gradientChange id="gr24604" pos="537.000000" absPos="24037" name="HBP" slope="-3.730"/>
-            <gradientChange id="gr24626" pos="869.000000" absPos="24369" name="LBP" slope="2.750"/>
-            <gradientChange id="gr24630" pos="1009.000000" absPos="24509" name="LBP" slope="3.780"/>
-            <gradientChange id="gr24646" pos="1154.000000" absPos="24654" name="HBP" slope="2.240"/>
-            <gradientChange id="gr24650" pos="1230.000000" absPos="24730" name="LBP" slope="3.010"/>
-            <gradientChange id="gr25616" pos="1529.000000" absPos="36496" name="HBP" slope="-9.000"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra24693" pos="0.000000" absPos="23500" radius="0.000000"/>
+            <radiusChange id="rc29" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc30" name="OB" pos="99" absPos="99" radius="0" />
+            <radiusChange id="rc31" name="OB" pos="261" absPos="261" radius="0" />
+            <radiusChange id="rc32" name="OB" pos="359" absPos="359" radius="0" />
+            <radiusChange id="rc33" name="OB" pos="395" absPos="395" radius="0" />
+            <radiusChange id="rc34" name="OB" pos="674" absPos="674" radius="0" />
+            <radiusChange id="rc35" name="OB" pos="735" absPos="735" radius="0" />
+            <radiusChange id="rc36" name="OB" pos="802" absPos="802" radius="0" />
+            <radiusChange id="rc37" name="OB" pos="865" absPos="865" radius="0" />
           </radiusChanges>
-          <tunnels>
-            <tunnel id="tn24693" pos="0.000000" absPos="23500" dir="up" length="265.000000" crossSection="40.000000"/>
-            <tunnel id="tn24634" pos="1014.000000" absPos="24514" name="Tunnel, LIERÅSEN, Asker stasjon" dir="up" length="624.000000" crossSection="40.000000"/>
-          </tunnels>
         </trackElements>
         <ocsElements>
-          <signals>
-            <signal id="si35006" pos="233.000000" absPos="23733" dir="down" name="Butt" type="shunting" sight="400" virtual="true" code="4"/>
-            <signal id="si24594" pos="384.000000" absPos="23884" dir="down" name="4626" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
-            <signal id="si28323" pos="747.000000" absPos="24247" dir="up" name="4625" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
-            <signal id="si24652" pos="1375.000000" absPos="24875" dir="up" name="UL 4613" type="main" function="blocking" sight="400" virtual="false" code="1"/>
-          </signals>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb35007" pos="233.000000" absPos="23733" name="808" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35006" pos="233.000000" absPos="23733" name="810" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24580" pos="306.000000" absPos="23806" name="810" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24582_2" pos="306.000000" absPos="23806" name="812" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25219" pos="343.000000" absPos="23843" name="812" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25218" pos="343.000000" absPos="23843" name="814" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24592" pos="384.000000" absPos="23884" name="814" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24594" pos="384.000000" absPos="23884" name="854" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb28323" pos="747.000000" absPos="24247" name="854" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb28325" pos="747.000000" absPos="24247" name="864" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24616" pos="839.000000" absPos="24339" name="864" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24618" pos="839.000000" absPos="24339" name="866" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35199" pos="925.000000" absPos="24425" name="866" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35198" pos="925.000000" absPos="24425" name="868" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35187" pos="1051.000000" absPos="24551" name="868" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35186" pos="1051.000000" absPos="24551" name="874" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24652" pos="1375.000000" absPos="24875" name="874" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24654" pos="1375.000000" absPos="24875" name="878" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25618" pos="1638.000000" absPos="36605" name="878" dir="down" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd33" name="Tp(-/-)" pos="306" absPos="306" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-152.88152516221328 -94.388464063050151 0" />
+            </trainDetector>
+            <trainDetector id="trd34" name="Tp(-/-)" pos="781" absPos="781" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="304.57090322572094 -20.166946035337 0" />
+            </trainDetector>
           </trainDetectionElements>
-          <balises>
-            <balise id="ba28210" pos="198.000000" absPos="23698" dir="up" name="Balise Rep. HS/FS 4615"/>
-            <balise id="ba28238" pos="383.000000" absPos="23883" dir="down" name="Balise HS/FS 4626"/>
-            <balise id="ba29095" pos="414.000000" absPos="23914" dir="up" name="Balise Rep. HS/FS 4625"/>
-            <balise id="ba29113" pos="634.000000" absPos="24134" dir="down" name="Balise Rep. HS/FS 4626U"/>
-            <balise id="ba28335" pos="748.000000" absPos="24248" dir="up" name="Balise HS/FS 4625"/>
-            <balise id="ba29131" pos="773.000000" absPos="24273" dir="down" name="Balise Rep. HS/FS 4626"/>
-            <balise id="ba29172" pos="1150.000000" absPos="24650" dir="up" name="Balise Rep. HS/FS 4613"/>
-            <balise id="ba28385" pos="1376.000000" absPos="24876" dir="up" name="Balise HS 4613UL"/>
-            <balise id="ba28411" pos="1637.000000" absPos="36604" dir="down" name="Balise HS/FS 4602B"/>
-          </balises>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr26" name="LM05">
+      <track id="tr8" code="t10" name="[t10]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x24443" pos="0.000000" absPos="23500">
-            <connection id="co24433" ref="co36183"/>
+          <trackBegin id="beg8" pos="0" absPos="0">
+            <geoCoord coord="-143.453818777463 28.4516731076837" />
           </trackBegin>
-          <trackEnd id="y25206" pos="500.000000" absPos="24000">
-            <connection id="co25206" ref="co25208"/>
+          <trackEnd id="end8" pos="2668" absPos="2668">
+            <geoCoord coord="2524.70515802952 30.6785238654065" />
+            <openEnd id="ABoutV" />
           </trackEnd>
           <connections>
-            <switch id="sw24357" pos="245.000000" absPos="23745" name="Sporveksel/sporkryss, 311, Asker stasjon">
-              <connection id="co24359_1" ref="co24359_2" orientation="outgoing"/>
+            <switch id="sw16" name="V." pos="802" absPos="802" trackContinueCourse="right" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="658.662346216737 29.121120844990834 0" />
+              <connection id="co37" ref="co36" course="left" orientation="incoming" />
+            </switch>
+            <switch id="sw17" name="V." pos="321" absPos="321" trackContinueCourse="left" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="177.1918038340965 28.719284578319403 0" />
+              <connection id="co39" ref="co38" course="right" orientation="incoming" />
             </switch>
           </connections>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu24433" pos="0.000000" absPos="23500" dir="up" profileRef="sppr8" vMax="200"/>
-            <speedChange id="spd24341" pos="170.000000" absPos="23670" name="Hastighet, 90, Asker stasjon" dir="down" profileRef="sppr8" vMax="200"/>
-            <speedChange id="spu24343" pos="170.000000" absPos="23670" name="Hastighet, 90, Asker stasjon" dir="up" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd24345" pos="173.000000" absPos="23673" name="Sporveksel/sporkryss, 307, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu24355" pos="233.000000" absPos="23733" name="Sporveksel/sporkryss, 328, Asker stasjon" dir="up" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd24357" pos="245.000000" absPos="23745" name="Sporveksel/sporkryss, 311, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd24361" pos="272.000000" absPos="23772" name="LBP" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu24363" pos="272.000000" absPos="23772" name="LBP" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25243" pos="290.000000" absPos="23790" name="Sporveksel/sporkryss, 328, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu25242" pos="290.000000" absPos="23790" name="Sporveksel/sporkryss, 328, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd28258" pos="357.000000" absPos="23857" name="Balise HS/FS 4646" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu28257" pos="357.000000" absPos="23857" name="Balise HS/FS 4646" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25206" pos="500.000000" absPos="24000" dir="down" profileRef="sppr1" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24433" pos="0.000000" absPos="23500" slope="11.590"/>
-            <gradientChange id="gr24331" pos="73.000000" absPos="23573" name="HBP" slope="7.150"/>
-            <gradientChange id="gr24335" pos="139.000000" absPos="23639" name="HBP" slope="1.310"/>
-            <gradientChange id="gr24339" pos="167.000000" absPos="23667" name="LBP" slope="4.490"/>
-            <gradientChange id="gr24351" pos="203.000000" absPos="23703" name="LBP" slope="6.790"/>
-            <gradientChange id="gr24363" pos="272.000000" absPos="23772" name="LBP" slope="3.580"/>
-            <gradientChange id="gr24371" pos="358.000000" absPos="23858" name="05" slope="2.030"/>
-            <gradientChange id="gr24377" pos="410.000000" absPos="23910" name="LBP" slope="-0.420"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra24433" pos="0.000000" absPos="23500" radius="0.000000"/>
+            <radiusChange id="rc38" name="Start" pos="0" absPos="0" radius="0" />
           </radiusChanges>
-          <tunnels>
-            <tunnel id="tn24433" pos="0.000000" absPos="23500" dir="up" length="265.000000" crossSection="40.000000"/>
-          </tunnels>
         </trackElements>
         <ocsElements>
           <signals>
-            <signal id="si35047" pos="161.000000" absPos="23661" dir="up" name="Butt" type="shunting" sight="400" virtual="true" code="4"/>
-            <signal id="si24371" pos="358.000000" absPos="23858" dir="down" name="4646" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
+            <signal id="sig12" name="Hs." pos="1064" absPos="1064" dir="down" sight="250" type="main">
+              <geoCoord coord="920.69563667048772 32.83981556629557 0" />
+            </signal>
+            <signal id="sig13" name="Hs." pos="1711" absPos="1711" dir="up" sight="250" type="main">
+              <geoCoord coord="1567.5258565645327 21.789950756766302 0" />
+            </signal>
           </signals>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb35047" pos="161.000000" absPos="23661" name="830" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35046" pos="161.000000" absPos="23661" name="832" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24349" pos="203.000000" absPos="23703" name="832" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24351" pos="203.000000" absPos="23703" name="834" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35083" pos="238.000000" absPos="23738" name="834" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35082" pos="238.000000" absPos="23738" name="838" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24369" pos="358.000000" absPos="23858" name="838" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24371" pos="358.000000" absPos="23858" name="856" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd35" name="Tp(-/-)" pos="139" absPos="139" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-4.6718572782721015 27.817500545950722 0" />
+            </trainDetector>
+            <trainDetector id="trd36" name="Tp(-/-)" pos="353" absPos="353" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="209.80078903890612 27.996499840638087 0" />
+            </trainDetector>
+            <trainDetector id="trd37" name="Tp(-/-)" pos="1064" absPos="1064" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="920.65432368487973 28.589779606205379 0" />
+            </trainDetector>
+            <trainDetector id="trd38" name="Tp(-/-)" pos="1710" absPos="1710" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1566.6891811318226 30.628962098038368 0" />
+            </trainDetector>
+            <trainDetector id="trd39" name="Tp(-/-)" pos="2446" absPos="2446" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="2302.9858220451106 29.743476207984081 0" />
+            </trainDetector>
+            <trainDetector id="trd40" name="Tp(-/-)" pos="2012" absPos="2012" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1868.3734216796274 29.380747839291526 0" />
+            </trainDetector>
           </trainDetectionElements>
-          <balises>
-            <balise id="ba28257" pos="357.000000" absPos="23857" dir="down" name="Balise HS/FS 4646"/>
-            <balise id="ba29073" pos="387.000000" absPos="23887" dir="up" name="Balise Rep. HS/FS 4645"/>
-          </balises>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr27" name="RM01">
+      <track id="tr9" code="t11x" name="[t11x]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x36212" pos="0.000000" absPos="21760">
-            <openEnd id="oe36212" code="ext-DB1__oe35090"/>
+          <trackBegin id="beg9" pos="0" absPos="0">
+            <geoCoord coord="484.4418174001 -1.22409157837228" />
+            <connection id="co28" ref="co29" />
           </trackBegin>
-          <trackEnd id="y36208" pos="1740.000000" absPos="23500">
-            <connection id="co36206" ref="co24685"/>
+          <trackEnd id="end9" pos="178" absPos="178">
+            <geoCoord coord="658.662572312758 28.8502180345768" />
+            <connection id="co36" ref="co37" />
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <radiusChanges>
+            <radiusChange id="rc39" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc40" name="OB" pos="6" absPos="6" radius="0" />
+            <radiusChange id="rc41" name="OB" pos="16" absPos="16" radius="0" />
+            <radiusChange id="rc42" name="OB" pos="70" absPos="70" radius="0" />
+            <radiusChange id="rc43" name="OB" pos="101" absPos="101" radius="0" />
+            <radiusChange id="rc44" name="OB" pos="130" absPos="130" radius="0" />
+          </radiusChanges>
+        </trackElements>
+        <ocsElements>
+          <trainDetectionElements>
+            <trainDetector id="trd41" name="Tp(-/-)" pos="74" absPos="74" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="556.66937280752438 13.271800552260942 0" />
+            </trainDetector>
+          </trainDetectionElements>
+        </ocsElements>
+        <infraAttrGroupRefs />
+      </track>
+      <track id="tr10" code="t12" name="[t12]" type="mainTrack">
+        <trackTopology>
+          <trackBegin id="beg10" pos="0" absPos="0">
+            <geoCoord coord="619.432369423463 -2.41793440779657" />
+            <connection id="co30" ref="co31" />
+          </trackBegin>
+          <trackEnd id="end10" pos="1600" absPos="1600">
+            <geoCoord coord="2206.80951836033 -5.07879492817301" />
+            <connection id="co32" ref="co33" />
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <radiusChanges>
+            <radiusChange id="rc45" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc46" name="OB" pos="66" absPos="66" radius="0" />
+            <radiusChange id="rc47" name="OB" pos="129" absPos="129" radius="0" />
+            <radiusChange id="rc48" name="OB" pos="169" absPos="169" radius="0" />
+            <radiusChange id="rc49" name="OB" pos="218" absPos="218" radius="0" />
+            <radiusChange id="rc50" name="OB" pos="277" absPos="277" radius="0" />
+            <radiusChange id="rc51" name="OB" pos="382" absPos="382" radius="0" />
+            <radiusChange id="rc52" name="OB" pos="1096" absPos="1096" radius="0" />
+            <radiusChange id="rc53" name="OB" pos="1192" absPos="1192" radius="0" />
+            <radiusChange id="rc54" name="OB" pos="1269" absPos="1269" radius="0" />
+            <radiusChange id="rc55" name="OB" pos="1345" absPos="1345" radius="0" />
+            <radiusChange id="rc56" name="OB" pos="1395" absPos="1395" radius="0" />
+            <radiusChange id="rc57" name="OB" pos="1471" absPos="1471" radius="0" />
+          </radiusChanges>
+        </trackElements>
+        <ocsElements>
+          <signals>
+            <signal id="sig14" name="Hs." pos="317" absPos="317" dir="down" sight="250" type="main">
+              <geoCoord coord="928.32343594995359 -55.324973418361736 0" />
+            </signal>
+            <signal id="sig15" name="Hs." pos="965" absPos="965" dir="up" sight="250" type="main">
+              <geoCoord coord="1576.6444893348998 -71.938071515873162 0" />
+            </signal>
+          </signals>
+          <trainDetectionElements>
+            <trainDetector id="trd42" name="Tp(-/-)" pos="317" absPos="317" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="928.00510784081825 -59.576456172035293 0" />
+            </trainDetector>
+            <trainDetector id="trd43" name="Tp(-/-)" pos="965" absPos="965" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1576.6267332618293 -59.720918359032559 0" />
+            </trainDetector>
+            <trainDetector id="trd44" name="Tp(-/-)" pos="1258" absPos="1258" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1868.4905089856961 -41.913045272227556 0" />
+            </trainDetector>
+          </trainDetectionElements>
+        </ocsElements>
+        <infraAttrGroupRefs />
+      </track>
+      <track id="tr11" code="t13" name="[t13]" type="mainTrack">
+        <trackTopology>
+          <trackBegin id="beg11" pos="0" absPos="0">
+            <geoCoord coord="-103.480979266518 61.4884440207243" />
+            <connection id="co20" ref="co21" />
+          </trackBegin>
+          <trackEnd id="end11" pos="284" absPos="284">
+            <geoCoord coord="177.192170771381 28.2796291564773" />
+            <connection id="co38" ref="co39" />
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <radiusChanges>
+            <radiusChange id="rc58" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc59" name="OB" pos="18" absPos="18" radius="0" />
+            <radiusChange id="rc60" name="OB" pos="33" absPos="33" radius="0" />
+            <radiusChange id="rc61" name="OB" pos="47" absPos="47" radius="0" />
+            <radiusChange id="rc62" name="OB" pos="90" absPos="90" radius="0" />
+            <radiusChange id="rc63" name="OB" pos="177" absPos="177" radius="0" />
+          </radiusChanges>
+        </trackElements>
+        <ocsElements>
+          <trainDetectionElements>
+            <trainDetector id="trd45" name="Tp(-/-)" pos="103" absPos="103" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="-3.0302171357063985 40.633795360020294 0" />
+            </trainDetector>
+          </trainDetectionElements>
+        </ocsElements>
+        <infraAttrGroupRefs />
+      </track>
+      <track id="tr12" code="t99" name="[t99]" type="mainTrack">
+        <trackTopology>
+          <trackBegin id="beg12" pos="0" absPos="0">
+            <geoCoord coord="-12.227478087636 108.442098774967" />
+          </trackBegin>
+          <trackEnd id="end12" pos="410" absPos="410">
+            <geoCoord coord="397.277259203598 109.526507847992" />
           </trackEnd>
           <connections>
-            <switch id="sw36097" pos="1520.000000" absPos="23280" name="Sporveksel/sporkryss, 303, Asker stasjon">
-              <connection id="co36099_1" ref="co36099_2" orientation="outgoing"/>
+            <switch id="sw18" name="V." pos="273" absPos="273" trackContinueCourse="left" trackContinueRadius="0" model="Ikke-spesifisert" type="other:unspecified">
+              <geoCoord coord="260.61376738322093 109.16460939606763 0" />
+              <connection id="co41" ref="co40" course="right" orientation="outgoing" />
             </switch>
           </connections>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu36210" pos="0.000000" absPos="21760" name="Kjedebrudd, km 21,000V, Askerbanen Sandvika-Asker" dir="up" profileRef="sppr6" vMax="200"/>
-            <speedChange id="spd36097" pos="1520.000000" absPos="23280" name="Sporveksel/sporkryss, 303, Asker stasjon" dir="down" profileRef="sppr6" vMax="200"/>
-            <speedChange id="spd36202" pos="1650.000000" absPos="23410" name="Hastighet, 100, Askerbanen, Sandvika-Asker" dir="down" profileRef="sppr6" vMax="200"/>
-            <speedChange id="spu36204" pos="1650.000000" absPos="23410" name="Hastighet, 100, Askerbanen, Sandvika-Asker" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd36206" pos="1740.000000" absPos="23500" dir="down" profileRef="sppr2" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr36210" pos="0.000000" absPos="21760" name="Kjedebrudd, km 21,000V, Askerbanen Sandvika-Asker" slope="13.090"/>
-            <gradientChange id="gr36200" pos="1489.000000" absPos="23249" name="HBP" slope="11.390"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra36210" pos="0.000000" absPos="21760" name="Kjedebrudd, km 21,000V, Askerbanen Sandvika-Asker" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn36210" pos="0.000000" absPos="21760" name="Kjedebrudd, km 21,000V, Askerbanen Sandvika-Asker" dir="up" length="1740.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si36188" pos="986.000000" absPos="22746" dir="up" name="A 4601" type="combined" function="home" sight="400" virtual="false" code="2"/>
-            <signal id="si36195" pos="1000.000000" absPos="22760" dir="down" name="UM 4614" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb36399" pos="146.000000" absPos="21906" name="679" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36397" pos="146.000000" absPos="21906" name="681" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36407" pos="996.000000" absPos="22756" name="681" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36405" pos="996.000000" absPos="22756" name="801" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36415" pos="1508.000000" absPos="23268" name="801" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36413" pos="1508.000000" absPos="23268" name="805" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36423" pos="1660.000000" absPos="23420" name="805" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36421" pos="1660.000000" absPos="23420" name="807" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba36332" pos="100.000000" absPos="21860" dir="down" name="Balise Rep. HS/FS 4358"/>
-            <balise id="ba36344" pos="481.000000" absPos="22241" dir="up" name="Balise Rep. HS/FS 4601"/>
-            <balise id="ba36302" pos="987.000000" absPos="22747" dir="up" name="Balise HS 4601A"/>
-            <balise id="ba36308" pos="999.000000" absPos="22759" dir="down" name="Balise HS 4614UM"/>
-            <balise id="ba36368" pos="1495.000000" absPos="23255" dir="down" name="Balise Rep. HS/FS 4614"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr28" name="RM01">
-        <trackTopology>
-          <trackBegin id="x24705" pos="0.000000" absPos="23500">
-            <connection id="co24685" ref="co36206"/>
-          </trackBegin>
-          <trackEnd id="y25162" pos="500.000000" absPos="24000">
-            <connection id="co25162" ref="co25160"/>
-          </trackEnd>
-          <connections>
-            <switch id="sw24464" pos="326.000000" absPos="23826" name="Sporveksel/sporkryss, 317, Asker stasjon">
-              <connection id="co24466_2" ref="co24466_1" orientation="outgoing"/>
-            </switch>
-          </connections>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu24685" pos="0.000000" absPos="23500" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24464" pos="326.000000" absPos="23826" name="Sporveksel/sporkryss, 317, Asker stasjon" dir="down" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25162" pos="500.000000" absPos="24000" dir="down" profileRef="sppr2" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24685" pos="0.000000" absPos="23500" slope="11.390"/>
-            <gradientChange id="gr24458" pos="175.000000" absPos="23675" name="HBP" slope="4.370"/>
-            <gradientChange id="gr24480" pos="407.000000" absPos="23907" name="HBP" slope="-0.750"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra24685" pos="0.000000" absPos="23500" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn24685" pos="0.000000" absPos="23500" dir="up" length="265.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si24474" pos="399.000000" absPos="23899" dir="down" name="4606" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb35019" pos="287.000000" absPos="23787" name="807" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35018" pos="287.000000" absPos="23787" name="809" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24472" pos="399.000000" absPos="23899" name="809" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24474" pos="399.000000" absPos="23899" name="851" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba28202" pos="198.000000" absPos="23698" dir="up" name="Balise Rep. HS/FS 4605"/>
-            <balise id="ba28219" pos="398.000000" absPos="23898" dir="down" name="Balise HS/FS 4606"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr29" name="RM02">
-        <trackTopology>
-          <trackBegin id="x25196" pos="0.000000" absPos="24000">
-            <connection id="co25196" ref="co25194"/>
-          </trackBegin>
-          <trackEnd id="y28404" pos="1137.000000" absPos="36604">
-            <connection id="co28404" ref="co28403"/>
-          </trackEnd>
-          <mileageChanges>
-            <mileageChange id="mi24530" pos="971.000000" name="Kjedebrudd, km 24,971H, Asker stasjon" absPosIn="24971" absPos="36438" type="overlapping"/>
-          </mileageChanges>
-          <connections>
-            <switch id="sw33751" pos="110.000000" absPos="24110" name="SPV-319">
-              <connection id="co33750_1" ref="co33750_2" orientation="outgoing"/>
-            </switch>
-            <switch id="sw25443" pos="463.000000" absPos="24463" name="Sporveksel/sporkryss, 312, Asker stasjon">
-              <connection id="co25443_1" ref="co25443_2" orientation="incoming"/>
-            </switch>
-            <switch id="sw24504" pos="546.000000" absPos="24546" name="Sporveksel/sporkryss, 308, Asker stasjon">
-              <connection id="co24504_2" ref="co24504_1" orientation="incoming"/>
-            </switch>
-            <switch id="sw24512" pos="556.000000" absPos="24556" name="Sporveksel/sporkryss, 331, Asker stasjon">
-              <connection id="co24514_1" ref="co24514_2" orientation="outgoing"/>
-            </switch>
-          </connections>
-          <crossSections>
-            <crossSection id="cs25196" pos="0.000000" absPos="24000" ocpRef="ocp-ASR"/>
-          </crossSections>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu25196" pos="0.000000" absPos="24000" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd33751" pos="110.000000" absPos="24110" name="SPV-319" dir="down" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25012" pos="370.000000" absPos="24370" name="LBP" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu25014" pos="370.000000" absPos="24370" name="LBP" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd29141" pos="387.000000" absPos="24387" name="Balise Rep. HS/FS 4616" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu29140" pos="387.000000" absPos="24387" name="Balise Rep. HS/FS 4616" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25451" pos="409.000000" absPos="24409" name="Sporveksel/sporkryss, 312, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu25450" pos="409.000000" absPos="24409" name="Sporveksel/sporkryss, 312, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25443_2" pos="463.000000" absPos="24463" name="Sporveksel/sporkryss, 312, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu25442" pos="463.000000" absPos="24463" name="Sporveksel/sporkryss, 312, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25030" pos="481.000000" absPos="24481" name="Sporveksel/sporkryss, 308, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu25028" pos="481.000000" absPos="24481" name="Sporveksel/sporkryss, 308, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25016" pos="510.000000" absPos="24510" name="LBP" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu25018" pos="510.000000" absPos="24510" name="LBP" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd25020" pos="514.000000" absPos="24514" name="Tunnel, LIERÅSEN, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu25022" pos="514.000000" absPos="24514" name="Tunnel, LIERÅSEN, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24504_2" pos="546.000000" absPos="24546" name="Sporveksel/sporkryss, 308, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spu24506" pos="546.000000" absPos="24546" name="Sporveksel/sporkryss, 308, Asker stasjon" dir="up" profileRef="sppr2" vMax="200"/>
-            <speedChange id="spd24512" pos="556.000000" absPos="24556" name="Sporveksel/sporkryss, 331, Asker stasjon" dir="down" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spd28404" pos="1137.000000" absPos="36604" name="Balise HS/FS 4612UB" dir="down" profileRef="sppr7" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr25196" pos="0.000000" absPos="24000" slope="-0.750"/>
-            <gradientChange id="gr25005" pos="100.000000" absPos="24100" name="HBP" slope="-3.730"/>
-            <gradientChange id="gr25014" pos="370.000000" absPos="24370" name="LBP" slope="2.870"/>
-            <gradientChange id="gr25018" pos="510.000000" absPos="24510" name="LBP" slope="3.790"/>
-            <gradientChange id="gr24518" pos="599.000000" absPos="24599" name="HBP" slope="2.570"/>
-            <gradientChange id="gr24522" pos="770.000000" absPos="24770" name="LBP" slope="3.040"/>
-            <gradientChange id="gr25570" pos="1029.000000" absPos="36496" name="HBP" slope="-9.000"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra25196" pos="0.000000" absPos="24000" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn25022" pos="514.000000" absPos="24514" name="Tunnel, LIERÅSEN, Asker stasjon" dir="up" length="623.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si25007" pos="193.000000" absPos="24193" dir="up" name="4615" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
-            <signal id="si24524" pos="875.000000" absPos="24875" dir="up" name="L 4603" type="main" function="blocking" sight="400" virtual="false" code="1"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb35095" pos="107.000000" absPos="24107" name="853" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35094" pos="107.000000" absPos="24107" name="860" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25007" pos="193.000000" absPos="24193" name="860" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25009" pos="193.000000" absPos="24193" name="863" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35255" pos="339.000000" absPos="24339" name="863" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35254" pos="339.000000" absPos="24339" name="862" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25016" pos="510.000000" absPos="24510" name="862" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25018" pos="510.000000" absPos="24510" name="865" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24508" pos="551.000000" absPos="24551" name="865" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24510" pos="551.000000" absPos="24551" name="873" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24524" pos="875.000000" absPos="24875" name="873" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24526" pos="875.000000" absPos="24875" name="877" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba28345" pos="194.000000" absPos="24194" dir="up" name="Balise HS/FS 4615"/>
-            <balise id="ba29140" pos="387.000000" absPos="24387" dir="down" name="Balise Rep. HS/FS 4616"/>
-            <balise id="ba29163" pos="617.000000" absPos="24617" dir="up" name="Balise Rep. HS/FS 4603"/>
-            <balise id="ba28393" pos="876.000000" absPos="24876" dir="up" name="Balise HS 4603L"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr30" name="RM04">
-        <trackTopology>
-          <trackBegin id="x24324" pos="0.000000" absPos="23500">
-            <connection id="co24314" ref="co36109"/>
-          </trackBegin>
-          <trackEnd id="y25202" pos="500.000000" absPos="24000">
-            <connection id="co25202" ref="co25204"/>
-          </trackEnd>
-          <connections>
-            <switch id="sw24229" pos="173.000000" absPos="23673" name="Sporveksel/sporkryss, 305, Asker stasjon">
-              <connection id="co24231_1" ref="co24231_2" orientation="outgoing"/>
-            </switch>
-            <switch id="sw24237" pos="233.000000" absPos="23733" name="Sporveksel/sporkryss, 326, Asker stasjon">
-              <connection id="co24237_1" ref="co24237_2" orientation="incoming"/>
-            </switch>
-            <switch id="sw24249" pos="306.000000" absPos="23806" name="Sporveksel/sporkryss, 315, Asker stasjon">
-              <connection id="co24251_1" ref="co24251_2" orientation="outgoing"/>
-            </switch>
-            <switch id="sw24257" pos="380.000000" absPos="23880" name="Sporveksel/sporkryss, 324, Asker stasjon">
-              <connection id="co24257_1" ref="co24257_2" orientation="incoming"/>
-            </switch>
-          </connections>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu24314" pos="0.000000" absPos="23500" dir="up" profileRef="sppr9" vMax="200"/>
-            <speedChange id="spd24225" pos="170.000000" absPos="23670" name="Hastighet, 80, Asker stasjon" dir="down" profileRef="sppr9" vMax="200"/>
-            <speedChange id="spu24227" pos="170.000000" absPos="23670" name="Hastighet, 80, Asker stasjon" dir="up" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd24229" pos="173.000000" absPos="23673" name="Sporveksel/sporkryss, 305, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu24239" pos="233.000000" absPos="23733" name="Sporveksel/sporkryss, 326, Asker stasjon" dir="up" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd24249" pos="306.000000" absPos="23806" name="Sporveksel/sporkryss, 315, Asker stasjon" dir="down" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spu24259" pos="380.000000" absPos="23880" name="Sporveksel/sporkryss, 324, Asker stasjon" dir="up" profileRef="sppr1" vMax="200"/>
-            <speedChange id="spd25202" pos="500.000000" absPos="24000" dir="down" profileRef="sppr1" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr24314" pos="0.000000" absPos="23500" slope="11.790"/>
-            <gradientChange id="gr24223" pos="88.000000" absPos="23588" name="HBP" slope="4.480"/>
-            <gradientChange id="gr24235" pos="203.000000" absPos="23703" name="LBP" slope="6.790"/>
-            <gradientChange id="gr24243" pos="250.000000" absPos="23750" name="LBP" slope="0.100"/>
-            <gradientChange id="gr24247" pos="298.000000" absPos="23798" name="LBP" slope="3.650"/>
-            <gradientChange id="gr24251_2" pos="306.000000" absPos="23806" name="Sporveksel/sporkryss, 315, Asker stasjon" slope="5.772"/>
-            <gradientChange id="gr24259" pos="380.000000" absPos="23880" name="Sporveksel/sporkryss, 324, Asker stasjon" slope="3.650"/>
-            <gradientChange id="gr24271" pos="409.000000" absPos="23909" name="LBP" slope="-0.410"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra24314" pos="0.000000" absPos="23500" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn24314" pos="0.000000" absPos="23500" dir="up" length="265.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si35070" pos="238.000000" absPos="23738" dir="down" name="Butt" type="shunting" sight="400" virtual="true" code="4"/>
-            <signal id="si24265" pos="383.000000" absPos="23883" dir="down" name="4636" ocpStationRef="ocp-ASR" type="combined" function="exit" sight="400" virtual="false" code="2"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb35059" pos="161.000000" absPos="23661" name="829" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35058" pos="161.000000" absPos="23661" name="823" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24233" pos="203.000000" absPos="23703" name="823" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24235" pos="203.000000" absPos="23703" name="833" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35071" pos="238.000000" absPos="23738" name="833" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35070" pos="238.000000" absPos="23738" name="837" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25231" pos="343.000000" absPos="23843" name="837" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25230" pos="343.000000" absPos="23843" name="841" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24263" pos="383.000000" absPos="23883" name="841" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb24265" pos="383.000000" absPos="23883" name="855" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba28248" pos="382.000000" absPos="23882" dir="down" name="Balise HS/FS 4636"/>
-            <balise id="ba29082" pos="414.000000" absPos="23914" dir="up" name="Balise Rep. HS/FS 4635"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr82" name="LM02">
-        <trackTopology>
-          <trackBegin id="x36181" pos="0.000000" absPos="21500">
-            <openEnd id="oe36181" code="ext-DB1__oe35392"/>
-          </trackBegin>
-          <trackEnd id="y36157" pos="1756.000000" absPos="23256">
-            <connection id="co36157" ref="co36159"/>
-          </trackEnd>
-          <crossSections>
-            <crossSection id="cs36120" pos="670.000000" absPos="22170" ocpRef="ocp-H__216_N"/>
-          </crossSections>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu36179" pos="0.000000" absPos="21500" dir="up" profileRef="sppr14" vMax="200"/>
-            <speedChange id="spd36387" pos="922.000000" absPos="22422" name="Hastighet, 100, Asker - Hvalstad" dir="down" profileRef="sppr14" vMax="200"/>
-            <speedChange id="spu36385" pos="922.000000" absPos="22422" name="Hastighet, 100, Asker - Hvalstad" dir="up" profileRef="sppr8" vMax="200"/>
-            <speedChange id="spd36157" pos="1756.000000" absPos="23256" name="4685, Asker stasjon" dir="down" profileRef="sppr8" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr36179" pos="0.000000" absPos="21500" slope="14.060"/>
-            <gradientChange id="gr36126" pos="679.000000" absPos="22179" name="HBP" slope="8.410"/>
-            <gradientChange id="gr36130" pos="915.000000" absPos="22415" name="LBP" slope="11.570"/>
-            <gradientChange id="gr36139" pos="1295.000000" absPos="22795" name="HBP" slope="9.680"/>
-            <gradientChange id="gr36143" pos="1407.000000" absPos="22907" name="LBP" slope="12.890"/>
-            <gradientChange id="gr36147" pos="1509.000000" absPos="23009" name="HBP" slope="7.610"/>
-            <gradientChange id="gr36151" pos="1590.000000" absPos="23090" name="LBP" slope="14.740"/>
-            <gradientChange id="gr36155" pos="1728.000000" absPos="23228" name="HBP" slope="11.310"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra36179" pos="0.000000" absPos="21500" radius="0.000000"/>
+            <radiusChange id="rc64" name="Start" pos="0" absPos="0" radius="0" />
           </radiusChanges>
         </trackElements>
         <ocsElements>
           <signals>
-            <signal id="si36115" pos="163.000000" absPos="21663" dir="down" name="B 478" ocpStationRef="ocp-H__216_N" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-            <signal id="si36176" pos="908.000000" absPos="22408" dir="up" name="UC 4631" ocpStationRef="ocp-H__216_N" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-            <signal id="si36134" pos="1278.000000" absPos="22778" dir="down" name="O 4624" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-            <signal id="si36157" pos="1756.000000" absPos="23256" dir="up" name="4685" type="combined" function="home" sight="400" virtual="false" code="2"/>
+            <signal id="sig16" name="Hs." pos="9" absPos="9" dir="down" sight="250" type="main">
+              <geoCoord coord="-3.6317583965119837 111.96487336315533 0" />
+            </signal>
           </signals>
           <trainDetectionElements>
-            <trainDetector id="td36113" pos="163.000000" absPos="21663" name="386" dir="down" ocpStationRef="st36712"/>
-            <trainDetector id="td36115" pos="163.000000" absPos="21663" name="384" dir="up" ocpStationRef="st36712"/>
-            <trackCircuitBorder id="tcb36176" pos="908.000000" absPos="22408" name="384" dir="down" ocpStationRef="st36712"/>
-            <trackCircuitBorder id="tcb36174" pos="908.000000" absPos="22408" name="822" dir="up" ocpStationRef="ocp-ASR"/>
-            <trainDetector id="td36443" pos="918.000000" absPos="22418" name="822" dir="down" ocpStationRef="ocp-ASR"/>
-            <trainDetector id="td36441" pos="918.000000" absPos="22418" name="822" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36132" pos="1278.000000" absPos="22778" name="822" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36134" pos="1278.000000" absPos="22778" name="826" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd46" name="Tp(-/-)" pos="247" absPos="247" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="rightRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="234.36207001446627 109.84509493296106 0" />
+            </trainDetector>
           </trainDetectionElements>
-          <balises>
-            <balise id="ba36272" pos="162.000000" absPos="21662" dir="down" name="Balise HS 478B"/>
-            <balise id="ba36330" pos="517.000000" absPos="22017" dir="up" name="Balise Rep. HS/FS 4631U"/>
-            <balise id="ba36316" pos="643.000000" absPos="22143" dir="down" name="Balise Rep. HS/FS 478"/>
-            <balise id="ba36282" pos="909.000000" absPos="22409" dir="up" name="Balise HS 4631UC"/>
-            <balise id="ba36288" pos="1277.000000" absPos="22777" dir="down" name="Balise HS 4624O"/>
-            <balise id="ba36354" pos="1356.000000" absPos="22856" dir="up" name="Balise Rep. HS/FS 4685"/>
-            <balise id="ba36360" pos="1679.000000" absPos="23179" dir="down" name="Balise Rep. HS/FS 4624"/>
-          </balises>
-          <stopPosts>
-            <stopPost id="sp36118" pos="670.000000" absPos="22170" dir="up" trainLength="800" code="20"/>
-            <stopPost id="sp36120" pos="670.000000" absPos="22170" dir="down" code="6"/>
-          </stopPosts>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr83" name="LM02">
+      <track id="tr13" code="t99x" name="[t99x]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x25620" pos="0.000000" absPos="36605">
-            <connection id="co25620" ref="co25618"/>
+          <trackBegin id="beg13" pos="0" absPos="0">
+            <geoCoord coord="260.614644037301 108.833559050026" />
+            <connection id="co40" ref="co41" />
           </trackBegin>
-          <trackEnd id="y25970" pos="5395.000000" absPos="42000">
-            <connection id="co25950" ref="co26169"/>
+          <trackEnd id="end13" pos="231" absPos="231">
+            <geoCoord coord="490.68666445533 92.4527879661746" />
+            <connection id="co10" ref="co11" />
           </trackEnd>
-          <crossSections>
-            <crossSection id="cs25905" pos="3215.000000" absPos="39820" name="B, Asker - Brakerøya" ocpRef="ocp-SB1"/>
-          </crossSections>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu25620" pos="0.000000" absPos="36605" name="B, Asker - Brakerøya" dir="up" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spd25950" pos="5395.000000" absPos="42000" dir="down" profileRef="sppr7" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr25620" pos="0.000000" absPos="36605" name="B, Asker - Brakerøya" slope="-9.000"/>
-            <gradientChange id="gr25917" pos="4171.000000" absPos="40776" name="LBP" slope="-8.000"/>
-            <gradientChange id="gr25927" pos="5034.000000" absPos="41639" name="HBP" slope="-8.830"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra25620" pos="0.000000" absPos="36605" name="B, Asker - Brakerøya" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn25620" pos="0.000000" absPos="36605" name="B, Asker - Brakerøya" dir="up" length="5395.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si25620" pos="0.000000" absPos="36605" dir="down" name="B 4602" type="combined" function="home" sight="400" virtual="false" code="2"/>
-            <signal id="si25887" pos="1214.000000" absPos="37819" dir="down" name="B 4602" type="distant" sight="400" virtual="false" code="3"/>
-            <signal id="si25891" pos="1271.000000" absPos="37876" dir="up" name="UA 447" type="distant" sight="400" virtual="false" code="3"/>
-            <signal id="si25897" pos="2647.000000" absPos="39252" dir="up" name="UA 447" type="main" function="blocking" sight="400" virtual="false" code="1"/>
-            <signal id="si25905" pos="3215.000000" absPos="39820" dir="down" name="B 428" ocpStationRef="ocp-SB1" type="main" function="blocking" sight="400" virtual="false" code="1"/>
-            <signal id="si25909" pos="3942.000000" absPos="40547" dir="up" name="UA 4831" type="distant" sight="400" virtual="false" code="3"/>
-            <signal id="si25929" pos="5326.000000" absPos="41931" dir="up" name="UA 4831" ocpStationRef="ocp-ERU" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-            <signal id="si25931" pos="5326.000000" absPos="41931" dir="down" name="M 4834" ocpStationRef="ocp-ERU" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb25620" pos="0.000000" absPos="36605" name="428c" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35243" pos="1240.000000" absPos="37845" name="428c" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35242" pos="1240.000000" absPos="37845" name="428b" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25897" pos="2647.000000" absPos="39252" name="428b" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25899" pos="2647.000000" absPos="39252" name="428a" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25903" pos="3215.000000" absPos="39820" name="428a" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25905" pos="3215.000000" absPos="39820" name="4834b" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35279" pos="4610.000000" absPos="41215" name="4834b" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35278" pos="4610.000000" absPos="41215" name="4834a" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb28542" pos="5325.000000" absPos="41930" name="4834a" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb28541" pos="5325.000000" absPos="41930" name="UA" dir="up" ocpStationRef="ocp-ERU"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba29180" pos="475.000000" absPos="37080" dir="down" name="Balise Rep. HS/FS 4602"/>
-            <balise id="ba28425" pos="1213.000000" absPos="37818" dir="down" name="Balise FS 4602B"/>
-            <balise id="ba28444" pos="1272.000000" absPos="37877" dir="up" name="Balise FS 447UA"/>
-            <balise id="ba28470" pos="2648.000000" absPos="39253" dir="up" name="Balise HS 447UA"/>
-            <balise id="ba28487" pos="3214.000000" absPos="39819" dir="down" name="Balise HS 428B"/>
-            <balise id="ba28506" pos="3943.000000" absPos="40548" dir="up" name="Balise FS 4831UA"/>
-            <balise id="ba28541" pos="5325.000000" absPos="41930" dir="down" name="Balise HS 4834M"/>
-            <balise id="ba28561" pos="5327.000000" absPos="41932" dir="up" name="Balise HS/FS 4831UA"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr88" name="LM05">
-        <trackTopology>
-          <trackBegin id="x36159" pos="0.000000" absPos="23256">
-            <connection id="co36159" ref="co36157"/>
-          </trackBegin>
-          <trackEnd id="y36185" pos="241.000000" absPos="23500">
-            <connection id="co36183" ref="co24433"/>
-          </trackEnd>
-          <mileageChanges>
-            <mileageChange id="mi36391" pos="74.000000" name="Kjedebrudd" absPosIn="23330" absPos="23333" type="overlapping"/>
-          </mileageChanges>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu36159" pos="0.000000" absPos="23256" name="4685, Asker stasjon" dir="up" profileRef="sppr8" vMax="200"/>
-            <speedChange id="spd36183" pos="241.000000" absPos="23500" dir="down" profileRef="sppr8" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr36159" pos="0.000000" absPos="23256" name="4685, Asker stasjon" slope="11.310"/>
-            <gradientChange id="gr36164" pos="15.000000" absPos="23271" name="LBP" slope="11.590"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra36159" pos="0.000000" absPos="23256" name="4685, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn36164" pos="15.000000" absPos="23271" name="LBP" dir="up" length="226.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb36439" pos="3.000000" absPos="23259" name="826" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36437" pos="3.000000" absPos="23259" name="830" dir="up" ocpStationRef="ocp-ASR"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba36298" pos="1.000000" absPos="23257" dir="up" name="Balise HS 4685"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr91" name="RM01">
-        <trackTopology>
-          <trackBegin id="x36107" pos="0.000000" absPos="21500">
-            <openEnd id="oe36107" code="ext-DB1__oe35305"/>
-          </trackBegin>
-          <trackEnd id="y36092" pos="1756.000000" absPos="23256">
-            <connection id="co36092" ref="co36094"/>
-          </trackEnd>
-          <crossSections>
-            <crossSection id="cs36028" pos="670.000000" absPos="22170" ocpRef="ocp-H__216_N"/>
-          </crossSections>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu36105" pos="0.000000" absPos="21500" dir="up" profileRef="sppr14" vMax="200"/>
-            <speedChange id="spd36383" pos="922.000000" absPos="22422" name="Hastighet, 95, Hvalstad - Asker" dir="down" profileRef="sppr14" vMax="200"/>
-            <speedChange id="spu36381" pos="922.000000" absPos="22422" name="Hastighet, 95, Hvalstad - Asker" dir="up" profileRef="sppr9" vMax="200"/>
-            <speedChange id="spd36092" pos="1756.000000" absPos="23256" name="4675, Asker stasjon" dir="down" profileRef="sppr9" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr36105" pos="0.000000" absPos="21500" slope="13.880"/>
-            <gradientChange id="gr36016" pos="294.000000" absPos="21794" name="LBP" slope="14.160"/>
-            <gradientChange id="gr36020" pos="512.000000" absPos="22012" name="HBP" slope="13.460"/>
-            <gradientChange id="gr36024" pos="656.000000" absPos="22156" name="HBP" slope="9.810"/>
-            <gradientChange id="gr36034" pos="713.000000" absPos="22213" name="HBP" slope="6.480"/>
-            <gradientChange id="gr36040" pos="758.000000" absPos="22258" name="LBP" slope="8.510"/>
-            <gradientChange id="gr36044" pos="887.000000" absPos="22387" name="LBP" slope="10.340"/>
-            <gradientChange id="gr36053" pos="933.000000" absPos="22433" name="HBP" slope="8.310"/>
-            <gradientChange id="gr36057" pos="970.000000" absPos="22470" name="LBP" slope="15.300"/>
-            <gradientChange id="gr36061" pos="1044.000000" absPos="22544" name="HBP" slope="13.020"/>
-            <gradientChange id="gr36065" pos="1111.000000" absPos="22611" name="HBP" slope="9.560"/>
-            <gradientChange id="gr36069" pos="1166.000000" absPos="22666" name="LBP" slope="10.440"/>
-            <gradientChange id="gr36073" pos="1224.000000" absPos="22724" name="LBP" slope="12.500"/>
-            <gradientChange id="gr36077" pos="1272.000000" absPos="22772" name="HBP" slope="11.730"/>
-            <gradientChange id="gr36086" pos="1515.000000" absPos="23015" name="HBP" slope="9.290"/>
-            <gradientChange id="gr36090" pos="1587.000000" absPos="23087" name="LBP" slope="11.790"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra36105" pos="0.000000" absPos="21500" radius="0.000000"/>
+            <radiusChange id="rc65" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc66" name="OB" pos="26" absPos="26" radius="0" />
+            <radiusChange id="rc67" name="OB" pos="125" absPos="125" radius="0" />
           </radiusChanges>
         </trackElements>
         <ocsElements>
-          <signals>
-            <signal id="si36046" pos="908.000000" absPos="22408" dir="up" name="C 4621" ocpStationRef="ocp-H__216_N" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-            <signal id="si36081" pos="1278.000000" absPos="22778" dir="down" name="UO 4634" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-            <signal id="si36092" pos="1756.000000" absPos="23256" dir="up" name="4675" type="combined" function="home" sight="400" virtual="false" code="2"/>
-          </signals>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb36046" pos="908.000000" absPos="22408" name="385" dir="down" ocpStationRef="st36712"/>
-            <trackCircuitBorder id="tcb36048" pos="908.000000" absPos="22408" name="821" dir="up" ocpStationRef="ocp-ASR"/>
-            <trainDetector id="td36447" pos="918.000000" absPos="22418" name="821" dir="down" ocpStationRef="ocp-ASR"/>
-            <trainDetector id="td36445" pos="918.000000" absPos="22418" name="821" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36079" pos="1278.000000" absPos="22778" name="821" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36081" pos="1278.000000" absPos="22778" name="825" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd47" name="Tp(-/-)" pos="78" absPos="78" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="338.21634237579832 99.910650777653942 0" />
+            </trainDetector>
           </trainDetectionElements>
-          <balises>
-            <balise id="ba36326" pos="517.000000" absPos="22017" dir="up" name="Balise Rep. HS/FS 4621"/>
-            <balise id="ba36320" pos="646.000000" absPos="22146" dir="down" name="Balise Rep. HS/FS 378"/>
-            <balise id="ba36278" pos="909.000000" absPos="22409" dir="up" name="Balise HS 4621C"/>
-            <balise id="ba36284" pos="1277.000000" absPos="22777" dir="down" name="Balise HS 4634UO"/>
-            <balise id="ba36358" pos="1356.000000" absPos="22856" dir="up" name="Balise Rep. HS/FS 4675"/>
-            <balise id="ba36364" pos="1679.000000" absPos="23179" dir="down" name="Balise Rep. HS/FS 4634"/>
-          </balises>
-          <stopPosts>
-            <stopPost id="sp36026" pos="670.000000" absPos="22170" dir="up" trainLength="800" code="20"/>
-            <stopPost id="sp36028" pos="670.000000" absPos="22170" dir="down" code="6"/>
-          </stopPosts>
         </ocsElements>
+        <infraAttrGroupRefs />
       </track>
-      <track id="tr93" name="RM01">
+      <track id="tr14" code="t15" name="[t15]" type="mainTrack">
         <trackTopology>
-          <trackBegin id="x28403" pos="0.000000" absPos="36604">
-            <connection id="co28403" ref="co28404"/>
+          <trackBegin id="beg14" pos="0" absPos="0">
+            <geoCoord coord="1635.79135686893 92.0698758391009" />
+            <connection id="co12" ref="co13" />
           </trackBegin>
-          <trackEnd id="y25878" pos="5396.000000" absPos="42000">
-            <connection id="co25866" ref="co26079"/>
+          <trackEnd id="end14" pos="690" absPos="690">
+            <geoCoord coord="2322.48922959448 135.19581461153" />
+            <connection id="co24" ref="co25" />
           </trackEnd>
-          <crossSections>
-            <crossSection id="cs25807" pos="2648.000000" absPos="39252" name="A, Asker - Brakerøya" ocpRef="ocp-SBR"/>
-          </crossSections>
         </trackTopology>
         <trackElements>
-          <speedChanges>
-            <speedChange id="spu28403" pos="0.000000" absPos="36604" name="Balise HS/FS 4612UB" dir="up" profileRef="sppr7" vMax="200"/>
-            <speedChange id="spd25866" pos="5396.000000" absPos="42000" dir="down" profileRef="sppr7" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr28403" pos="0.000000" absPos="36604" name="Balise HS/FS 4612UB" slope="-9.000"/>
-            <gradientChange id="gr25825" pos="4172.000000" absPos="40776" name="LBP" slope="-8.020"/>
-            <gradientChange id="gr25835" pos="5035.000000" absPos="41639" name="HBP" slope="-8.830"/>
-          </gradientChanges>
           <radiusChanges>
-            <radiusChange id="ra28403" pos="0.000000" absPos="36604" name="Balise HS/FS 4612UB" radius="0.000000"/>
+            <radiusChange id="rc68" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc69" name="OB" pos="159" absPos="159" radius="0" />
+            <radiusChange id="rc70" name="OB" pos="250" absPos="250" radius="0" />
+            <radiusChange id="rc71" name="OB" pos="431" absPos="431" radius="0" />
           </radiusChanges>
-          <tunnels>
-            <tunnel id="tn28403" pos="0.000000" absPos="36604" name="Balise HS/FS 4612UB" dir="up" length="5396.000000" crossSection="40.000000"/>
-          </tunnels>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="si25574" pos="1.000000" absPos="36605" dir="down" name="UB 4612" type="combined" function="home" sight="400" virtual="false" code="2"/>
-            <signal id="si25795" pos="1215.000000" absPos="37819" dir="down" name="UB 4612" type="distant" sight="400" virtual="false" code="3"/>
-            <signal id="si25799" pos="1272.000000" absPos="37876" dir="up" name="A 437" type="distant" sight="400" virtual="false" code="3"/>
-            <signal id="si25805" pos="2648.000000" absPos="39252" dir="up" name="A 437" ocpStationRef="ocp-SBR" type="main" function="blocking" sight="400" virtual="false" code="1"/>
-            <signal id="si25813" pos="3216.000000" absPos="39820" dir="down" name="UB 418" type="main" function="blocking" sight="400" virtual="false" code="1"/>
-            <signal id="si25817" pos="3943.000000" absPos="40547" dir="up" name="A 4821" type="distant" sight="400" virtual="false" code="3"/>
-            <signal id="si25829" pos="4223.000000" absPos="40827" dir="down" name="UB 418" type="distant" sight="400" virtual="false" code="3"/>
-            <signal id="si25837" pos="5327.000000" absPos="41931" dir="up" name="A 4821" ocpStationRef="ocp-ERU" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
-            <signal id="si25839" pos="5327.000000" absPos="41931" dir="down" name="UM 4824" ocpStationRef="ocp-ERU" type="main" function="blocking" sight="400" virtual="false" code="1"/>
-          </signals>
-          <trainDetectionElements>
-            <trackCircuitBorder id="tcb25572" pos="1.000000" absPos="36605" name="877" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25574" pos="1.000000" absPos="36605" name="418c" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35227" pos="1241.000000" absPos="37845" name="418c" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35226" pos="1241.000000" absPos="37845" name="418b" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25805" pos="2648.000000" absPos="39252" name="418b" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25807" pos="2648.000000" absPos="39252" name="418a" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25811" pos="3216.000000" absPos="39820" name="418a" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb25813" pos="3216.000000" absPos="39820" name="4824b" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35267" pos="4611.000000" absPos="41215" name="4824b" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb35266" pos="4611.000000" absPos="41215" name="4824a" dir="up" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb28534" pos="5326.000000" absPos="41930" name="4824a" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb28533" pos="5326.000000" absPos="41930" name="A" dir="up" ocpStationRef="ocp-ERU"/>
-          </trainDetectionElements>
-          <balises>
-            <balise id="ba28403" pos="0.000000" absPos="36604" dir="down" name="Balise HS/FS 4612UB"/>
-            <balise id="ba29188" pos="476.000000" absPos="37080" dir="down" name="Balise Rep. HS/FS 4622"/>
-            <balise id="ba28433" pos="1214.000000" absPos="37818" dir="down" name="Balise FS 4602B"/>
-            <balise id="ba28452" pos="1273.000000" absPos="37877" dir="up" name="Balise FS 437A"/>
-            <balise id="ba28462" pos="2649.000000" absPos="39253" dir="up" name="Balise HS 437A"/>
-            <balise id="ba28479" pos="3215.000000" absPos="39819" dir="down" name="Balise HS 418UB"/>
-            <balise id="ba28498" pos="3944.000000" absPos="40548" dir="up" name="Balise HS/FS 4821A"/>
-            <balise id="ba28523" pos="4222.000000" absPos="40826" dir="down" name="Balise FS 418UB"/>
-            <balise id="ba28533" pos="5326.000000" absPos="41930" dir="down" name="Balise HS 4824UM"/>
-            <balise id="ba28553" pos="5328.000000" absPos="41932" dir="up" name="Balise HS/FS 4821A"/>
-          </balises>
-        </ocsElements>
-      </track>
-      <track id="tr95" name="RM04">
-        <trackTopology>
-          <trackBegin id="x36094" pos="0.000000" absPos="23256">
-            <connection id="co36094" ref="co36092"/>
-          </trackBegin>
-          <trackEnd id="y36111" pos="241.000000" absPos="23500">
-            <connection id="co36109" ref="co24314"/>
-          </trackEnd>
-          <mileageChanges>
-            <mileageChange id="mi36395" pos="74.000000" name="Kjedebrudd" absPosIn="23330" absPos="23333" type="overlapping"/>
-          </mileageChanges>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="spu36094" pos="0.000000" absPos="23256" name="4675, Asker stasjon" dir="up" profileRef="sppr9" vMax="200"/>
-            <speedChange id="spd36109" pos="241.000000" absPos="23500" dir="down" profileRef="sppr9" vMax="200"/>
-          </speedChanges>
-          <gradientChanges>
-            <gradientChange id="gr36094" pos="0.000000" absPos="23256" name="4675, Asker stasjon" slope="11.790"/>
-          </gradientChanges>
-          <radiusChanges>
-            <radiusChange id="ra36094" pos="0.000000" absPos="23256" name="4675, Asker stasjon" radius="0.000000"/>
-          </radiusChanges>
-          <tunnels>
-            <tunnel id="tn36103" pos="44.000000" absPos="23300" name="Tunnel, ASKER, Asker stasjon" dir="up" length="197.000000" crossSection="40.000000"/>
-          </tunnels>
         </trackElements>
         <ocsElements>
           <trainDetectionElements>
-            <trackCircuitBorder id="tcb36435" pos="3.000000" absPos="23259" name="825" dir="down" ocpStationRef="ocp-ASR"/>
-            <trackCircuitBorder id="tcb36433" pos="3.000000" absPos="23259" name="829" dir="up" ocpStationRef="ocp-ASR"/>
+            <trainDetector id="trd48" name="Tp(-/-)" pos="235" absPos="235" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="1868.7321751269938 112.13650311662084 0" />
+            </trainDetector>
           </trainDetectionElements>
-          <balises>
-            <balise id="ba36294" pos="1.000000" absPos="23257" dir="up" name="Balise HS 4675"/>
-          </balises>
         </ocsElements>
+        <infraAttrGroupRefs />
+      </track>
+      <track id="tr15" code="t16" name="[t16]" type="mainTrack">
+        <trackTopology>
+          <trackBegin id="beg15" pos="0" absPos="0">
+            <geoCoord coord="1970.34626021702 92.4379035450693" />
+            <connection id="co1" ref="co0" />
+          </trackBegin>
+          <trackEnd id="end15" pos="221" absPos="221">
+            <geoCoord coord="2188.32065625339 61.3210732788248" />
+            <connection id="co22" ref="co23" />
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <radiusChanges>
+            <radiusChange id="rc72" name="Start" pos="0" absPos="0" radius="0" />
+            <radiusChange id="rc73" name="OB" pos="53" absPos="53" radius="0" />
+            <radiusChange id="rc74" name="OB" pos="142" absPos="142" radius="0" />
+            <radiusChange id="rc75" name="OB" pos="172" absPos="172" radius="0" />
+          </radiusChanges>
+        </trackElements>
+        <ocsElements>
+          <trainDetectionElements>
+            <trainDetector id="trd49" name="Tp(-/-)" pos="43" absPos="43" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="2013.2521040490103 91.5687989153659 0" />
+            </trainDetector>
+          </trainDetectionElements>
+        </ocsElements>
+        <infraAttrGroupRefs />
+      </track>
+      <track id="tr16" code="t17x" name="[t17x]" type="mainTrack">
+        <trackTopology>
+          <trackBegin id="beg16" pos="0" absPos="0">
+            <geoCoord coord="2211.80588810439 61.6693604173597" />
+            <connection id="co3" ref="co2" />
+          </trackBegin>
+          <trackEnd id="end16" pos="313" absPos="313">
+            <geoCoord coord="2524.67970271558 58.5655844276243" />
+            <openEnd id="DBoutH" />
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <radiusChanges>
+            <radiusChange id="rc76" name="Start" pos="0" absPos="0" radius="0" />
+          </radiusChanges>
+        </trackElements>
+        <ocsElements>
+          <trainDetectionElements>
+            <trainDetector id="trd50" name="Tp(-/-)" pos="86" absPos="86" dir="unknown" detectionObject="axle" medium="magnetic" posInTrack="leftRail" directionDetection="false" axleCounting="true">
+              <geoCoord coord="2297.7565431165849 60.066674405028955 0" />
+            </trainDetector>
+          </trainDetectionElements>
+        </ocsElements>
+        <infraAttrGroupRefs />
       </track>
     </tracks>
+    <trackGroups>
+      <line id="line0">
+        <trackRef ref="tr0" />
+        <trackRef ref="tr1" />
+        <trackRef ref="tr2" />
+        <trackRef ref="tr3" />
+        <trackRef ref="tr4" />
+        <trackRef ref="tr5" />
+        <trackRef ref="tr6" />
+        <trackRef ref="tr7" />
+        <trackRef ref="tr8" />
+        <trackRef ref="tr9" />
+        <trackRef ref="tr10" />
+        <trackRef ref="tr11" />
+        <trackRef ref="tr12" />
+        <trackRef ref="tr13" />
+        <trackRef ref="tr14" />
+        <trackRef ref="tr15" />
+        <trackRef ref="tr16" />
+      </line>
+    </trackGroups>
   </infrastructure>
+  <infrastructureVisualizations xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.railml.org/schemas/2013">
+    <visualization version="2.2" infrastructureRef="inf0" id="iv0">
+      <lineVis ref="line0">
+        <trackVis ref="tr0">
+          <trackElementVis ref="oe0">
+            <position x="50" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="beg0">
+            <position x="50" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="rc0">
+            <position x="50" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="sig0">
+            <position x="123" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="sig1">
+            <position x="160" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="sw0">
+            <position x="489" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="sw1">
+            <position x="526" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="sw2">
+            <position x="599" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="sw3">
+            <position x="928" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="sig2">
+            <position x="1111" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="sig3">
+            <position x="1221" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="sw4">
+            <position x="1257" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="co0">
+            <position x="1404" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="end0">
+            <position x="1404" y="1050" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr1">
+          <trackElementVis ref="oe1">
+            <position x="50" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="beg1">
+            <position x="50" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="rc1">
+            <position x="50" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="sig4">
+            <position x="123" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="sig5">
+            <position x="196" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="sw5">
+            <position x="233" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="sw7">
+            <position x="452" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="sw6">
+            <position x="635" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="sw8">
+            <position x="672" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="sig6">
+            <position x="1111" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="sig7">
+            <position x="1221" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="sw9">
+            <position x="1513" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="co2">
+            <position x="1550" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="end1">
+            <position x="1550" y="700" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr2">
+          <trackElementVis ref="co14">
+            <position x="233" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="beg2">
+            <position x="233" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="rc2">
+            <position x="50" y="1000" />
+          </trackElementVis>
+          <trackElementVis ref="co4">
+            <position x="489" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="end2">
+            <position x="489" y="1050" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr3">
+          <trackElementVis ref="co6">
+            <position x="526" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="beg3">
+            <position x="526" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="rc9">
+            <position x="50" y="1150" />
+          </trackElementVis>
+          <trackElementVis ref="sig8">
+            <position x="1001" y="1150" />
+          </trackElementVis>
+          <trackElementVis ref="sig9">
+            <position x="1148" y="1150" />
+          </trackElementVis>
+          <trackElementVis ref="sw10">
+            <position x="1367" y="1150" />
+          </trackElementVis>
+          <trackElementVis ref="oe2">
+            <position x="1440" y="1150" />
+          </trackElementVis>
+          <trackElementVis ref="end3">
+            <position x="1440" y="1150" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr4">
+          <trackElementVis ref="co8">
+            <position x="599" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="beg4">
+            <position x="599" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="rc14">
+            <position x="50" y="800" />
+          </trackElementVis>
+          <trackElementVis ref="co16">
+            <position x="635" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="end4">
+            <position x="635" y="700" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr5">
+          <trackElementVis ref="co18">
+            <position x="452" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="beg5">
+            <position x="452" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="rc20">
+            <position x="50" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="sw11">
+            <position x="745" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="sw12">
+            <position x="782" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="sw13">
+            <position x="891" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="sig10">
+            <position x="1038" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="sig11">
+            <position x="1184" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="sw14">
+            <position x="1330" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="oe3">
+            <position x="1477" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="end5">
+            <position x="1477" y="500" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr6">
+          <trackElementVis ref="oe4">
+            <position x="50" y="400" />
+          </trackElementVis>
+          <trackElementVis ref="beg6">
+            <position x="50" y="400" />
+          </trackElementVis>
+          <trackElementVis ref="rc28">
+            <position x="50" y="400" />
+          </trackElementVis>
+          <trackElementVis ref="sw15">
+            <position x="270" y="400" />
+          </trackElementVis>
+          <trackElementVis ref="oe5">
+            <position x="965" y="400" />
+          </trackElementVis>
+          <trackElementVis ref="end6">
+            <position x="965" y="400" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr7">
+          <trackElementVis ref="co34">
+            <position x="270" y="400" />
+          </trackElementVis>
+          <trackElementVis ref="beg7">
+            <position x="270" y="400" />
+          </trackElementVis>
+          <trackElementVis ref="rc29">
+            <position x="50" y="450" />
+          </trackElementVis>
+          <trackElementVis ref="co26">
+            <position x="745" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="end7">
+            <position x="745" y="500" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr8">
+          <trackElementVis ref="oe6">
+            <position x="50" y="650" />
+          </trackElementVis>
+          <trackElementVis ref="beg8">
+            <position x="50" y="650" />
+          </trackElementVis>
+          <trackElementVis ref="rc38">
+            <position x="50" y="650" />
+          </trackElementVis>
+          <trackElementVis ref="sw17">
+            <position x="416" y="650" />
+          </trackElementVis>
+          <trackElementVis ref="sw16">
+            <position x="709" y="650" />
+          </trackElementVis>
+          <trackElementVis ref="sig12">
+            <position x="855" y="650" />
+          </trackElementVis>
+          <trackElementVis ref="sig13">
+            <position x="1074" y="650" />
+          </trackElementVis>
+          <trackElementVis ref="oe7">
+            <position x="1294" y="650" />
+          </trackElementVis>
+          <trackElementVis ref="end8">
+            <position x="1294" y="650" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr9">
+          <trackElementVis ref="co28">
+            <position x="782" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="beg9">
+            <position x="782" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="rc39">
+            <position x="50" y="600" />
+          </trackElementVis>
+          <trackElementVis ref="co36">
+            <position x="709" y="650" />
+          </trackElementVis>
+          <trackElementVis ref="end9">
+            <position x="709" y="650" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr10">
+          <trackElementVis ref="co30">
+            <position x="891" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="beg10">
+            <position x="891" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="rc45">
+            <position x="50" y="550" />
+          </trackElementVis>
+          <trackElementVis ref="sig14">
+            <position x="379" y="550" />
+          </trackElementVis>
+          <trackElementVis ref="sig15">
+            <position x="818" y="550" />
+          </trackElementVis>
+          <trackElementVis ref="co32">
+            <position x="1330" y="500" />
+          </trackElementVis>
+          <trackElementVis ref="end10">
+            <position x="1330" y="500" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr11">
+          <trackElementVis ref="co20">
+            <position x="672" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="beg11">
+            <position x="672" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="rc58">
+            <position x="50" y="750" />
+          </trackElementVis>
+          <trackElementVis ref="co38">
+            <position x="416" y="650" />
+          </trackElementVis>
+          <trackElementVis ref="end11">
+            <position x="416" y="650" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr12">
+          <trackElementVis ref="oe8">
+            <position x="50" y="1100" />
+          </trackElementVis>
+          <trackElementVis ref="beg12">
+            <position x="50" y="1100" />
+          </trackElementVis>
+          <trackElementVis ref="rc64">
+            <position x="50" y="1100" />
+          </trackElementVis>
+          <trackElementVis ref="sig16">
+            <position x="87" y="1100" />
+          </trackElementVis>
+          <trackElementVis ref="sw18">
+            <position x="306" y="1100" />
+          </trackElementVis>
+          <trackElementVis ref="oe9">
+            <position x="562" y="1100" />
+          </trackElementVis>
+          <trackElementVis ref="end12">
+            <position x="562" y="1100" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr13">
+          <trackElementVis ref="co40">
+            <position x="306" y="1100" />
+          </trackElementVis>
+          <trackElementVis ref="beg13">
+            <position x="306" y="1100" />
+          </trackElementVis>
+          <trackElementVis ref="rc65">
+            <position x="50" y="1200" />
+          </trackElementVis>
+          <trackElementVis ref="co10">
+            <position x="928" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="end13">
+            <position x="928" y="1050" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr14">
+          <trackElementVis ref="co12">
+            <position x="1257" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="beg14">
+            <position x="1257" y="1050" />
+          </trackElementVis>
+          <trackElementVis ref="rc68">
+            <position x="50" y="950" />
+          </trackElementVis>
+          <trackElementVis ref="co24">
+            <position x="1367" y="1150" />
+          </trackElementVis>
+          <trackElementVis ref="end14">
+            <position x="1367" y="1150" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr15">
+          <trackElementVis ref="co1">
+            <position x="50" y="850" />
+          </trackElementVis>
+          <trackElementVis ref="beg15">
+            <position x="50" y="850" />
+          </trackElementVis>
+          <trackElementVis ref="rc72">
+            <position x="50" y="850" />
+          </trackElementVis>
+          <trackElementVis ref="co22">
+            <position x="1513" y="700" />
+          </trackElementVis>
+          <trackElementVis ref="end15">
+            <position x="1513" y="700" />
+          </trackElementVis>
+        </trackVis>
+        <trackVis ref="tr16">
+          <trackElementVis ref="co3">
+            <position x="50" y="900" />
+          </trackElementVis>
+          <trackElementVis ref="beg16">
+            <position x="50" y="900" />
+          </trackElementVis>
+          <trackElementVis ref="rc76">
+            <position x="50" y="900" />
+          </trackElementVis>
+          <trackElementVis ref="oe10">
+            <position x="343" y="900" />
+          </trackElementVis>
+          <trackElementVis ref="end16">
+            <position x="343" y="900" />
+          </trackElementVis>
+        </trackVis>
+      </lineVis>
+    </visualization>
+  </infrastructureVisualizations>
 </railml>

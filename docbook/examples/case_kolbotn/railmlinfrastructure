@@ -346,10 +346,10 @@
             <connection id="co26497" ref="co26499"/>
           </trackEnd>
           <connections>
-            <switch id="sw26435" pos="164.000000" absPos="12731" name="Sporveksel/sporkryss, 625, Kolbotn stasjon">
+            <switch id="sw26435" pos="164.000000" absPos="12731" name="Sporveksel/sporkryss, 625, Kolbotn stasjon" trackContinueCourse="left">
               <connection id="co26437_1" ref="co26437_2" orientation="outgoing" course="right"/>
             </switch>
-            <switch id="sw26469" pos="489.000000" absPos="13056" name="Sporveksel/sporkryss, 628, Kolbotn stasjon">
+            <switch id="sw26469" pos="489.000000" absPos="13056" name="Sporveksel/sporkryss, 628, Kolbotn stasjon" trackContinueCourse="right">
               <connection id="co26469_1" ref="co26469_2" orientation="incoming" course="left"/>
             </switch>
           </connections>
@@ -582,10 +582,10 @@
             <connection id="co26370" ref="co26372"/>
           </trackEnd>
           <connections>
-            <switch id="sw26298" pos="590.000000" absPos="12733" name="Sporveksel/sporkryss, 627A, Kolbotn stasjon">
+            <switch id="sw26298" pos="590.000000" absPos="12733" name="Sporveksel/sporkryss, 627A, Kolbotn stasjon" trackContinueCourse="right">
               <connection id="co26300_1" ref="co26300_2" orientation="outgoing" course="left"/>
             </switch>
-            <switch id="sw26338" pos="911.000000" absPos="13054" name="Sporveksel/sporkryss, 626B, Kolbotn stasjon">
+            <switch id="sw26338" pos="911.000000" absPos="13054" name="Sporveksel/sporkryss, 626B, Kolbotn stasjon" trackContinueCourse="left">
               <connection id="co26338_1" ref="co26338_2" orientation="incoming" course="right"/>
             </switch>
           </connections>

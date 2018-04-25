@@ -75,6 +75,46 @@
       </infraAttributes>
     </infraAttrGroups>
     <tracks>
+      <track id="t328D161" name="ARNENIPA" type="mainTrack">
+        <trackTopology>
+          <trackBegin id="refjoo" pos="0" absPos="456654.020196">
+            <geoCoord coord="310502.150554 6703434.901918 0" />
+            <openEnd id="rbff4z" />
+          </trackBegin>
+          <trackEnd id="rljci0" pos="4145.979801" absPos="460799.999997">
+            <geoCoord coord="307812.339752 6703722.708953 0" />
+            <connection id="continuation_t328D161_t328D139" ref="continuation_t328D139_t328D161" />
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="sc_lywp" pos="0.000000" absPos="456654.020196" dir="up" profileRef="sp_stgja" vMax="230" />
+            <speedChange id="sc_slck" pos="2000.000000" absPos="458654.020196" dir="down" profileRef="sp_stgja" vMax="230" />
+            <speedChange id="sc_mg4k" pos="2000.000000" absPos="458654.020196" dir="up" profileRef="sp_dibjx" vMax="230" />
+            <speedChange id="sc_5iz4" pos="3345.979804" absPos="460000" dir="down" profileRef="sp_dibjx" vMax="230" />
+            <speedChange id="sc_quzw" pos="3345.979804" absPos="460000" dir="up" profileRef="sp_jltcf" vMax="230" />
+            <speedChange id="sc_jrmk" pos="4145.979801" absPos="460799.999997" dir="down" profileRef="sp_jltcf" vMax="230" />
+          </speedChanges>
+          <radiusChanges>
+            <radiusChange id="rc_k1oe" pos="0.000000" absPos="456654.020196" radius="0" />
+            <radiusChange id="rc_0epo" pos="852.421180" absPos="457506.441376" radius="600.000001" />
+            <radiusChange id="rc_ojnj" pos="1172.774997" absPos="457826.795193" radius="0" />
+            <radiusChange id="rc_r3zu" pos="1313.669303" absPos="457967.689499" radius="-849.999998" />
+            <radiusChange id="rc_dkxr" pos="1874.898180" absPos="458528.918376" radius="-700.000001" />
+            <radiusChange id="rc_y3sf" pos="2217.668925" absPos="458871.689121" radius="0" />
+            <radiusChange id="rc_q0k4" pos="2503.822261" absPos="459157.842457" radius="500" />
+            <radiusChange id="rc_luwv" pos="2857.243894" absPos="459511.26409" radius="0" />
+          </radiusChanges>
+        </trackElements>
+        <ocsElements>
+          <signals>
+            <signal id="t31A8D48" name="Fs.11001(A)" description="Fs" pos="3045.778804" dir="up" type="distant">
+              <geoCoord coord="307623.81443924259 6703719.1805947376 0" />
+            </signal>
+          </signals>
+        </ocsElements>
+        <infraAttrGroupRefs />
+      </track>
       <track id="t328D129" name="ARNA-HP_SPOR 13" type="mainTrack">
         <trackTopology>
           <trackBegin id="rvjozo" pos="0" absPos="462160.992">
@@ -170,7 +210,7 @@
           </trackBegin>
           <trackEnd id="rqshwj" pos="2483.525690" absPos="470836.160690">
             <geoCoord coord="298268.984774 6700208.582594 3" />
-            <connection id="switch_t328D139_t328D134_incoming_branch" ref="switch_t328D139_t328D134_incoming_trunk" />
+            <openEnd id="bergen" />
           </trackEnd>
         </trackTopology>
         <trackElements>
@@ -243,6 +283,8 @@
             <trainDetector id="t2B7EE37" name="Tp(x/y)" pos="1302.365">
               <geoCoord coord="299147.1473257675 6699429.1232745517 9.7401911545145818" />
             </trainDetector>
+            <trainDetector id="t2B7EE37-X" name="Tp(x/y)" pos="2302.365">
+            </trainDetector>
           </trainDetectionElements>
         </ocsElements>
         <infraAttrGroupRefs />
@@ -255,13 +297,9 @@
           </trackBegin>
           <trackEnd id="rfj2ho" pos="10413.198725" absPos="471220.068725">
             <geoCoord coord="298433.773507 6700056.63097 3" />
-            <bufferStop id="rt0zwl" />
+            <openEnd id="bergen2" />
           </trackEnd>
           <connections>
-            <switch id="SwitchWithoutBlockReference_switch_t328D139_t328D134_incoming" description="JBV 1:14 R760 sporveksel, 60E3, fast skinnekryss " pos="10028" absPos="470835.152610" type="ordinarySwitch">
-              <geoCoord coord="298268.984774 6700208.582594 0" />
-              <connection id="switch_t328D139_t328D134_incoming_trunk" ref="switch_t328D139_t328D134_incoming_branch" course="right" radius="760" orientation="incoming" />
-            </switch>
             <switch id="t1627A24" name="3" pos="846" absPos="461653.322903">
               <geoCoord coord="305699.08690859686 6703545.9747812487 8.7347032434668535" />
               <connection id="switch_t328D139_t328D175_outgoing_trunk" ref="switch_t328D139_t328D175_outgoing_branch" course="right" radius="190" orientation="outgoing" />
@@ -463,6 +501,8 @@
             </trainDetector>
             <trainDetector id="t31BDE83" name="Tp(901/201)" pos="363.156">
               <geoCoord coord="306161.43811760982 6703665.5241342615 0" />
+            </trainDetector>
+            <trainDetector id="t2B7EDA0-X" name="Tp(x/y)" pos="9848.193">
             </trainDetector>
           </trainDetectionElements>
         </ocsElements>
@@ -870,46 +910,6 @@
               <geoCoord coord="304776.98322274536 6702959.7124199085 13.374693904492377" />
             </trainDetector>
           </trainDetectionElements>
-        </ocsElements>
-        <infraAttrGroupRefs />
-      </track>
-      <track id="t328D161" name="ARNENIPA" type="mainTrack">
-        <trackTopology>
-          <trackBegin id="refjoo" pos="0" absPos="456654.020196">
-            <geoCoord coord="310502.150554 6703434.901918 0" />
-            <openEnd id="rbff4z" />
-          </trackBegin>
-          <trackEnd id="rljci0" pos="4145.979801" absPos="460799.999997">
-            <geoCoord coord="307812.339752 6703722.708953 0" />
-            <connection id="continuation_t328D161_t328D139" ref="continuation_t328D139_t328D161" />
-          </trackEnd>
-        </trackTopology>
-        <trackElements>
-          <speedChanges>
-            <speedChange id="sc_lywp" pos="0.000000" absPos="456654.020196" dir="up" profileRef="sp_stgja" vMax="230" />
-            <speedChange id="sc_slck" pos="2000.000000" absPos="458654.020196" dir="down" profileRef="sp_stgja" vMax="230" />
-            <speedChange id="sc_mg4k" pos="2000.000000" absPos="458654.020196" dir="up" profileRef="sp_dibjx" vMax="230" />
-            <speedChange id="sc_5iz4" pos="3345.979804" absPos="460000" dir="down" profileRef="sp_dibjx" vMax="230" />
-            <speedChange id="sc_quzw" pos="3345.979804" absPos="460000" dir="up" profileRef="sp_jltcf" vMax="230" />
-            <speedChange id="sc_jrmk" pos="4145.979801" absPos="460799.999997" dir="down" profileRef="sp_jltcf" vMax="230" />
-          </speedChanges>
-          <radiusChanges>
-            <radiusChange id="rc_k1oe" pos="0.000000" absPos="456654.020196" radius="0" />
-            <radiusChange id="rc_0epo" pos="852.421180" absPos="457506.441376" radius="600.000001" />
-            <radiusChange id="rc_ojnj" pos="1172.774997" absPos="457826.795193" radius="0" />
-            <radiusChange id="rc_r3zu" pos="1313.669303" absPos="457967.689499" radius="-849.999998" />
-            <radiusChange id="rc_dkxr" pos="1874.898180" absPos="458528.918376" radius="-700.000001" />
-            <radiusChange id="rc_y3sf" pos="2217.668925" absPos="458871.689121" radius="0" />
-            <radiusChange id="rc_q0k4" pos="2503.822261" absPos="459157.842457" radius="500" />
-            <radiusChange id="rc_luwv" pos="2857.243894" absPos="459511.26409" radius="0" />
-          </radiusChanges>
-        </trackElements>
-        <ocsElements>
-          <signals>
-            <signal id="t31A8D48" name="Fs.11001(A)" description="Fs" pos="3045.778804" dir="up" type="distant">
-              <geoCoord coord="307623.81443924259 6703719.1805947376 0" />
-            </signal>
-          </signals>
         </ocsElements>
         <infraAttrGroupRefs />
       </track>

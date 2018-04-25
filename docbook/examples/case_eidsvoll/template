@@ -1,13 +1,15 @@
-# Valebø
+# Eidsvoll
 
 Station converted from Bane NOR's model of the Norweigan national rail network.
-This example demonstrates conversion from railML on a simple two track station.
+This example demonstrates conversion from railML 
+for a line merge on several single tracks.
+
 Tracks, switches, signals and detectors are imported from railML, while 
 routes are derived from signal and detector placement. This may or may not be 
 equal to the actual routes in use on the station, but suffices for our 
 demonstrations.
 
-![Valebø](valebo.png "Valebø")
+![Eidsvoll](eidsvoll.png "Eidsvoll")
 
 ## View
 

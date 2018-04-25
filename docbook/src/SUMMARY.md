@@ -24,6 +24,11 @@
   - [railML two track](./examples/railml_twotrack.md)
 - [Case studies](./casestudies.md)
   - [Valebø](./examples/case_valebo.md)
+  - [Kolbotn](./examples/case_kolbotn.md)
+  - [Eidsvoll](./examples/case_eidsvoll.md)
+  - [Holmlia](./examples/case_holmlia.md)
+  - [Asker](./examples/case_asker.md)
+  - [Arna A20](./examples/case_arna.md)
   - [Arna A20 by hand](./examples/case_arna_byhand.md)
 
 <!--

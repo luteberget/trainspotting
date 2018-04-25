@@ -1,23 +1,31 @@
 # Kolbotn
 
-```haskell
-$RAILWAYUSAGE
-```
+Station converted from Bane NOR's model of the Norweigan national rail network.
+This example demonstrates conversion from railML 
+for a double track station with a secondary track in the middle.
+
+Tracks, switches, signals and detectors are imported from railML, while 
+routes are derived from signal and detector placement. This may or may not be 
+equal to the actual routes in use on the station, but suffices for our 
+demonstrations.
+
+![Kolbotn](kolbotn.png "Kolbotn")
 
 ## View
 
 $RAILWAYVIEW
 
+## Usage
 
-## Plan
+The view above solves the following usage scenario:
+
+```haskell
+$RAILWAYUSAGE
+```
+
+... by presenting the following dispatch plan:
 
 ```haskell
 $RAILWAYDISPATCH
-```
-
-## Infrastructure 
-
-```haskell
-$RAILWAYINFRASTRUCTURE
 ```
 
