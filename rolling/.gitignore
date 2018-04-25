@@ -1,3 +1,4 @@
-
+scratch/
 /target/
 **/*.rs.bk
+Cargo.lock

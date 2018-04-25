@@ -1,0 +1,770 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<railml version="2.2" xmlns="http://www.railml.org/schemas/2013" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.railml.org/schemas/2013 http://schemas.railml.org/2013/railML-2.2/railML.xsd">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:source>OpenTrack (http://www.opentrack.ch) Version 1.8.3 (2016-01-06) JBV mode</dc:source>
+    <dc:date>Fri Feb 26 15:26:59 CET 2016</dc:date>
+  </metadata>
+  <infrastructure id="mo-OEB1" name="OEB1">
+    <infraAttrGroups>
+      <infraAttributes id="sppr0">
+        <speeds>
+          <speed trainCategory="Normal" vMax="50"/>
+          <speed trainCategory="Pluss" vMax="50"/>
+          <speed trainCategory="Krenge" vMax="50"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr1">
+        <speeds>
+          <speed trainCategory="Normal" vMax="40"/>
+          <speed trainCategory="Pluss" vMax="40"/>
+          <speed trainCategory="Krenge" vMax="40"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr2">
+        <speeds>
+          <speed trainCategory="Normal" vMax="70"/>
+          <speed trainCategory="Pluss" vMax="70"/>
+          <speed trainCategory="Krenge" vMax="70"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr3">
+        <speeds>
+          <speed trainCategory="Normal" vMax="80"/>
+          <speed trainCategory="Pluss" vMax="85"/>
+          <speed trainCategory="Krenge" vMax="85"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr4">
+        <speeds>
+          <speed trainCategory="Normal" vMax="70"/>
+          <speed trainCategory="Pluss" vMax="85"/>
+          <speed trainCategory="Krenge" vMax="85"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr5">
+        <speeds>
+          <speed trainCategory="Normal" vMax="90"/>
+          <speed trainCategory="Pluss" vMax="105"/>
+          <speed trainCategory="Krenge" vMax="105"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr6">
+        <speeds>
+          <speed trainCategory="Normal" vMax="75"/>
+          <speed trainCategory="Pluss" vMax="80"/>
+          <speed trainCategory="Krenge" vMax="80"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr7">
+        <speeds>
+          <speed trainCategory="Normal" vMax="70"/>
+          <speed trainCategory="Pluss" vMax="75"/>
+          <speed trainCategory="Krenge" vMax="75"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr8">
+        <speeds>
+          <speed trainCategory="Normal" vMax="85"/>
+          <speed trainCategory="Pluss" vMax="90"/>
+          <speed trainCategory="Krenge" vMax="90"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr9">
+        <speeds>
+          <speed trainCategory="Normal" vMax="100"/>
+          <speed trainCategory="Pluss" vMax="105"/>
+          <speed trainCategory="Krenge" vMax="105"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr10">
+        <speeds>
+          <speed trainCategory="Normal" vMax="105"/>
+          <speed trainCategory="Pluss" vMax="110"/>
+          <speed trainCategory="Krenge" vMax="110"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr11">
+        <speeds>
+          <speed trainCategory="Normal" vMax="80"/>
+          <speed trainCategory="Pluss" vMax="90"/>
+          <speed trainCategory="Krenge" vMax="90"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr12">
+        <speeds>
+          <speed trainCategory="Normal" vMax="90"/>
+          <speed trainCategory="Pluss" vMax="95"/>
+          <speed trainCategory="Krenge" vMax="95"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr13">
+        <speeds>
+          <speed trainCategory="Normal" vMax="95"/>
+          <speed trainCategory="Pluss" vMax="100"/>
+          <speed trainCategory="Krenge" vMax="100"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr14">
+        <speeds>
+          <speed trainCategory="Normal" vMax="110"/>
+          <speed trainCategory="Pluss" vMax="115"/>
+          <speed trainCategory="Krenge" vMax="115"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr15">
+        <speeds>
+          <speed trainCategory="Normal" vMax="90"/>
+          <speed trainCategory="Pluss" vMax="120"/>
+          <speed trainCategory="Krenge" vMax="120"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr16">
+        <speeds>
+          <speed trainCategory="Normal" vMax="95"/>
+          <speed trainCategory="Pluss" vMax="120"/>
+          <speed trainCategory="Krenge" vMax="120"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr17">
+        <speeds>
+          <speed trainCategory="Normal" vMax="70"/>
+          <speed trainCategory="Pluss" vMax="90"/>
+          <speed trainCategory="Krenge" vMax="90"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr18">
+        <speeds>
+          <speed trainCategory="Normal" vMax="85"/>
+          <speed trainCategory="Pluss" vMax="95"/>
+          <speed trainCategory="Krenge" vMax="95"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr19">
+        <speeds>
+          <speed trainCategory="Normal" vMax="125"/>
+          <speed trainCategory="Pluss" vMax="130"/>
+          <speed trainCategory="Krenge" vMax="130"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr20">
+        <speeds>
+          <speed trainCategory="Normal" vMax="110"/>
+          <speed trainCategory="Pluss" vMax="120"/>
+          <speed trainCategory="Krenge" vMax="120"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr21">
+        <speeds>
+          <speed trainCategory="Normal" vMax="100"/>
+          <speed trainCategory="Pluss" vMax="120"/>
+          <speed trainCategory="Krenge" vMax="120"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr22">
+        <speeds>
+          <speed trainCategory="Normal" vMax="85"/>
+          <speed trainCategory="Pluss" vMax="100"/>
+          <speed trainCategory="Krenge" vMax="100"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr23">
+        <speeds>
+          <speed trainCategory="Normal" vMax="70"/>
+          <speed trainCategory="Pluss" vMax="75"/>
+          <speed trainCategory="Krenge" vMax="80"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr24">
+        <speeds>
+          <speed trainCategory="Normal" vMax="80"/>
+          <speed trainCategory="Pluss" vMax="100"/>
+          <speed trainCategory="Krenge" vMax="100"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr25">
+        <speeds>
+          <speed trainCategory="Normal" vMax="90"/>
+          <speed trainCategory="Pluss" vMax="100"/>
+          <speed trainCategory="Krenge" vMax="100"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr26">
+        <speeds>
+          <speed trainCategory="Normal" vMax="120"/>
+          <speed trainCategory="Pluss" vMax="125"/>
+          <speed trainCategory="Krenge" vMax="125"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr27">
+        <speeds>
+          <speed trainCategory="Normal" vMax="115"/>
+          <speed trainCategory="Pluss" vMax="125"/>
+          <speed trainCategory="Krenge" vMax="125"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr28">
+        <speeds>
+          <speed trainCategory="Normal" vMax="75"/>
+          <speed trainCategory="Pluss" vMax="85"/>
+          <speed trainCategory="Krenge" vMax="85"/>
+        </speeds>
+      </infraAttributes>
+      <infraAttributes id="sppr29">
+        <speeds>
+          <speed trainCategory="Normal" vMax="60"/>
+          <speed trainCategory="Pluss" vMax="65"/>
+          <speed trainCategory="Krenge" vMax="65"/>
+        </speeds>
+      </infraAttributes>
+    </infraAttrGroups>
+    <tracks>
+      <track id="tr2" name="01-02">
+        <trackTopology>
+          <trackBegin id="x22353" pos="0.000000" absPos="6919">
+            <connection id="co22353_2" ref="co22353_1"/>
+          </trackBegin>
+          <trackEnd id="y22516" pos="66.000000" absPos="6985">
+            <connection id="co22516_2" ref="co22516_1"/>
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu22353" pos="0.000000" absPos="6919" name="Sporveksel/sporkryss, 617A, Ljan stasjon" dir="up" profileRef="sppr1" vMax="200"/>
+            <speedChange id="spd22516" pos="66.000000" absPos="6985" name="Sporveksel/sporkryss, 617B, Ljan stasjon" dir="down" profileRef="sppr1" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr22353" pos="0.000000" absPos="6919" name="Sporveksel/sporkryss, 617A, Ljan stasjon" slope="11.400"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra22353" pos="0.000000" absPos="6919" name="Sporveksel/sporkryss, 617A, Ljan stasjon" radius="0.000000"/>
+          </radiusChanges>
+        </trackElements>
+        <ocsElements>
+          <trainDetectionElements>
+            <trackCircuitBorder id="tcb22707" pos="33.000000" absPos="6952" name="625" dir="down" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22705" pos="33.000000" absPos="6952" name="624" dir="up" ocpStationRef="ocp-LJA"/>
+          </trainDetectionElements>
+        </ocsElements>
+      </track>
+      <track id="tr3" name="01-02">
+        <trackTopology>
+          <trackBegin id="x24089" pos="0.000000" absPos="9676">
+            <connection id="co24089" ref="co24088"/>
+          </trackBegin>
+          <trackEnd id="y23066" pos="31.000000" absPos="9707">
+            <connection id="co23066_2" ref="co23066_1"/>
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu24089" pos="0.000000" absPos="9676" name="Hjelpepunkt sporkryss" dir="up" profileRef="sppr1" vMax="200"/>
+            <speedChange id="spd23066" pos="31.000000" absPos="9707" name="Sporveksel/sporkryss, 623B, Holmlia stasjon" dir="down" profileRef="sppr1" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr24089" pos="0.000000" absPos="9676" name="Hjelpepunkt sporkryss" slope="10.000"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra24089" pos="0.000000" absPos="9676" name="Hjelpepunkt sporkryss" radius="0.000000"/>
+          </radiusChanges>
+        </trackElements>
+        <ocsElements/>
+      </track>
+      <track id="tr4" name="01-02">
+        <trackTopology>
+          <trackBegin id="x22921" pos="0.000000" absPos="9643">
+            <connection id="co22921_2" ref="co22921_1"/>
+          </trackBegin>
+          <trackEnd id="y24100" pos="31.000000" absPos="9674">
+            <connection id="co24100" ref="co24101"/>
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu22921" pos="0.000000" absPos="9643" name="Sporveksel/sporkryss, 623A, Holmlia stasjon" dir="up" profileRef="sppr1" vMax="200"/>
+            <speedChange id="spd24100" pos="31.000000" absPos="9674" name="Hjelpepunkt sporkryss" dir="down" profileRef="sppr1" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr22921" pos="0.000000" absPos="9643" name="Sporveksel/sporkryss, 623A, Holmlia stasjon" slope="10.600"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra22921" pos="0.000000" absPos="9643" name="Sporveksel/sporkryss, 623A, Holmlia stasjon" radius="0.000000"/>
+          </radiusChanges>
+        </trackElements>
+        <ocsElements>
+          <trainDetectionElements>
+            <trackCircuitBorder id="tcb24100" pos="31.000000" absPos="9674" name="637" dir="down" ocpStationRef="st28536"/>
+          </trainDetectionElements>
+        </ocsElements>
+      </track>
+      <track id="tr7" name="02">
+        <trackTopology>
+          <trackBegin id="x24095" pos="0.000000" absPos="9674">
+            <connection id="co24095" ref="co24094"/>
+          </trackBegin>
+          <trackEnd id="y24082" pos="2.000000" absPos="9676">
+            <connection id="co24082" ref="co24083"/>
+          </trackEnd>
+          <connections>
+            <crossing id="cr23186" pos="1.000000" absPos="9675" name="Sporveksel/sporkryss, 623A, Holmlia stasjon">
+              <connection id="co23186_1" ref="co23186_2" orientation="incoming"/>
+              <connection id="co23184_1" ref="co23184_2" orientation="outgoing"/>
+            </crossing>
+          </connections>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu24095" pos="0.000000" absPos="9674" name="Hjelpepunkt sporkryss" dir="up" profileRef="sppr1" vMax="200"/>
+            <speedChange id="spd24082" pos="2.000000" absPos="9676" name="Hjelpepunkt sporkryss" dir="down" profileRef="sppr1" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr24095" pos="0.000000" absPos="9674" name="Hjelpepunkt sporkryss" slope="10.000"/>
+            <gradientChange id="gr23184" pos="1.000000" absPos="9675" name="Sporveksel/sporkryss, 623A, Holmlia stasjon" slope="10.600"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra24095" pos="0.000000" absPos="9674" name="Hjelpepunkt sporkryss" radius="0.000000"/>
+          </radiusChanges>
+        </trackElements>
+        <ocsElements/>
+      </track>
+      <track id="tr8" name="02">
+        <trackTopology>
+          <trackBegin id="x23184" pos="0.000000" absPos="9675">
+            <connection id="co23184_2" ref="co23184_1"/>
+          </trackBegin>
+          <trackEnd id="y24088" pos="1.000000" absPos="9676">
+            <connection id="co24088" ref="co24089"/>
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu23184" pos="0.000000" absPos="9675" name="Sporveksel/sporkryss, 623A, Holmlia stasjon" dir="up" profileRef="sppr1" vMax="200"/>
+            <speedChange id="spd24088" pos="1.000000" absPos="9676" name="Hjelpepunkt sporkryss" dir="down" profileRef="sppr1" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr23184_2" pos="0.000000" absPos="9675" name="Sporveksel/sporkryss, 623A, Holmlia stasjon" slope="10.000"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra23184" pos="0.000000" absPos="9675" name="Sporveksel/sporkryss, 623A, Holmlia stasjon" radius="0.000000"/>
+          </radiusChanges>
+        </trackElements>
+        <ocsElements/>
+      </track>
+      <track id="tr9" name="02">
+        <trackTopology>
+          <trackBegin id="x24101" pos="0.000000" absPos="9674">
+            <connection id="co24101" ref="co24100"/>
+          </trackBegin>
+          <trackEnd id="y23186" pos="1.000000" absPos="9675">
+            <connection id="co23186_2" ref="co23186_1"/>
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu24101" pos="0.000000" absPos="9674" name="Hjelpepunkt sporkryss" dir="up" profileRef="sppr1" vMax="200"/>
+            <speedChange id="spd23186" pos="1.000000" absPos="9675" name="Sporveksel/sporkryss, 623A, Holmlia stasjon" dir="down" profileRef="sppr1" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr24101" pos="0.000000" absPos="9674" name="Hjelpepunkt sporkryss" slope="10.600"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra24101" pos="0.000000" absPos="9674" name="Hjelpepunkt sporkryss" radius="0.000000"/>
+          </radiusChanges>
+        </trackElements>
+        <ocsElements>
+          <trainDetectionElements>
+            <trackCircuitBorder id="tcb24101" pos="0.000000" absPos="9674" name="HML" dir="up"/>
+          </trainDetectionElements>
+        </ocsElements>
+      </track>
+      <track id="tr14" name="02-01">
+        <trackTopology>
+          <trackBegin id="x22510" pos="0.000000" absPos="6640">
+            <connection id="co22510_2" ref="co22510_1"/>
+          </trackBegin>
+          <trackEnd id="y22347" pos="54.000000" absPos="6694">
+            <connection id="co22347_2" ref="co22347_1"/>
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu22510" pos="0.000000" absPos="6640" name="Sporveksel/sporkryss, 615A, Ljan stasjon" dir="up" profileRef="sppr1" vMax="200"/>
+            <speedChange id="spd22347" pos="54.000000" absPos="6694" name="Sporveksel/sporkryss, 615B, Ljan stasjon" dir="down" profileRef="sppr1" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr22510" pos="0.000000" absPos="6640" name="Sporveksel/sporkryss, 615A, Ljan stasjon" slope="11.200"/>
+            <gradientChange id="gr22683" pos="27.000000" absPos="6667" name="Sporveksel/sporkryss, 615A, Ljan stasjon" slope="11.400"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra22510" pos="0.000000" absPos="6640" name="Sporveksel/sporkryss, 615A, Ljan stasjon" radius="0.000000"/>
+          </radiusChanges>
+        </trackElements>
+        <ocsElements>
+          <trainDetectionElements>
+            <trackCircuitBorder id="tcb22685" pos="27.000000" absPos="6667" name="624" dir="down" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22683" pos="27.000000" absPos="6667" name="625" dir="up" ocpStationRef="ocp-LJA"/>
+          </trainDetectionElements>
+        </ocsElements>
+      </track>
+      <track id="tr15" name="02-01">
+        <trackTopology>
+          <trackBegin id="x24083" pos="0.000000" absPos="9676">
+            <connection id="co24083" ref="co24082"/>
+          </trackBegin>
+          <trackEnd id="y22923" pos="27.000000" absPos="9703">
+            <connection id="co22923_2" ref="co22923_1"/>
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu24083" pos="0.000000" absPos="9676" name="Hjelpepunkt sporkryss" dir="up" profileRef="sppr1" vMax="200"/>
+            <speedChange id="spd22923" pos="27.000000" absPos="9703" name="Sporveksel/sporkryss, 621B, Holmlia stasjon" dir="down" profileRef="sppr1" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr24083" pos="0.000000" absPos="9676" name="Hjelpepunkt sporkryss" slope="10.600"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra24083" pos="0.000000" absPos="9676" name="Hjelpepunkt sporkryss" radius="0.000000"/>
+          </radiusChanges>
+        </trackElements>
+        <ocsElements/>
+      </track>
+      <track id="tr16" name="02-01">
+        <trackTopology>
+          <trackBegin id="x23064" pos="0.000000" absPos="9647">
+            <connection id="co23064_2" ref="co23064_1"/>
+          </trackBegin>
+          <trackEnd id="y24094" pos="27.000000" absPos="9674">
+            <connection id="co24094" ref="co24095"/>
+          </trackEnd>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu23064" pos="0.000000" absPos="9647" name="Sporveksel/sporkryss, 621A, Holmlia stasjon" dir="up" profileRef="sppr1" vMax="200"/>
+            <speedChange id="spd24094" pos="27.000000" absPos="9674" name="Hjelpepunkt sporkryss" dir="down" profileRef="sppr1" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr23064" pos="0.000000" absPos="9647" name="Sporveksel/sporkryss, 621A, Holmlia stasjon" slope="10.000"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra23064" pos="0.000000" absPos="9647" name="Sporveksel/sporkryss, 621A, Holmlia stasjon" radius="0.000000"/>
+          </radiusChanges>
+        </trackElements>
+        <ocsElements/>
+      </track>
+      <track id="tr21" name="LM02">
+        <trackTopology>
+          <trackBegin id="x22672" pos="0.000000" absPos="6500">
+              <!--<connection id="co22660" ref="co22226"/>-->
+              <openEnd id="inL" />
+          </trackBegin>
+          <trackEnd id="y23150" pos="4000.000000" absPos="10500">
+              <!--<connection id="co23130" ref="co23444"/>-->
+              <openEnd id="outL" />
+          </trackEnd>
+          <connections>
+            <switch id="sw22508" pos="140.000000" absPos="6640" name="Sporveksel/sporkryss, 615A, Ljan stasjon">
+              <connection id="co22510_1" ref="co22510_2" orientation="outgoing" course="right"/>
+            </switch>
+            <switch id="sw22516" pos="485.000000" absPos="6985" name="Sporveksel/sporkryss, 617B, Ljan stasjon">
+              <connection id="co22516_1" ref="co22516_2" orientation="incoming" course="left"/>
+            </switch>
+            <switch id="sw23062" pos="3147.000000" absPos="9647" name="Sporveksel/sporkryss, 621A, Holmlia stasjon">
+              <connection id="co23064_1" ref="co23064_2" orientation="outgoing" course="right"/>
+            </switch>
+            <switch id="sw23066" pos="3207.000000" absPos="9707" name="Sporveksel/sporkryss, 623B, Holmlia stasjon">
+              <connection id="co23066_1" ref="co23066_2" orientation="incoming" course="left"/>
+            </switch>
+          </connections>
+          <crossSections>
+            <crossSection id="cs22530" pos="650.000000" absPos="7150" ocpRef="ocp-LJA"/>
+            <crossSection id="cs22592" pos="1495.000000" absPos="7995" name="B, Ljan - Holmlia" ocpRef="ocp-LB1"/>
+            <crossSection id="cs23040" pos="2170.000000" absPos="8670" ocpRef="ocp-HTO"/>
+            <crossSection id="cs24727" pos="3350.000000" absPos="9850" name="Holmlia" ocpRef="ocp-HLM"/>
+            <crossSection id="cs23100" pos="3700.000000" absPos="10200" ocpRef="ocp-HMA"/>
+          </crossSections>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu22660" pos="0.000000" absPos="6500" dir="up" profileRef="sppr18" vMax="200"/>
+            <speedChange id="spd22508" pos="140.000000" absPos="6640" name="Sporveksel/sporkryss, 615A, Ljan stasjon" dir="down" profileRef="sppr18" vMax="200"/>
+            <speedChange id="spu22518" pos="485.000000" absPos="6985" name="Sporveksel/sporkryss, 617B, Ljan stasjon" dir="up" profileRef="sppr18" vMax="200"/>
+            <speedChange id="spd25373" pos="600.000000" absPos="7100" name="Hastighet, 70(+5), Ljan" dir="down" profileRef="sppr18" vMax="200"/>
+            <speedChange id="spu25374" pos="600.000000" absPos="7100" name="Hastighet, 70(+5), Ljan" dir="up" profileRef="sppr7" vMax="200"/>
+            <speedChange id="spd22580" pos="1451.000000" absPos="7951" name="Hastighet, N.satt kj.hast. 75km, Ljan - Holmlia" dir="down" profileRef="sppr7" vMax="200"/>
+            <speedChange id="spu22582" pos="1451.000000" absPos="7951" name="Hastighet, N.satt kj.hast. 75km, Ljan - Holmlia" dir="up" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spd23054" pos="2955.000000" absPos="9455" name="Hastighet, N.satt kj.hast. 80km, Holmlia stasjon" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu23056" pos="2955.000000" absPos="9455" name="Hastighet, N.satt kj.hast. 80km, Holmlia stasjon" dir="up" profileRef="sppr19" vMax="200"/>
+            <speedChange id="spd23062" pos="3147.000000" absPos="9647" name="Sporveksel/sporkryss, 621A, Holmlia stasjon" dir="down" profileRef="sppr19" vMax="200"/>
+            <speedChange id="spu23068" pos="3207.000000" absPos="9707" name="Sporveksel/sporkryss, 623B, Holmlia stasjon" dir="up" profileRef="sppr19" vMax="200"/>
+            <speedChange id="spd23130" pos="4000.000000" absPos="10500" dir="down" profileRef="sppr19" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr22660" pos="0.000000" absPos="6500" slope="11.200"/>
+            <gradientChange id="gr22514" pos="179.000000" absPos="6679" name="LBP" slope="11.400"/>
+            <gradientChange id="gr22522" pos="518.000000" absPos="7018" name="HBP" slope="0.000"/>
+            <gradientChange id="gr22526" pos="583.000000" absPos="7083" name="LBP" slope="2.250"/>
+            <gradientChange id="gr22546" pos="680.000000" absPos="7180" name="HBP" slope="0.000"/>
+            <gradientChange id="gr22550" pos="818.000000" absPos="7318" name="LBP" slope="3.000"/>
+            <gradientChange id="gr22554" pos="931.000000" absPos="7431" name="LBP" slope="4.000"/>
+            <gradientChange id="gr22558" pos="989.000000" absPos="7489" name="LBP" slope="12.200"/>
+            <gradientChange id="gr22562" pos="1103.000000" absPos="7603" name="HBP" slope="9.300"/>
+            <gradientChange id="gr22566" pos="1177.000000" absPos="7677" name="HBP" slope="8.300"/>
+            <gradientChange id="gr22570" pos="1227.000000" absPos="7727" name="LBP" slope="12.500"/>
+            <gradientChange id="gr22574" pos="1277.000000" absPos="7777" name="HBP" slope="10.000"/>
+            <gradientChange id="gr22578" pos="1383.000000" absPos="7883" name="LBP" slope="12.570"/>
+            <gradientChange id="gr22598" pos="1588.000000" absPos="8088" name="HBP" slope="10.000"/>
+            <gradientChange id="gr22602" pos="1717.000000" absPos="8217" name="HBP" slope="6.500"/>
+            <gradientChange id="gr22606" pos="1806.000000" absPos="8306" name="LBP" slope="9.500"/>
+            <gradientChange id="gr22618" pos="1915.000000" absPos="8415" name="LBP" slope="11.000"/>
+            <gradientChange id="gr23024" pos="2050.000000" absPos="8550" name="HBP" slope="7.500"/>
+            <gradientChange id="gr23044" pos="2213.000000" absPos="8713" name="HBP" slope="4.110"/>
+            <gradientChange id="gr23048" pos="2437.000000" absPos="8937" name="LBP" slope="13.600"/>
+            <gradientChange id="gr23052" pos="2593.000000" absPos="9093" name="HBP" slope="11.200"/>
+            <gradientChange id="gr23060" pos="2972.000000" absPos="9472" name="HBP" slope="10.000"/>
+            <gradientChange id="gr23072" pos="3213.000000" absPos="9713" name="LBP" slope="11.900"/>
+            <gradientChange id="gr23092" pos="3473.000000" absPos="9973" name="HBP" slope="2.700"/>
+            <gradientChange id="gr23096" pos="3673.000000" absPos="10173" name="HBP" slope="2.500"/>
+            <gradientChange id="gr23104" pos="3771.000000" absPos="10271" name="LBP" slope="4.200"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra22660" pos="0.000000" absPos="6500" radius="0.000000"/>
+          </radiusChanges>
+          <tunnels>
+            <tunnel id="tn22610" pos="1833.000000" absPos="8333" name="Tunnel, Sole, v-hovedspor, Ljan - Holmlia" dir="up" length="73.000000" crossSection="40.000000"/>
+          </tunnels>
+        </trackElements>
+        <ocsElements>
+          <signals>
+            <signal id="si22532" pos="657.000000" absPos="7157" dir="up" name="UL 723" ocpStationRef="ocp-LJA" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si22540" pos="661.000000" absPos="7161" dir="down" name="B 722" ocpStationRef="ocp-LJA" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si22584" pos="1493.000000" absPos="7993" dir="up" name="UA 737" ocpStationRef="ocp-LB1" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si22592" pos="1495.000000" absPos="7995" dir="down" name="B 728" ocpStationRef="ocp-LB1" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si23026" pos="2154.000000" absPos="8654" dir="up" name="UA 731" ocpStationRef="ocp-HTO" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si23034" pos="2158.000000" absPos="8658" dir="down" name="M 734" ocpStationRef="ocp-HTO" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si23078" pos="3458.000000" absPos="9958" dir="up" name="UL 733" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si23086" pos="3461.000000" absPos="9961" dir="down" name="B 732" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+          </signals>
+          <trainDetectionElements>
+            <trackCircuitBorder id="tcb26195" pos="130.000000" absPos="6630" name="622" dir="down" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb26196" pos="130.000000" absPos="6630" name="624" dir="up" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22520" pos="518.000000" absPos="7018" name="624" dir="down" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22522" pos="518.000000" absPos="7018" name="626" dir="up" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22538" pos="661.000000" absPos="7161" name="626" dir="down" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22540" pos="661.000000" absPos="7161" name="629" dir="up" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22590" pos="1495.000000" absPos="7995" name="629" dir="down" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22592" pos="1495.000000" absPos="7995" name="631" dir="up"/>
+            <trackCircuitBorder id="tcb23026" pos="2154.000000" absPos="8654" name="631" dir="down"/>
+            <trackCircuitBorder id="tcb23028" pos="2154.000000" absPos="8654" name="633" dir="up" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb26207" pos="3140.000000" absPos="9640" name="633" dir="down" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb26208" pos="3140.000000" absPos="9640" name="635" dir="up" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb23070" pos="3213.000000" absPos="9713" name="635" dir="down" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb23072" pos="3213.000000" absPos="9713" name="638" dir="up" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb23084" pos="3461.000000" absPos="9961" name="638" dir="down" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb23086" pos="3461.000000" absPos="9961" name="642" dir="up"/>
+            <trackCircuitBorder id="tcb23086-X" pos="3561.000000" absPos="9961" name="642" dir="both"/>
+          </trainDetectionElements>
+          <balises>
+            <balise id="ba23672" pos="658.000000" absPos="7158" dir="up" name="Balise HS/FS 723"/>
+            <balise id="ba23681" pos="660.000000" absPos="7160" dir="down" name="Balise HS/FS 722"/>
+            <balise id="ba23965" pos="1027.000000" absPos="7527" dir="up" name="Balise Rep. HS/FS 737"/>
+            <balise id="ba23708" pos="1494.000000" absPos="7994" dir="up" name="Balise HS/FS 728"/>
+            <balise id="ba23709" pos="1494.000000" absPos="7994" dir="down" name="Balise HS/FS 728"/>
+            <balise id="ba23741" pos="2155.000000" absPos="8655" dir="up" name="Balise HS/FS 731"/>
+            <balise id="ba23750" pos="2157.000000" absPos="8657" dir="down" name="Balise HS/FS 734"/>
+            <balise id="ba23993" pos="2263.000000" absPos="8763" dir="down" name="Balise Rep. HS/FS 734"/>
+            <balise id="ba24001" pos="2434.000000" absPos="8934" dir="up" name="Balise Rep. HS/FS 733/633"/>
+            <balise id="ba23778" pos="3459.000000" absPos="9959" dir="up" name="Balise HS/FS 733"/>
+            <balise id="ba23787" pos="3460.000000" absPos="9960" dir="down" name="Balise HS/FS 732"/>
+            <balise id="ba24029" pos="3587.000000" absPos="10087" dir="down" name="Balise Rep. HS/FS 732"/>
+            <balise id="ba24037" pos="3727.000000" absPos="10227" dir="up" name="Balise Rep. HS/FS 747"/>
+          </balises>
+          <stopPosts>
+            <stopPost id="sp26094" pos="860.000000" absPos="7360" dir="up" name="STOP" trainLength="300" code="10"/>
+            <stopPost id="sp23040" pos="2170.000000" absPos="8670" dir="down" trainLength="300" code="10"/>
+            <stopPost id="sp23046" pos="2437.000000" absPos="8937" dir="up" name="LBP" trainLength="300" code="10"/>
+            <stopPost id="sp23098" pos="3700.000000" absPos="10200" dir="up" code="21"/>
+            <stopPost id="sp23100" pos="3700.000000" absPos="10200" dir="down" code="21"/>
+          </stopPosts>
+        </ocsElements>
+      </track>
+      <track id="tr28" name="RM01">
+        <trackTopology>
+          <trackBegin id="x22503" pos="0.000000" absPos="6500">
+              <!--<connection id="co22491" ref="co22103"/>-->
+              <openEnd id="inR" />
+          </trackBegin>
+          <trackEnd id="y23011" pos="4000.000000" absPos="10500">
+              <!--<connection id="co22991" ref="co23323"/>-->
+              <openEnd id="outR" />
+          </trackEnd>
+          <connections>
+            <switch id="sw22347" pos="194.000000" absPos="6694" name="Sporveksel/sporkryss, 615B, Ljan stasjon">
+              <connection id="co22347_1" ref="co22347_2" orientation="incoming" course="right"/>
+            </switch>
+            <switch id="sw22351" pos="419.000000" absPos="6919" name="Sporveksel/sporkryss, 617A, Ljan stasjon">
+              <connection id="co22353_1" ref="co22353_2" orientation="outgoing" course="left"/>
+            </switch>
+            <switch id="sw22919" pos="3143.000000" absPos="9643" name="Sporveksel/sporkryss, 623A, Holmlia stasjon">
+              <connection id="co22921_1" ref="co22921_2" orientation="outgoing" course="left"/>
+            </switch>
+            <switch id="sw22923" pos="3203.000000" absPos="9703" name="Sporveksel/sporkryss, 621B, Holmlia stasjon">
+              <connection id="co22923_1" ref="co22923_2" orientation="incoming" course="right"/>
+            </switch>
+          </connections>
+          <crossSections>
+            <crossSection id="cs22369" pos="650.000000" absPos="7150" ocpRef="ocp-LJA"/>
+            <crossSection id="cs22425" pos="1598.000000" absPos="8098" name="UB, Ljan - Holmlia" ocpRef="ocp-LBU"/>
+            <crossSection id="cs22879" pos="2170.000000" absPos="8670" ocpRef="ocp-HTO"/>
+            <crossSection id="cs24735" pos="3350.000000" absPos="9850" name="Holmlia" ocpRef="ocp-HLM"/>
+            <crossSection id="cs22943" pos="3700.000000" absPos="10200" ocpRef="ocp-HMA"/>
+          </crossSections>
+        </trackTopology>
+        <trackElements>
+          <speedChanges>
+            <speedChange id="spu22491" pos="0.000000" absPos="6500" dir="up" profileRef="sppr6" vMax="200"/>
+            <speedChange id="spu22349" pos="194.000000" absPos="6694" name="Sporveksel/sporkryss, 615B, Ljan stasjon" dir="up" profileRef="sppr6" vMax="200"/>
+            <speedChange id="spd22351" pos="419.000000" absPos="6919" name="Sporveksel/sporkryss, 617A, Ljan stasjon" dir="down" profileRef="sppr6" vMax="200"/>
+            <speedChange id="spd22413" pos="1517.000000" absPos="8017" name="Hastighet, Økt kj.hast. 70+10 H, Ljan - Holmlia" dir="down" profileRef="sppr6" vMax="200"/>
+            <speedChange id="spu22415" pos="1517.000000" absPos="8017" name="Hastighet, Økt kj.hast. 70+10 H, Ljan - Holmlia" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22417" pos="1582.000000" absPos="8082" name="A, Ljan - Holmlia" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22419" pos="1582.000000" absPos="8082" name="A, Ljan - Holmlia" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd23719" pos="1583.000000" absPos="8083" name="Balise HS/FS 637" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu23720" pos="1583.000000" absPos="8083" name="Balise HS/FS 637" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd23731" pos="1597.000000" absPos="8097" name="Balise HS/FS 628" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu23732" pos="1597.000000" absPos="8097" name="Balise HS/FS 628" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22423" pos="1598.000000" absPos="8098" name="UB, Ljan - Holmlia" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22425" pos="1598.000000" absPos="8098" name="UB, Ljan - Holmlia" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22429" pos="1636.000000" absPos="8136" name="LBP" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22431" pos="1636.000000" absPos="8136" name="LBP" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22433" pos="1729.000000" absPos="8229" name="LBP" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22435" pos="1729.000000" absPos="8229" name="LBP" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22437" pos="1818.000000" absPos="8318" name="LBP" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22439" pos="1818.000000" absPos="8318" name="LBP" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22441" pos="1833.000000" absPos="8333" name="Tunnel, Sole, h-hovedspor, Ljan - Holmlia" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22443" pos="1833.000000" absPos="8333" name="Tunnel, Sole, h-hovedspor, Ljan - Holmlia" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22445" pos="1906.000000" absPos="8406" name="Tunnel, Sole, h-hovedspor, Ljan - Holmlia" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22447" pos="1906.000000" absPos="8406" name="Tunnel, Sole, h-hovedspor, Ljan - Holmlia" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22449" pos="1932.000000" absPos="8432" name="LBP" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22451" pos="1932.000000" absPos="8432" name="LBP" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22869" pos="2032.000000" absPos="8532" name="LBP" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22871" pos="2032.000000" absPos="8532" name="LBP" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd23974" pos="2137.000000" absPos="8637" name="Balise Rep. HS/FS 628" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu23975" pos="2137.000000" absPos="8637" name="Balise Rep. HS/FS 628" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22873" pos="2141.000000" absPos="8641" name="LBP" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22875" pos="2141.000000" absPos="8641" name="LBP" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22877" pos="2170.000000" absPos="8670" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22879" pos="2170.000000" absPos="8670" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd23983" pos="2371.000000" absPos="8871" name="Balise Rep. HS/FS 631" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu23984" pos="2371.000000" absPos="8871" name="Balise Rep. HS/FS 631" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22881" pos="2409.000000" absPos="8909" name="LBP" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22883" pos="2409.000000" absPos="8909" name="LBP" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22887" pos="2501.000000" absPos="9001" name="A, Holmlia stasjon" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22889" pos="2501.000000" absPos="9001" name="A, Holmlia stasjon" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd23760" pos="2502.000000" absPos="9002" name="Balise HS/FS 631" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu23761" pos="2502.000000" absPos="9002" name="Balise HS/FS 631" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd23768" pos="2504.000000" absPos="9004" name="Balise HS/FS 634" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu23769" pos="2504.000000" absPos="9004" name="Balise HS/FS 634" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22893" pos="2505.000000" absPos="9005" name="UM, Holmlia stasjon" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22895" pos="2505.000000" absPos="9005" name="UM, Holmlia stasjon" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22899" pos="2570.000000" absPos="9070" name="LBP" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22901" pos="2570.000000" absPos="9070" name="LBP" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22903" pos="2788.000000" absPos="9288" name="LBP" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22905" pos="2788.000000" absPos="9288" name="LBP" dir="up" profileRef="sppr8" vMax="200"/>
+            <speedChange id="spd22907" pos="2900.000000" absPos="9400" name="Hastighet, Økt kj.hast. 90+10, Holmlia stasjon" dir="down" profileRef="sppr3" vMax="200"/>
+            <speedChange id="spu22909" pos="2900.000000" absPos="9400" name="Hastighet, Økt kj.hast. 90+10, Holmlia stasjon" dir="up" profileRef="sppr25" vMax="200"/>
+            <speedChange id="spd22915" pos="3142.000000" absPos="9642" name="Hastighet, Økt kj.hast. 115+5 H, Holmlia stasjon" dir="down" profileRef="sppr25" vMax="200"/>
+            <speedChange id="spu22917" pos="3142.000000" absPos="9642" name="Hastighet, Økt kj.hast. 115+5 H, Holmlia stasjon" dir="up" profileRef="sppr26" vMax="200"/>
+            <speedChange id="spd22919" pos="3143.000000" absPos="9643" name="Sporveksel/sporkryss, 623A, Holmlia stasjon" dir="down" profileRef="sppr26" vMax="200"/>
+            <speedChange id="spu22925" pos="3203.000000" absPos="9703" name="Sporveksel/sporkryss, 621B, Holmlia stasjon" dir="up" profileRef="sppr26" vMax="200"/>
+            <speedChange id="spd22991" pos="4000.000000" absPos="10500" dir="down" profileRef="sppr26" vMax="200"/>
+          </speedChanges>
+          <gradientChanges>
+            <gradientChange id="gr22491" pos="0.000000" absPos="6500" slope="11.400"/>
+            <gradientChange id="gr22361" pos="514.000000" absPos="7014" name="LBP" slope="0.000"/>
+            <gradientChange id="gr22365" pos="574.000000" absPos="7074" name="LBP" slope="2.400"/>
+            <gradientChange id="gr22373" pos="694.000000" absPos="7194" name="LBP" slope="0.000"/>
+            <gradientChange id="gr22379" pos="814.000000" absPos="7314" name="LBP" slope="2.200"/>
+            <gradientChange id="gr22395" pos="935.000000" absPos="7435" name="LBP" slope="5.200"/>
+            <gradientChange id="gr22399" pos="995.000000" absPos="7495" name="LBP" slope="12.000"/>
+            <gradientChange id="gr22403" pos="1105.000000" absPos="7605" name="LBP" slope="10.000"/>
+            <gradientChange id="gr22407" pos="1268.000000" absPos="7768" name="LBP" slope="11.000"/>
+            <gradientChange id="gr22411" pos="1409.000000" absPos="7909" name="LBP" slope="11.400"/>
+            <gradientChange id="gr22431" pos="1636.000000" absPos="8136" name="LBP" slope="9.200"/>
+            <gradientChange id="gr22435" pos="1729.000000" absPos="8229" name="LBP" slope="7.100"/>
+            <gradientChange id="gr22439" pos="1818.000000" absPos="8318" name="LBP" slope="9.400"/>
+            <gradientChange id="gr22451" pos="1932.000000" absPos="8432" name="LBP" slope="10.900"/>
+            <gradientChange id="gr22871" pos="2032.000000" absPos="8532" name="LBP" slope="7.500"/>
+            <gradientChange id="gr22875" pos="2141.000000" absPos="8641" name="LBP" slope="4.800"/>
+            <gradientChange id="gr22883" pos="2409.000000" absPos="8909" name="LBP" slope="12.300"/>
+            <gradientChange id="gr22901" pos="2570.000000" absPos="9070" name="LBP" slope="11.400"/>
+            <gradientChange id="gr22905" pos="2788.000000" absPos="9288" name="LBP" slope="10.300"/>
+            <gradientChange id="gr22913" pos="3140.000000" absPos="9640" name="LBP" slope="10.600"/>
+            <gradientChange id="gr22933" pos="3466.000000" absPos="9966" name="LBP" slope="11.900"/>
+            <gradientChange id="gr22939" pos="3666.000000" absPos="10166" name="LBP" slope="2.700"/>
+            <gradientChange id="gr22947" pos="3764.000000" absPos="10264" name="LBP" slope="2.500"/>
+          </gradientChanges>
+          <radiusChanges>
+            <radiusChange id="ra22491" pos="0.000000" absPos="6500" radius="0.000000"/>
+          </radiusChanges>
+          <tunnels>
+            <tunnel id="tn22443" pos="1833.000000" absPos="8333" name="Tunnel, Sole, h-hovedspor, Ljan - Holmlia" dir="up" length="73.000000" crossSection="40.000000"/>
+          </tunnels>
+        </trackElements>
+        <ocsElements>
+          <signals>
+            <signal id="si22381" pos="857.000000" absPos="7357" dir="up" name="L 623" ocpStationRef="ocp-LJA" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si22389" pos="861.000000" absPos="7361" dir="down" name="UB 622" ocpStationRef="ocp-LJA" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si22417" pos="1582.000000" absPos="8082" dir="up" name="A 637" ocpStationRef="ocp-LBU" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si22425" pos="1598.000000" absPos="8098" dir="down" name="UB 628" ocpStationRef="ocp-LBU" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si22887" pos="2501.000000" absPos="9001" dir="up" name="A 631" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si22895" pos="2505.000000" absPos="9005" dir="down" name="UM 634" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si22949" pos="3811.000000" absPos="10311" dir="up" name="L 633" ocpStationRef="ocp-HMA" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+            <signal id="si22957" pos="3815.000000" absPos="10315" dir="down" name="UB 632" ocpStationRef="ocp-HMA" type="combined" function="blocking" sight="400" virtual="false" code="2"/>
+          </signals>
+          <trainDetectionElements>
+            <trackCircuitBorder id="tcb22688" pos="167.000000" absPos="6667" name="623" dir="down" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22689" pos="167.000000" absPos="6667" name="625" dir="up" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22697" pos="452.000000" absPos="6952" name="625" dir="down" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22698" pos="452.000000" absPos="6952" name="627" dir="up" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22387" pos="861.000000" absPos="7361" name="627" dir="down" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22389" pos="861.000000" absPos="7361" name="630" dir="up" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22423" pos="1598.000000" absPos="8098" name="630" dir="down" ocpStationRef="ocp-LJA"/>
+            <trackCircuitBorder id="tcb22425" pos="1598.000000" absPos="8098" name="632" dir="up"/>
+            <trackCircuitBorder id="tcb22887" pos="2501.000000" absPos="9001" name="632" dir="down"/>
+            <trackCircuitBorder id="tcb22889" pos="2501.000000" absPos="9001" name="634" dir="up" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb22911" pos="3140.000000" absPos="9640" name="634" dir="down" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb22913" pos="3140.000000" absPos="9640" name="637" dir="up" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb26219" pos="3276.000000" absPos="9713" name="637" dir="down" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb26220" pos="3276.000000" absPos="9713" name="639" dir="up" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb22955" pos="3815.000000" absPos="10315" name="639" dir="down" ocpStationRef="st28536"/>
+            <trackCircuitBorder id="tcb22957" pos="3815.000000" absPos="10315" name="643" dir="up"/>
+            <trackCircuitBorder id="tcb22957-X" pos="3915.000000" absPos="10315" name="643" dir="both"/>
+          </trainDetectionElements>
+          <balises>
+            <balise id="ba23944" pos="646.000000" absPos="7146" dir="down" name="Balise Rep. HS/FS 624/724"/>
+            <balise id="ba23956" pos="767.000000" absPos="7267" dir="up" name="Balise Rep. HS/FS 623"/>
+            <balise id="ba23690" pos="858.000000" absPos="7358" dir="up" name="Balise HS/FS 623"/>
+            <balise id="ba23699" pos="860.000000" absPos="7360" dir="down" name="Balise HS/FS 622"/>
+            <balise id="ba23719" pos="1583.000000" absPos="8083" dir="up" name="Balise HS/FS 637"/>
+            <balise id="ba23732" pos="1597.000000" absPos="8097" dir="down" name="Balise HS/FS 628"/>
+            <balise id="ba23975" pos="2137.000000" absPos="8637" dir="down" name="Balise Rep. HS/FS 628"/>
+            <balise id="ba23983" pos="2371.000000" absPos="8871" dir="up" name="Balise Rep. HS/FS 631"/>
+            <balise id="ba23760" pos="2502.000000" absPos="9002" dir="up" name="Balise HS/FS 631"/>
+            <balise id="ba23769" pos="2504.000000" absPos="9004" dir="down" name="Balise HS/FS 634"/>
+            <balise id="ba24011" pos="3531.000000" absPos="10031" dir="down" name="Balise Rep. HS/FS 634/734"/>
+            <balise id="ba24019" pos="3723.000000" absPos="10223" dir="up" name="Balise Rep. HS/FS 633"/>
+            <balise id="ba23797" pos="3812.000000" absPos="10312" dir="up" name="Balise HS/FS 633"/>
+            <balise id="ba23806" pos="3814.000000" absPos="10314" dir="down" name="Balise HS/FS 632"/>
+          </balises>
+          <stopPosts>
+            <stopPost id="sp24701" pos="670.000000" absPos="7170" dir="down" name="Stopp LJA" trainLength="300" code="10"/>
+            <stopPost id="sp22879" pos="2170.000000" absPos="8670" dir="down" trainLength="300" code="10"/>
+            <stopPost id="sp22881" pos="2409.000000" absPos="8909" dir="up" name="LBP" trainLength="300" code="10"/>
+            <stopPost id="sp22941" pos="3700.000000" absPos="10200" dir="up" code="21"/>
+            <stopPost id="sp22943" pos="3700.000000" absPos="10200" dir="down" code="21"/>
+          </stopPosts>
+        </ocsElements>
+      </track>
+    </tracks>
+  </infrastructure>
+</railml>

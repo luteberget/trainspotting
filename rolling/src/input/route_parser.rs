@@ -149,6 +149,7 @@ pub fn parse_route(i: &mut usize,
         let entry = lookup(objnames, &identifier(i, t)?)?;
         symbol(i, t, "exit")?;
         let _exit = identifier(i, t)?;
+        println!("to parse entrysection in route {}", route_name);
         symbol(i, t, "entrysection")?;
         let entrysection = lookup(objnames, &identifier(i, t)?)?;
         symbol(i, t, "length")?;
@@ -283,6 +284,7 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
                 line += 1;
             }
             c => {
+                println!("Unexpected char \"{}\"",c.escape_debug());
                 return Err(LexerError::UnexpectedChar {
                     i: line,
                     c: c.to_string(),

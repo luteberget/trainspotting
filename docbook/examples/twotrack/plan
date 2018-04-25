@@ -1,4 +1,0 @@
-train t1 l=100.0 a=0.5 b=0.5 v=10.0 ri
-route rleft
-wait 110.0
-route releft

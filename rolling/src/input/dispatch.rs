@@ -10,7 +10,7 @@ pub struct Dispatch {
 
 #[derive(Debug)]
 pub enum DispatchAction {
-    Wait(f64),
+    Wait(Option<f64>),
     Route(Name),
     Train(Name, TrainParams, Name), // train name, train params, entry route name
 }
@@ -34,7 +34,9 @@ pub enum ParseError {
 ///
 pub fn parse_dispatch(input: &str) -> Result<Dispatch, ParseError> {
     let mut actions = Vec::new();
-    let wait_re = Regex::new(r"^\s*wait\s*([\d\.]+)\s*$")
+    let wait_time_re = Regex::new(r"^\s*wait\s*([\d\.]+)\s*$")
+        .map_err(|e| ParseError::RegexError(format!("{:?}",e)))?;
+    let wait_re = Regex::new(r"^\s*wait\s*$")
         .map_err(|e| ParseError::RegexError(format!("{:?}",e)))?;
     let route_re = Regex::new(r"^\s*route\s*([\w\.]+)\s*$")
         .map_err(|e| ParseError::RegexError(format!("{:?}",e)))?;
@@ -46,9 +48,13 @@ pub fn parse_dispatch(input: &str) -> Result<Dispatch, ParseError> {
             (?P<route>\w+) \s*
             $").map_err(|e| ParseError::RegexError(format!("{:?}", e)))?;
     for line in input.lines() {
-        if let Some(groups) = wait_re.captures(line) {
+        if let Some(groups) = wait_time_re.captures(line) {
             let time = groups[1].parse::<f64>().map_err(|_e| ParseError::NumberError)?;
-            actions.push(DispatchAction::Wait(time));
+            actions.push(DispatchAction::Wait(Some(time)));
+            continue;
+        }
+        if let Some(_) = wait_re.captures(line) {
+            actions.push(DispatchAction::Wait(None));
             continue;
         }
         if let Some(groups) = route_re.captures(line) {

@@ -1,4 +1,0 @@
-# Rolling
-
-![Rolling](rolling.png)
-

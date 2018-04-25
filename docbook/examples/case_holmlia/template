@@ -1,0 +1,26 @@
+# Holmlia
+
+Station converted from Bane NOR's model of the Norweigan national rail network.
+This example demonstrates conversion from railML for a station with a diamond
+crossing. The diamond crossing is not yet supported.
+
+![Holmlia](holmlia.png "Holmlia")
+
+## View
+
+$RAILWAYVIEW
+
+## Usage
+
+The view above solves the following usage scenario:
+
+```haskell
+$RAILWAYUSAGE
+```
+
+... by presenting the following dispatch plan:
+
+```haskell
+$RAILWAYDISPATCH
+```
+

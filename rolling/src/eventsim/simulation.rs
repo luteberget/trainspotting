@@ -170,6 +170,16 @@ impl<T> Simulation<T> {
     }
 
 
+    pub fn advance_to(&mut self, ev :EventId) {
+        while let Some(&QueuedEvent { .. }) = self.scheduler.queue.peek() {
+            if let EventState::Ready = self.scheduler.events[ev].state {
+                self.step();
+            } else {
+                break;
+            }
+        }
+    }
+
     pub fn advance_by(&mut self, dt: f64) {
         let target = OrderedFloat::from(*self.time() + dt);
         while let Some(&QueuedEvent { time, .. }) = self.scheduler.queue.peek() {
@@ -178,10 +188,13 @@ impl<T> Simulation<T> {
             }
             self.step();
         }
-        let time = *self.time();
-        if let Some(ref mut logger) = self.logger {
-            logger(*target - time);
-        }
+
+        // ????
+        // let time = *self.time();
+        // if let Some(ref mut logger) = self.logger {
+        //     logger(*target - time);
+        // }
+
         self.scheduler.time = target;
     }
 
