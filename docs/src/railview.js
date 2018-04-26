@@ -524,3 +524,24 @@ function lerp(a,b,x) {
 function y_vector(a) { return [0.0, a[1]]; }
 
 set_t(0.0);
+
+function animate_from(last_t,last_real_t,factor) {
+    console.log("ANIMATE");
+    console.log(last_t);
+    console.log(last_real_t);
+    console.log(factor);
+    var real_t = (new Date()).getTime() / 1000.0;
+    var real_dt = real_t - last_real_t;
+    var dt = real_dt * factor;
+    var t = last_t + dt;
+    set_t(t);
+    requestAnimationFrame(function() {
+        animate_from(t,real_t,factor);
+    });
+}
+
+function animate(factor) {
+    let t = 0.0;
+    let real_t = (new Date()).getTime() / 1000.0;
+    animate_from(t,real_t,factor);
+}
