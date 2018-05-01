@@ -1,6 +1,7 @@
 # Infrastructure
 
-The `rolling` infrastructure model is conceptually a double node graph, which is similar to a graph, with the difference that each node has two sides. A train entering a node from an edge connected to one side of the node can only exit the node through edges on the opposide side of the node. 
+The `rolling` infrastructure model uses a double node graph model. To understand the motivation for the double node graph, consider the 
+railway junction in the figure below.
 
 ![Dgraph 1](dgraph1.png)
 
@@ -11,6 +12,8 @@ On the railway network, paths p-q-r and p-q-u exist, in both directions. However
 When we extend the graph concept to include two sides of each node, there is no longer a path r-q-u.
 
 ![Dgraph 3](dgraph3.png)
+
+So, the double node graph is similar to a graph, with the difference that each node has two sides. A train entering a node from an edge connected to one side of the node can only exit the node through edges on the opposide side of the node. 
 
 This model allows a sense of *local directedness* without deciding on a global direction concept such as up/down or outgoing/incoming often used in railway engineering. A global directionality requires considering special cases to handle railway networks where 
 a train's up/down direction may change without the train reversing its direction, such as the [balloon loop example](examples/baloon.md).
@@ -73,4 +76,43 @@ The syntax is `boundary <node>`.
 Example:
 ```haskell
 boundary n1
+```
+
+## Objects
+
+Each node may contain zero or more objects, which appear within the parentheses after the node name in the `node` statement.
+
+The possible object types are:
+
+* **Signals**: a signal with the given name is located at the current node. Note that this has no actual impact on trains, as only the `sight` statements can add the signal to the train's communication list. This statement is used for visualization purposes.
+  
+  Syntax: `signal <name>` 
+  
+  Example: `signal sig1`
+
+* **Enter section**: a train whose front passes the current node will enter a detection section. Note that a train detector (e.g. axle counter) or a track circuit border will typically need to be translated into four `enter`/`exit` statements, an `enter` for the section on each side of the detector, and an `exit` for each section on the opposite sides. The rationale for this representation is that it is a low-level instruction that the train can simply read and execute, and that is allows for more exotic train detection setups, such as overlapping sections.
+
+  Syntax: `enter <section-name>` 
+  
+  Example: `enter section1`
+
+* **Exit section**: a train whose back passes the current node will exit a detection section.
+
+  Syntax: `exit <section-name>` 
+  
+  Example: `exit section1`
+
+* **Sight**: after visiting the current node, trains can *see* a given signal for a given travel distance. Typically, this node will appear at a given distance before a signal, and the given distance will be the travel distance from the sight object's node to the signal.
+
+  Syntax: `sight <signal-name> <distance>` 
+  
+  Example: `signal sig1 400.0`
+
+*Switches* may also be considered to be objects, but appear in their own statements since they also relate nodes (see the [switches section](#switches)).
+
+An example of various objecs on a double node statement:
+
+```haskell
+node n1(enter section1, exit section2)
+    -n2(signal sig1, sight sig2 800.0, exit section1, enter section2)
 ```
