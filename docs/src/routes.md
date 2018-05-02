@@ -1,8 +1,8 @@
-# Interlocking
+# Interlocking 🔒
 
-The safety-critical low-level control systems in railways tasked with 
+An **interlocking** is the safety-critical low-level control system in railways, tasked with ensuring that all actions involving signals and movable elements are performed in a safe manner.
 
-Routes are the **atomic unit of allocation** from the dispatcher's point of view.
+The main operating mode of the interlocking is to take requests for **setting a route**, and then moving track elements and giving signals if this route is safe to set.  Routes are the **atomic unit of allocation** from the dispatcher's point of view.
 Note that the atomic unit of de-allocation is typically smaller than the route, 
 a feature of interlockings which is called *partial release*.
 
@@ -69,7 +69,7 @@ route are de-allocated. The syntax is as follows
     which cease to be allocated after the trigger event has occurred.
 
   Note that if no releases are specified, a default release condition is added which
-  frees the whole length and all resources after the last 
+  frees the whole length and all resources, using the last section in the path as the trigger.
 
 
 ## Entry / exit routes
@@ -103,5 +103,5 @@ Overlaps are currently not supported.
 
 ## Flank protection
 
-
+Flank protection can be implemented by adding requirements of exclusive allocation of resources such as detection sections and switches.
 

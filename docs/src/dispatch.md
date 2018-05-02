@@ -1,4 +1,4 @@
-# Dispatch
+# Dispatch 👋
 
 The dispatch plan file represents a timeline of the following types of events:
 
@@ -9,7 +9,7 @@ The `train` and `route` statements can be seen as launching concurrent processes
 
 ## Statements
 
-### Train
+### Train 🚆
 
 A train starting at the current time is described by the following syntax:
 
@@ -35,7 +35,7 @@ The train, seen as a process, executes in three stages:
    * receiving updated movement authority from signal which are in sight
 3. **Finished**: when the train has exited through a model boundary, it is removed from the model and considered finished.
 
-### Route
+### Route 🛤
 
 A route request dispatches at the current time is represented using the following syntax:
 
@@ -45,7 +45,7 @@ route <route-name>
 
 This statement starts a route activation process. The process will wait until all resources are available before reserving the resources and starting to move any movable elements. This means that two conflicting routes may be requested, after which the first route's activation will finish, and the second route to be requested will remain waiting until all required resources are available.
 
-### Wait
+### Wait ⏱
 
 Passing time is represented by a separate statement:
 

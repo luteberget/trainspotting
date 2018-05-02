@@ -1,4 +1,4 @@
-# Infrastructure
+# Infrastructure 🌍
 
 The `rolling` infrastructure model uses a double node graph model. To understand the motivation for the double node graph, consider the 
 railway junction in the figure below.
@@ -26,7 +26,7 @@ Each side of the node may have a set of *objects*, which are read by a passing t
 
 The DGraph input file format consists of statements separated by whitespace which describe the double nodes, both sides together, and various edge types with corresponding lengths.
 
-## Nodes
+## Nodes 🔶
 
 The syntax for describing nodes is as follows:
 
@@ -42,7 +42,7 @@ node n3(enter sec1)-n4
 ```
 
 
-## Edges
+## Edges ↔
 
 Edges are either **linear**, **switches** or **boundaries**. Each node may only be mentioned in one edge statement. Nodes which are not mentioned in edge statements are assumed to be the end of a track.
 
@@ -84,25 +84,25 @@ Each node may contain zero or more objects, which appear within the parentheses 
 
 The possible object types are:
 
-* **Signals**: a signal with the given name is located at the current node. Note that this has no actual impact on trains, as only the `sight` statements can add the signal to the train's communication list. This statement is used for visualization purposes.
+* **Signal 🚦**: a signal with the given name is located at the current node. Note that this has no actual impact on trains, as only the `sight` statements can add the signal to the train's communication list. This statement is used for visualization purposes.
   
   Syntax: `signal <name>` 
   
   Example: `signal sig1`
 
-* **Enter section**: a train whose front passes the current node will enter a detection section. Note that a train detector (e.g. axle counter) or a track circuit border will typically need to be translated into four `enter`/`exit` statements, an `enter` for the section on each side of the detector, and an `exit` for each section on the opposite sides. The rationale for this representation is that it is a low-level instruction that the train can simply read and execute, and that is allows for more exotic train detection setups, such as overlapping sections.
+* **Enter section ⬇**: a train whose front passes the current node will enter a detection section. Note that a train detector (e.g. axle counter) or a track circuit border will typically need to be translated into four `enter`/`exit` statements, an `enter` for the section on each side of the detector, and an `exit` for each section on the opposite sides. The rationale for this representation is that it is a low-level instruction that the train can simply read and execute, and that is allows for more exotic train detection setups, such as overlapping sections.
 
   Syntax: `enter <section-name>` 
   
   Example: `enter section1`
 
-* **Exit section**: a train whose back passes the current node will exit a detection section.
+* **Exit section ⬆**: a train whose back passes the current node will exit a detection section.
 
   Syntax: `exit <section-name>` 
   
   Example: `exit section1`
 
-* **Sight**: after visiting the current node, trains can *see* a given signal for a given travel distance. Typically, this node will appear at a given distance before a signal, and the given distance will be the travel distance from the sight object's node to the signal.
+* **Sight 👁**: after visiting the current node, trains can *see* a given signal for a given travel distance. Typically, this node will appear at a given distance before a signal, and the given distance will be the travel distance from the sight object's node to the signal.
 
   Syntax: `sight <signal-name> <distance>` 
   
