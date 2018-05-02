@@ -189,11 +189,10 @@ impl<T> Simulation<T> {
             self.step();
         }
 
-        // ????
-        // let time = *self.time();
-        // if let Some(ref mut logger) = self.logger {
-        //     logger(*target - time);
-        // }
+        let time = *self.time();
+        if let Some(ref mut logger) = self.logger {
+            logger(*target - time);
+        }
 
         self.scheduler.time = target;
     }
