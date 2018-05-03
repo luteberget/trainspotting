@@ -18,6 +18,8 @@ Common flags:
 
 ## Model
 
+![Verification model](vmodel.png "Verification model")
+
 The required inputs to the `railperfcheck` planner are:
 
 * The `INFRFILE` argument takes a file name with the same format as

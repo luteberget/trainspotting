@@ -1,5 +1,6 @@
 # Dispatch mode (simulation)
 
+
 ## Command-line interface
 
 ```
@@ -27,6 +28,8 @@ ARGS:
 ```
 
 ## Model
+
+![Model](model_small.png "Model")
 
 The input model for `rolling` consists of three main components:
 
