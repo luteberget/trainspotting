@@ -39,7 +39,7 @@ src/%-vis.js: $(GRIDVIS) %/graph
 	[ -f $*/nooptgrid ] && $(GRIDVIS) -n $*/graph > src/$*-vis.js || $(GRIDVIS) $*/graph > src/$*-vis.js
 
 %/plan: $(RAILPERFCHECK) %/infrastructure %/routes %/usage
-	$(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan
+	$(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan | tee $*/railperfchecklog
 
 %/infrastructure %/routes: $(ROLLINGRAILML) %/railmlinfrastructure
 	$(ROLLINGRAILML) $*/railmlinfrastructure -o $*/infrastructure -r $*/routes
