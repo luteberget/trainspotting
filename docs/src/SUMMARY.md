@@ -33,6 +33,11 @@
   - [Asker](./examples/case_asker.md)
   - [Arna A20](./examples/case_arna.md)
   - [Arna A20 by hand](./examples/case_arna_byhand.md)
+- [Test cases](./testcases.md)
+  - [Trivial](./examples/gen_trivial.md)
+  - [Two track](./examples/gen_twotrack.md)
+  - [Five tracks](./examples/gen_5track.md)
+  - [3x2 tracks](./examples/gen_3by2.md)
 
 <!--
   - [Through train + pendulum](./examples/pendulum.md)
