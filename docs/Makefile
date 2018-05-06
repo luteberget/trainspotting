@@ -3,6 +3,7 @@ examples = $(addsuffix .md, $(addprefix src/,\
 
 example_history = $(patsubst %.md,%-history.js, $(examples))
 example_vis     = $(patsubst %.md,%-vis.js, $(examples))
+example_plans   = $(patsubst src/%.md,%/plan, $(examples))
 
 ROLLING = ../rolling/target/debug/rolling
 GRIDVIS = ../gridvis/gridjson
@@ -12,6 +13,9 @@ ROLLINGRAILML = ../rollingrailml/target/debug/rollingrailml
 .PHONY: book
 book: $(examples) $(example_history) $(example_vis)
 	mdbook build
+
+.PHONY: time
+time: $(example_plans)
 
 src/%.md: src/%-history.js src/%-vis.js %/template %/infrastructure %/routes %/plan
 	sed \
@@ -39,7 +43,7 @@ src/%-vis.js: $(GRIDVIS) %/graph
 	[ -f $*/nooptgrid ] && $(GRIDVIS) -n $*/graph > src/$*-vis.js || $(GRIDVIS) $*/graph > src/$*-vis.js
 
 %/plan: $(RAILPERFCHECK) %/infrastructure %/routes %/usage
-	$(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan | tee $*/railperfchecklog
+	{ time $(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan | tee $*/railperfchecklog > /dev/null ; } 2> $*/time
 
 %/infrastructure %/routes: $(ROLLINGRAILML) %/railmlinfrastructure
 	$(ROLLINGRAILML) $*/railmlinfrastructure -o $*/infrastructure -r $*/routes
