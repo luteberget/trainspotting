@@ -68,7 +68,8 @@ main = do
               putStrLn (show usage)
 
               let numTrains = length (Usage.movements usage) -- TODO
-              let maxSteps = numTrains^2 +3
+              let maxminSteps = numTrains +3
+              let maxFailedSteps = 3
 
               let solverInput = Convert.solverInput routes usage
               putStrLn "ROUTES"
@@ -83,7 +84,7 @@ main = do
               sat_timer_sum <- newIORef 0
               des_timer_sum <- newIORef 0
 
-              final <- Solver.plan maxSteps solverInput $ \plan -> do
+              final <- Solver.plan maxminSteps maxFailedSteps solverInput $ \plan -> do
                 t <- getCPUTime
                 lastt <- readIORef sat_timer
                 modifyIORef sat_timer_sum ((+) (t-lastt))

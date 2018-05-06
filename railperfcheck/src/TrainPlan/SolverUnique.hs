@@ -272,9 +272,9 @@ endStateCond s = [ l | (_, l) <- bornBefore s] ++
                  [ l | (_, ls) <- progressBefore s, (_, l) <- ls ] ++
                  [ l | (_, ls) <- visitBefore s, (_, l) <- ls ]
 
-plan :: Int -> Problem -> (RoutePlan -> IO Bool) -> IO (Maybe RoutePlan)
-plan maxN problem@(routes,partialroutes,trains,orderings) test = withNewSolver $ \s -> do
-  solveNewState s 0 []
+plan :: Int -> Int -> Problem -> (RoutePlan -> IO Bool) -> IO (Maybe RoutePlan)
+plan nBefore nAfter problem@(routes,partialroutes,trains,orderings) test = withNewSolver $ \s -> do
+  solveNewState Nothing s 0 []
 
   where
     nodeMap :: NodeMap
@@ -283,13 +283,13 @@ plan maxN problem@(routes,partialroutes,trains,orderings) test = withNewSolver $
                                          | route <- routes
                                          , node <- routePartContains route ]
 
-    solveNewState :: Solver -> Int -> [State] -> IO (Maybe RoutePlan)
-    solveNewState s n states = do
+    solveNewState :: Maybe Int -> Solver -> Int -> [State] -> IO (Maybe RoutePlan)
+    solveNewState failedSteps s n states = do
       state <- newState s problem nodeMap (listToMaybe (reverse states))
-      solveAndTest s (n+1) (states ++ [state])
+      solveAndTest failedSteps s (n+1) (states ++ [state])
 
-    solveAndTest :: Solver -> Int -> [State] -> IO (Maybe RoutePlan)
-    solveAndTest s n states = do
+    solveAndTest :: Maybe Int ->  Solver -> Int -> [State] -> IO (Maybe RoutePlan)
+    solveAndTest failedSteps s n states = do
       putStrLn $ "*** Solving for n=" ++ (show n) 
       b <- SAT.solve s (endStateCond (last states))
       if b then do
@@ -305,12 +305,17 @@ plan maxN problem@(routes,partialroutes,trains,orderings) test = withNewSolver $
           -- Remove this solution
           addClause s [ neg (x .= v) | (st,stv) <- zip states schedule 
                                      , ((_,x),(_,v)) <- zip (occupation st) stv]
-          solveAndTest s n states
+          solveAndTest (Just 0) s n states
       else do
         putStrLn ("*** No more solutions for n=" ++ (show n))
-        if n < maxN then do
+
+        let increase = case failedSteps of
+              Just f  -> f < nAfter
+              Nothing -> n < nBefore
+
+        if increase then do
           putStrLn "*** Increasing transitions bound"
-          solveNewState s n states
+          solveNewState (fmap (+1) failedSteps) s n states
         else do
           putStrLn "*** Maximum transition count reached"
           return Nothing
