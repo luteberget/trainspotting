@@ -46,7 +46,8 @@ splitRoutes route =  [ SplitRoute (routeName route, i) entry exit l res nodes
                      | (i, (entry,exit), (Release l res)) <-
                             zip3 [0..] (succPairs signals) thisReleases ]
   where
-    thisReleases = trace ("RELEASES for " ++ (show route) ++ "---"  ++ (show (routeReleases route))) (routeReleases route)
+    --thisReleases = trace ("RELEASES for " ++ (show route) ++ "---"  ++ (show (routeReleases route))) (routeReleases route)
+    thisReleases = routeReleases route
     n = length (routeReleases route)
     signals = [routePointConv (routeEntry route)] ++ 
             (fmap (\j -> Just ((routeName route) ++ "__i" ++ (show j))) [1..(n-1)]) ++ 

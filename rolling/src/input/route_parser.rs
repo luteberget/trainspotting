@@ -149,7 +149,7 @@ pub fn parse_route(i: &mut usize,
         let entry = lookup(objnames, &identifier(i, t)?)?;
         symbol(i, t, "exit")?;
         let _exit = identifier(i, t)?;
-        println!("to parse entrysection in route {}", route_name);
+        // println!("to parse entrysection in route {}", route_name);
         symbol(i, t, "entrysection")?;
         let entrysection = lookup(objnames, &identifier(i, t)?)?;
         symbol(i, t, "length")?;

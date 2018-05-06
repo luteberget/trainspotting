@@ -298,7 +298,7 @@ plan nBefore nAfter problem@(routes,partialroutes,trains,orderings) test = withN
                                              return (r,v)
                                         | (r,x) <- occupation state ]
                              | state <- states ] 
-        putStrLn $ showSchedule schedule
+        --putStrLn $ showSchedule schedule
         accept <- test schedule
         if accept then return (Just schedule)
         else do

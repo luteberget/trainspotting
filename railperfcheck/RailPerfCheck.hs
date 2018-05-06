@@ -64,22 +64,22 @@ main = do
                         putStrLn err
                         exitFailure
             Right usage -> do
-              putStrLn (show routes)
-              putStrLn (show usage)
+              -- putStrLn (show routes)
+              -- putStrLn (show usage)
 
               let numTrains = length (Usage.movements usage) -- TODO
               let maxminSteps = numTrains +3
               let maxFailedSteps = 3
 
               let solverInput = Convert.solverInput routes usage
-              putStrLn "ROUTES"
-              sequence_ [ putStrLn $ " *> " ++ (show r) | r <- (\(a,_,_,_) -> a) solverInput ]
-              putStrLn $ "PARTIAL ROUTES" ++ (show ((\(_,b,_,_) -> b) solverInput))
+              -- putStrLn "ROUTES"
+              -- sequence_ [ putStrLn $ " *> " ++ (show r) | r <- (\(a,_,_,_) -> a) solverInput ]
+              -- putStrLn $ "PARTIAL ROUTES" ++ (show ((\(_,b,_,_) -> b) solverInput))
 
               let run d = Sim.dispatchTiming simInf simRoutes d
               let eval h = Timing.evaluate usage h
 
-              putStrLn (show solverInput)
+              -- putStrLn (show solverInput)
               sat_timer <- newIORef =<< getCPUTime
               sat_timer_sum <- newIORef 0
               des_timer_sum <- newIORef 0
@@ -89,7 +89,7 @@ main = do
                 lastt <- readIORef sat_timer
                 modifyIORef sat_timer_sum ((+) (t-lastt))
                 let dispatchString = Convert.dispatchPlan solverInput plan
-                putStrLn dispatchString
+                -- putStrLn dispatchString
                 Sim.withDispatch dispatchString $ \dispatch -> do
                   (sim_t, history) <- time (run dispatch)
                   modifyIORef des_timer_sum ((+) sim_t)

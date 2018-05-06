@@ -390,7 +390,7 @@ pub fn model_from_ast(stmts: &[Statement])
                 };
                 let sw_idx =
                     insert_object(&mut model.objects, &mut model.object_names, switch, name);
-                println!("PARSED switch {:?}", model.objects[sw_idx]);
+                //println!("PARSED switch {:?}", model.objects[sw_idx]);
                 model.nodes[node_idx].edges = Edges::Switchable(sw_idx);
                 model.nodes[l1idx].edges = Edges::Single(node_idx, l1dist);
                 model.nodes[l2idx].edges = Edges::Single(node_idx, l2dist);
