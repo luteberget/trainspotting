@@ -67,7 +67,7 @@ switch sw1 left n1-(n2 200.0, n3 220.0)
 
 ### Boundaries
 
-Boundaries are nodes where a train may enter or leave the model. When entering, the train's front simply appears at the node, while the body of the train is still outside of the model. When leaving, the front of the train visits the boundary node and the train travels on until the back of the train visits the boundary node, after which the train is considered to be finished.
+Boundaries are nodes where a train may enter or leave the model. When entering, the train's front simply appears at the node, while the body of the train is still outside of the model. When leaving, the front of the train visits the boundary node and the train travels on until the rear of the train visits the boundary node, after which the train is considered to be finished.
 
 The name of the boundary node is used in dispatch plans and in route files to refer to the location of the model boundary.
 
@@ -96,7 +96,7 @@ The possible object types are:
   
   Example: `enter section1`
 
-* **Exit section ⬆**: a train whose back passes the current node will exit a detection section.
+* **Exit section ⬆**: a train whose rear passes the current node will exit a detection section.
 
   Syntax: `exit <section-name>` 
   
