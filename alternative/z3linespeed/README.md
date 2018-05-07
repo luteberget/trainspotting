@@ -6,22 +6,22 @@ is a small subset of constraints which are relevant in the
 tools.
 
 The solver fails, returning `unknown`. There might be errors in the encoding of the problem,
-but how one investigate this?
+but how can one investigate this?
 
 Tested on :
 * Z3 version 4.6 
   ```
-Solving took  0.0152609348297
-unknown
-[]
-Z3 version (4L, 6L, 0L, 0L)
+  Solving took  0.0152609348297
+  unknown
+  []
+  Z3 version (4L, 6L, 0L, 0L)
   ```
 * Z3 version 4.5
   ```
-Solving took  0.0147528648376
-unknown
-[]
-Z3 version (4L, 5L, 0L, 0L)
+  Solving took  0.0147528648376
+  unknown
+  []
+  Z3 version (4L, 5L, 0L, 0L)
   ```
 
 Some explanations of non-linear real arithmetic in Z3:
