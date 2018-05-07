@@ -1,0 +1,1565 @@
+(set-info :status unknown)
+(declare-fun t0 () Real)
+(declare-fun d0 () Real)
+(declare-fun t1 () Real)
+(declare-fun d1 () Real)
+(declare-fun t2 () Real)
+(declare-fun d2 () Real)
+(declare-fun t3 () Real)
+(declare-fun d3 () Real)
+(declare-fun t4 () Real)
+(declare-fun d4 () Real)
+(declare-fun t5 () Real)
+(declare-fun d5 () Real)
+(declare-fun t6 () Real)
+(declare-fun d6 () Real)
+(declare-fun t7 () Real)
+(declare-fun d7 () Real)
+(declare-fun t8 () Real)
+(declare-fun d8 () Real)
+(declare-fun t9 () Real)
+(declare-fun d9 () Real)
+(declare-fun |(running_time)0_0| () Real)
+(declare-fun |(d)0_0| () Real)
+(declare-fun |(a)0_0| () Real)
+(declare-fun |(v)0_0| () Real)
+(declare-fun |(running_time)9_1| () Real)
+(declare-fun |(moving)0_dur| () Real)
+(declare-fun |(moving)1_dur| () Real)
+(declare-fun |(moving)2_dur| () Real)
+(declare-fun |(moving)3_dur| () Real)
+(declare-fun |(moving)4_dur| () Real)
+(declare-fun |(moving)5_dur| () Real)
+(declare-fun |(moving)6_dur| () Real)
+(declare-fun |(moving)7_dur| () Real)
+(declare-fun |(moving)8_dur| () Real)
+(declare-fun |(moving)9_dur| () Real)
+(declare-fun |(accelerate)0_dur| () Real)
+(declare-fun |(accelerate)1_dur| () Real)
+(declare-fun |(accelerate)2_dur| () Real)
+(declare-fun |(accelerate)3_dur| () Real)
+(declare-fun |(accelerate)4_dur| () Real)
+(declare-fun |(accelerate)5_dur| () Real)
+(declare-fun |(accelerate)6_dur| () Real)
+(declare-fun |(accelerate)7_dur| () Real)
+(declare-fun |(accelerate)8_dur| () Real)
+(declare-fun |(accelerate)9_dur| () Real)
+(declare-fun |(decelerate)0_dur| () Real)
+(declare-fun |(decelerate)1_dur| () Real)
+(declare-fun |(decelerate)2_dur| () Real)
+(declare-fun |(decelerate)3_dur| () Real)
+(declare-fun |(decelerate)4_dur| () Real)
+(declare-fun |(decelerate)5_dur| () Real)
+(declare-fun |(decelerate)6_dur| () Real)
+(declare-fun |(decelerate)7_dur| () Real)
+(declare-fun |(decelerate)8_dur| () Real)
+(declare-fun |(decelerate)9_dur| () Real)
+(declare-fun |(stop)0_dur| () Real)
+(declare-fun |(stop)1_dur| () Real)
+(declare-fun |(stop)2_dur| () Real)
+(declare-fun |(stop)3_dur| () Real)
+(declare-fun |(stop)4_dur| () Real)
+(declare-fun |(stop)5_dur| () Real)
+(declare-fun |(stop)6_dur| () Real)
+(declare-fun |(stop)7_dur| () Real)
+(declare-fun |(stop)8_dur| () Real)
+(declare-fun |(stop)9_dur| () Real)
+(declare-fun |(a)0_1| () Real)
+(declare-fun |(a)1_0| () Real)
+(declare-fun |(a)1_1| () Real)
+(declare-fun |(a)2_0| () Real)
+(declare-fun |(a)2_1| () Real)
+(declare-fun |(a)3_0| () Real)
+(declare-fun |(a)3_1| () Real)
+(declare-fun |(a)4_0| () Real)
+(declare-fun |(a)4_1| () Real)
+(declare-fun |(a)5_0| () Real)
+(declare-fun |(a)5_1| () Real)
+(declare-fun |(a)6_0| () Real)
+(declare-fun |(a)6_1| () Real)
+(declare-fun |(a)7_0| () Real)
+(declare-fun |(a)7_1| () Real)
+(declare-fun |(a)8_0| () Real)
+(declare-fun |(a)8_1| () Real)
+(declare-fun |(a)9_0| () Real)
+(declare-fun |(a)9_1| () Real)
+(declare-fun |(v)1_0| () Real)
+(declare-fun |(v)0_1| () Real)
+(declare-fun |(v)2_0| () Real)
+(declare-fun |(v)1_1| () Real)
+(declare-fun |(v)3_0| () Real)
+(declare-fun |(v)2_1| () Real)
+(declare-fun |(v)4_0| () Real)
+(declare-fun |(v)3_1| () Real)
+(declare-fun |(v)5_0| () Real)
+(declare-fun |(v)4_1| () Real)
+(declare-fun |(v)6_0| () Real)
+(declare-fun |(v)5_1| () Real)
+(declare-fun |(v)7_0| () Real)
+(declare-fun |(v)6_1| () Real)
+(declare-fun |(v)8_0| () Real)
+(declare-fun |(v)7_1| () Real)
+(declare-fun |(v)9_0| () Real)
+(declare-fun |(v)8_1| () Real)
+(declare-fun |(d)1_0| () Real)
+(declare-fun |(d)2_0| () Real)
+(declare-fun |(d)3_0| () Real)
+(declare-fun |(d)4_0| () Real)
+(declare-fun |(d)5_0| () Real)
+(declare-fun |(d)6_0| () Real)
+(declare-fun |(d)7_0| () Real)
+(declare-fun |(d)8_0| () Real)
+(declare-fun |(d)9_0| () Real)
+(declare-fun |(running_time)0_1| () Real)
+(declare-fun |(running_time)1_1| () Real)
+(declare-fun |(running_time)1_0| () Real)
+(declare-fun |(running_time)2_1| () Real)
+(declare-fun |(running_time)2_0| () Real)
+(declare-fun |(running_time)3_1| () Real)
+(declare-fun |(running_time)3_0| () Real)
+(declare-fun |(running_time)4_1| () Real)
+(declare-fun |(running_time)4_0| () Real)
+(declare-fun |(running_time)5_1| () Real)
+(declare-fun |(running_time)5_0| () Real)
+(declare-fun |(running_time)6_1| () Real)
+(declare-fun |(running_time)6_0| () Real)
+(declare-fun |(running_time)7_1| () Real)
+(declare-fun |(running_time)7_0| () Real)
+(declare-fun |(running_time)8_1| () Real)
+(declare-fun |(running_time)8_0| () Real)
+(declare-fun |(running_time)9_0| () Real)
+(declare-fun |(d)0_1| () Real)
+(declare-fun |(d)1_1| () Real)
+(declare-fun |(d)2_1| () Real)
+(declare-fun |(d)3_1| () Real)
+(declare-fun |(d)4_1| () Real)
+(declare-fun |(d)5_1| () Real)
+(declare-fun |(d)6_1| () Real)
+(declare-fun |(d)7_1| () Real)
+(declare-fun |(d)8_1| () Real)
+(declare-fun |(d)9_1| () Real)
+(declare-fun |(v)9_1| () Real)
+(declare-fun |(running)0_0| () Bool)
+(declare-fun |(engineblown)0_0| () Bool)
+(declare-fun |(goal_reached)0_0| () Bool)
+(declare-fun |(<= \|(running_time)9_1\| 50.0)| () Bool)
+(declare-fun |(moving)0_run| () Bool)
+(declare-fun |(moving)0_sta| () Bool)
+(declare-fun |(moving)0_end| () Bool)
+(declare-fun |(moving)1_run| () Bool)
+(declare-fun |(moving)1_sta| () Bool)
+(declare-fun |(moving)1_end| () Bool)
+(declare-fun |(moving)2_run| () Bool)
+(declare-fun |(moving)2_sta| () Bool)
+(declare-fun |(moving)2_end| () Bool)
+(declare-fun |(moving)3_run| () Bool)
+(declare-fun |(moving)3_sta| () Bool)
+(declare-fun |(moving)3_end| () Bool)
+(declare-fun |(moving)4_run| () Bool)
+(declare-fun |(moving)4_sta| () Bool)
+(declare-fun |(moving)4_end| () Bool)
+(declare-fun |(moving)5_run| () Bool)
+(declare-fun |(moving)5_sta| () Bool)
+(declare-fun |(moving)5_end| () Bool)
+(declare-fun |(moving)6_run| () Bool)
+(declare-fun |(moving)6_sta| () Bool)
+(declare-fun |(moving)6_end| () Bool)
+(declare-fun |(moving)7_run| () Bool)
+(declare-fun |(moving)7_sta| () Bool)
+(declare-fun |(moving)7_end| () Bool)
+(declare-fun |(moving)8_run| () Bool)
+(declare-fun |(moving)8_sta| () Bool)
+(declare-fun |(moving)8_end| () Bool)
+(declare-fun |(moving)9_run| () Bool)
+(declare-fun |(moving)9_sta| () Bool)
+(declare-fun |(moving)9_end| () Bool)
+(declare-fun |(running)0_1| () Bool)
+(declare-fun |(running)1_1| () Bool)
+(declare-fun |(running)2_1| () Bool)
+(declare-fun |(running)3_1| () Bool)
+(declare-fun |(running)4_1| () Bool)
+(declare-fun |(running)5_1| () Bool)
+(declare-fun |(running)6_1| () Bool)
+(declare-fun |(running)7_1| () Bool)
+(declare-fun |(running)8_1| () Bool)
+(declare-fun |(running)9_1| () Bool)
+(declare-fun |(accelerate)0_sta| () Bool)
+(declare-fun |(accelerate)1_sta| () Bool)
+(declare-fun |(running)1_0| () Bool)
+(declare-fun |(accelerate)2_sta| () Bool)
+(declare-fun |(running)2_0| () Bool)
+(declare-fun |(accelerate)3_sta| () Bool)
+(declare-fun |(running)3_0| () Bool)
+(declare-fun |(accelerate)4_sta| () Bool)
+(declare-fun |(running)4_0| () Bool)
+(declare-fun |(accelerate)5_sta| () Bool)
+(declare-fun |(running)5_0| () Bool)
+(declare-fun |(accelerate)6_sta| () Bool)
+(declare-fun |(running)6_0| () Bool)
+(declare-fun |(accelerate)7_sta| () Bool)
+(declare-fun |(running)7_0| () Bool)
+(declare-fun |(accelerate)8_sta| () Bool)
+(declare-fun |(running)8_0| () Bool)
+(declare-fun |(accelerate)9_sta| () Bool)
+(declare-fun |(running)9_0| () Bool)
+(declare-fun |(decelerate)0_sta| () Bool)
+(declare-fun |(decelerate)1_sta| () Bool)
+(declare-fun |(decelerate)2_sta| () Bool)
+(declare-fun |(decelerate)3_sta| () Bool)
+(declare-fun |(decelerate)4_sta| () Bool)
+(declare-fun |(decelerate)5_sta| () Bool)
+(declare-fun |(decelerate)6_sta| () Bool)
+(declare-fun |(decelerate)7_sta| () Bool)
+(declare-fun |(decelerate)8_sta| () Bool)
+(declare-fun |(decelerate)9_sta| () Bool)
+(declare-fun |(engineblown)0_1| () Bool)
+(declare-fun |(engineexplode)0_0| () Bool)
+(declare-fun |(engineblown)1_1| () Bool)
+(declare-fun |(engineexplode)1_0| () Bool)
+(declare-fun |(engineblown)2_1| () Bool)
+(declare-fun |(engineexplode)2_0| () Bool)
+(declare-fun |(engineblown)3_1| () Bool)
+(declare-fun |(engineexplode)3_0| () Bool)
+(declare-fun |(engineblown)4_1| () Bool)
+(declare-fun |(engineexplode)4_0| () Bool)
+(declare-fun |(engineblown)5_1| () Bool)
+(declare-fun |(engineexplode)5_0| () Bool)
+(declare-fun |(engineblown)6_1| () Bool)
+(declare-fun |(engineexplode)6_0| () Bool)
+(declare-fun |(engineblown)7_1| () Bool)
+(declare-fun |(engineexplode)7_0| () Bool)
+(declare-fun |(engineblown)8_1| () Bool)
+(declare-fun |(engineexplode)8_0| () Bool)
+(declare-fun |(engineblown)9_1| () Bool)
+(declare-fun |(engineexplode)9_0| () Bool)
+(declare-fun |(goal_reached)0_1| () Bool)
+(declare-fun |(stop)0_sta| () Bool)
+(declare-fun |(goal_reached)1_1| () Bool)
+(declare-fun |(stop)1_sta| () Bool)
+(declare-fun |(engineblown)1_0| () Bool)
+(declare-fun |(goal_reached)2_1| () Bool)
+(declare-fun |(stop)2_sta| () Bool)
+(declare-fun |(engineblown)2_0| () Bool)
+(declare-fun |(goal_reached)3_1| () Bool)
+(declare-fun |(stop)3_sta| () Bool)
+(declare-fun |(engineblown)3_0| () Bool)
+(declare-fun |(goal_reached)4_1| () Bool)
+(declare-fun |(stop)4_sta| () Bool)
+(declare-fun |(engineblown)4_0| () Bool)
+(declare-fun |(goal_reached)5_1| () Bool)
+(declare-fun |(stop)5_sta| () Bool)
+(declare-fun |(engineblown)5_0| () Bool)
+(declare-fun |(goal_reached)6_1| () Bool)
+(declare-fun |(stop)6_sta| () Bool)
+(declare-fun |(engineblown)6_0| () Bool)
+(declare-fun |(goal_reached)7_1| () Bool)
+(declare-fun |(stop)7_sta| () Bool)
+(declare-fun |(engineblown)7_0| () Bool)
+(declare-fun |(goal_reached)8_1| () Bool)
+(declare-fun |(stop)8_sta| () Bool)
+(declare-fun |(engineblown)8_0| () Bool)
+(declare-fun |(goal_reached)9_1| () Bool)
+(declare-fun |(stop)9_sta| () Bool)
+(declare-fun |(engineblown)9_0| () Bool)
+(declare-fun |(goal_reached)1_0| () Bool)
+(declare-fun |(goal_reached)2_0| () Bool)
+(declare-fun |(goal_reached)3_0| () Bool)
+(declare-fun |(goal_reached)4_0| () Bool)
+(declare-fun |(goal_reached)5_0| () Bool)
+(declare-fun |(goal_reached)6_0| () Bool)
+(declare-fun |(goal_reached)7_0| () Bool)
+(declare-fun |(goal_reached)8_0| () Bool)
+(declare-fun |(goal_reached)9_0| () Bool)
+(declare-fun |(transmission_fine)9_1| () Bool)
+(assert
+ (= t0 0.0))
+(assert
+ (>= d0 (/ 1.0 10.0)))
+(assert
+ (= t1 (+ t0 d0)))
+(assert
+ (> t1 t0))
+(assert
+ (>= d1 (/ 1.0 10.0)))
+(assert
+ (= t2 (+ t1 d1)))
+(assert
+ (> t2 t1))
+(assert
+ (>= d2 (/ 1.0 10.0)))
+(assert
+ (= t3 (+ t2 d2)))
+(assert
+ (> t3 t2))
+(assert
+ (>= d3 (/ 1.0 10.0)))
+(assert
+ (= t4 (+ t3 d3)))
+(assert
+ (> t4 t3))
+(assert
+ (>= d4 (/ 1.0 10.0)))
+(assert
+ (= t5 (+ t4 d4)))
+(assert
+ (> t5 t4))
+(assert
+ (>= d5 (/ 1.0 10.0)))
+(assert
+ (= t6 (+ t5 d5)))
+(assert
+ (> t6 t5))
+(assert
+ (>= d6 (/ 1.0 10.0)))
+(assert
+ (= t7 (+ t6 d6)))
+(assert
+ (> t7 t6))
+(assert
+ (>= d7 (/ 1.0 10.0)))
+(assert
+ (= t8 (+ t7 d7)))
+(assert
+ (> t8 t7))
+(assert
+ (>= d8 (/ 1.0 10.0)))
+(assert
+ (= t9 (+ t8 d8)))
+(assert
+ (> t9 t8))
+(assert
+ (>= d9 (/ 1.0 10.0)))
+(assert
+ |(running)0_0|)
+(assert
+ (not |(engineblown)0_0|))
+(assert
+ (not |(goal_reached)0_0|))
+(assert
+ (= |(running_time)0_0| 0.0))
+(assert
+ (= |(d)0_0| 0.0))
+(assert
+ (= |(a)0_0| 0.0))
+(assert
+ (= |(v)0_0| 0.0))
+(assert
+ (=> |(<= \|(running_time)9_1\| 50.0)| (<= |(running_time)9_1| 50.0)))
+(assert
+ (= |(moving)0_run| (> |(moving)0_dur| 0.0)))
+(assert
+ (let (($x285 (not |(moving)0_run|)))
+ (= $x285 (= |(moving)0_dur| 0.0))))
+(assert
+ (=> |(moving)0_sta| |(moving)0_run|))
+(assert
+ (=> |(moving)0_end| (= |(moving)0_dur| 0.0)))
+(assert
+ (not |(moving)0_end|))
+(assert
+ (=> |(moving)0_run| |(moving)0_sta|))
+(assert
+ (=> |(moving)0_sta| |(moving)0_run|))
+(assert
+ (let (($x285 (not |(moving)0_run|)))
+ (=> $x285 (not |(moving)0_sta|))))
+(assert
+ (= |(moving)1_run| (> |(moving)1_dur| 0.0)))
+(assert
+ (let (($x300 (not |(moving)1_run|)))
+ (= $x300 (= |(moving)1_dur| 0.0))))
+(assert
+ (=> |(moving)0_run| (= |(moving)1_dur| (- |(moving)0_dur| d0))))
+(assert
+ (=> |(moving)1_sta| |(moving)1_run|))
+(assert
+ (=> |(moving)1_end| (= |(moving)1_dur| 0.0)))
+(assert
+ (=> |(moving)1_end| |(moving)0_run|))
+(assert
+ (=> |(moving)1_sta| |(moving)1_run|))
+(assert
+ (let (($x285 (not |(moving)0_run|)))
+ (=> |(moving)1_sta| $x285)))
+(assert
+ (=> |(moving)1_run| (or |(moving)0_run| |(moving)1_sta|)))
+(assert
+ (let (($x300 (not |(moving)1_run|)))
+ (=> $x300 (or (not |(moving)0_run|) |(moving)1_end|))))
+(assert
+ (= |(moving)2_run| (> |(moving)2_dur| 0.0)))
+(assert
+ (let (($x320 (not |(moving)2_run|)))
+ (= $x320 (= |(moving)2_dur| 0.0))))
+(assert
+ (=> |(moving)1_run| (= |(moving)2_dur| (- |(moving)1_dur| d1))))
+(assert
+ (=> |(moving)2_sta| |(moving)2_run|))
+(assert
+ (=> |(moving)2_end| (= |(moving)2_dur| 0.0)))
+(assert
+ (=> |(moving)2_end| |(moving)1_run|))
+(assert
+ (=> |(moving)2_sta| |(moving)2_run|))
+(assert
+ (let (($x300 (not |(moving)1_run|)))
+ (=> |(moving)2_sta| $x300)))
+(assert
+ (=> |(moving)2_run| (or |(moving)1_run| |(moving)2_sta|)))
+(assert
+ (let (($x320 (not |(moving)2_run|)))
+ (=> $x320 (or (not |(moving)1_run|) |(moving)2_end|))))
+(assert
+ (= |(moving)3_run| (> |(moving)3_dur| 0.0)))
+(assert
+ (let (($x340 (not |(moving)3_run|)))
+ (= $x340 (= |(moving)3_dur| 0.0))))
+(assert
+ (=> |(moving)2_run| (= |(moving)3_dur| (- |(moving)2_dur| d2))))
+(assert
+ (=> |(moving)3_sta| |(moving)3_run|))
+(assert
+ (=> |(moving)3_end| (= |(moving)3_dur| 0.0)))
+(assert
+ (=> |(moving)3_end| |(moving)2_run|))
+(assert
+ (=> |(moving)3_sta| |(moving)3_run|))
+(assert
+ (let (($x320 (not |(moving)2_run|)))
+ (=> |(moving)3_sta| $x320)))
+(assert
+ (=> |(moving)3_run| (or |(moving)2_run| |(moving)3_sta|)))
+(assert
+ (let (($x340 (not |(moving)3_run|)))
+ (=> $x340 (or (not |(moving)2_run|) |(moving)3_end|))))
+(assert
+ (= |(moving)4_run| (> |(moving)4_dur| 0.0)))
+(assert
+ (let (($x360 (not |(moving)4_run|)))
+ (= $x360 (= |(moving)4_dur| 0.0))))
+(assert
+ (=> |(moving)3_run| (= |(moving)4_dur| (- |(moving)3_dur| d3))))
+(assert
+ (=> |(moving)4_sta| |(moving)4_run|))
+(assert
+ (=> |(moving)4_end| (= |(moving)4_dur| 0.0)))
+(assert
+ (=> |(moving)4_end| |(moving)3_run|))
+(assert
+ (=> |(moving)4_sta| |(moving)4_run|))
+(assert
+ (let (($x340 (not |(moving)3_run|)))
+ (=> |(moving)4_sta| $x340)))
+(assert
+ (=> |(moving)4_run| (or |(moving)3_run| |(moving)4_sta|)))
+(assert
+ (let (($x360 (not |(moving)4_run|)))
+ (=> $x360 (or (not |(moving)3_run|) |(moving)4_end|))))
+(assert
+ (= |(moving)5_run| (> |(moving)5_dur| 0.0)))
+(assert
+ (let (($x380 (not |(moving)5_run|)))
+ (= $x380 (= |(moving)5_dur| 0.0))))
+(assert
+ (=> |(moving)4_run| (= |(moving)5_dur| (- |(moving)4_dur| d4))))
+(assert
+ (=> |(moving)5_sta| |(moving)5_run|))
+(assert
+ (=> |(moving)5_end| (= |(moving)5_dur| 0.0)))
+(assert
+ (=> |(moving)5_end| |(moving)4_run|))
+(assert
+ (=> |(moving)5_sta| |(moving)5_run|))
+(assert
+ (let (($x360 (not |(moving)4_run|)))
+ (=> |(moving)5_sta| $x360)))
+(assert
+ (=> |(moving)5_run| (or |(moving)4_run| |(moving)5_sta|)))
+(assert
+ (let (($x380 (not |(moving)5_run|)))
+ (=> $x380 (or (not |(moving)4_run|) |(moving)5_end|))))
+(assert
+ (= |(moving)6_run| (> |(moving)6_dur| 0.0)))
+(assert
+ (let (($x400 (not |(moving)6_run|)))
+ (= $x400 (= |(moving)6_dur| 0.0))))
+(assert
+ (=> |(moving)5_run| (= |(moving)6_dur| (- |(moving)5_dur| d5))))
+(assert
+ (=> |(moving)6_sta| |(moving)6_run|))
+(assert
+ (=> |(moving)6_end| (= |(moving)6_dur| 0.0)))
+(assert
+ (=> |(moving)6_end| |(moving)5_run|))
+(assert
+ (=> |(moving)6_sta| |(moving)6_run|))
+(assert
+ (let (($x380 (not |(moving)5_run|)))
+ (=> |(moving)6_sta| $x380)))
+(assert
+ (=> |(moving)6_run| (or |(moving)5_run| |(moving)6_sta|)))
+(assert
+ (let (($x400 (not |(moving)6_run|)))
+ (=> $x400 (or (not |(moving)5_run|) |(moving)6_end|))))
+(assert
+ (= |(moving)7_run| (> |(moving)7_dur| 0.0)))
+(assert
+ (let (($x420 (not |(moving)7_run|)))
+ (= $x420 (= |(moving)7_dur| 0.0))))
+(assert
+ (=> |(moving)6_run| (= |(moving)7_dur| (- |(moving)6_dur| d6))))
+(assert
+ (=> |(moving)7_sta| |(moving)7_run|))
+(assert
+ (=> |(moving)7_end| (= |(moving)7_dur| 0.0)))
+(assert
+ (=> |(moving)7_end| |(moving)6_run|))
+(assert
+ (=> |(moving)7_sta| |(moving)7_run|))
+(assert
+ (let (($x400 (not |(moving)6_run|)))
+ (=> |(moving)7_sta| $x400)))
+(assert
+ (=> |(moving)7_run| (or |(moving)6_run| |(moving)7_sta|)))
+(assert
+ (let (($x420 (not |(moving)7_run|)))
+ (=> $x420 (or (not |(moving)6_run|) |(moving)7_end|))))
+(assert
+ (= |(moving)8_run| (> |(moving)8_dur| 0.0)))
+(assert
+ (let (($x440 (not |(moving)8_run|)))
+ (= $x440 (= |(moving)8_dur| 0.0))))
+(assert
+ (=> |(moving)7_run| (= |(moving)8_dur| (- |(moving)7_dur| d7))))
+(assert
+ (=> |(moving)8_sta| |(moving)8_run|))
+(assert
+ (=> |(moving)8_end| (= |(moving)8_dur| 0.0)))
+(assert
+ (=> |(moving)8_end| |(moving)7_run|))
+(assert
+ (=> |(moving)8_sta| |(moving)8_run|))
+(assert
+ (let (($x420 (not |(moving)7_run|)))
+ (=> |(moving)8_sta| $x420)))
+(assert
+ (=> |(moving)8_run| (or |(moving)7_run| |(moving)8_sta|)))
+(assert
+ (let (($x440 (not |(moving)8_run|)))
+ (=> $x440 (or (not |(moving)7_run|) |(moving)8_end|))))
+(assert
+ (= |(moving)9_run| (> |(moving)9_dur| 0.0)))
+(assert
+ (= (not |(moving)9_run|) (= |(moving)9_dur| 0.0)))
+(assert
+ (=> |(moving)8_run| (= |(moving)9_dur| (- |(moving)8_dur| d8))))
+(assert
+ (=> |(moving)9_sta| |(moving)9_run|))
+(assert
+ (=> |(moving)9_end| (= |(moving)9_dur| 0.0)))
+(assert
+ (=> |(moving)9_end| |(moving)8_run|))
+(assert
+ (=> |(moving)9_sta| |(moving)9_run|))
+(assert
+ (let (($x440 (not |(moving)8_run|)))
+ (=> |(moving)9_sta| $x440)))
+(assert
+ (=> |(moving)9_run| (or |(moving)8_run| |(moving)9_sta|)))
+(assert
+ (=> (not |(moving)9_run|) (or (not |(moving)8_run|) |(moving)9_end|)))
+(assert
+ (= |(accelerate)0_dur| 0.0))
+(assert
+ (= |(accelerate)1_dur| 0.0))
+(assert
+ (= |(accelerate)2_dur| 0.0))
+(assert
+ (= |(accelerate)3_dur| 0.0))
+(assert
+ (= |(accelerate)4_dur| 0.0))
+(assert
+ (= |(accelerate)5_dur| 0.0))
+(assert
+ (= |(accelerate)6_dur| 0.0))
+(assert
+ (= |(accelerate)7_dur| 0.0))
+(assert
+ (= |(accelerate)8_dur| 0.0))
+(assert
+ (= |(accelerate)9_dur| 0.0))
+(assert
+ (= |(decelerate)0_dur| 0.0))
+(assert
+ (= |(decelerate)1_dur| 0.0))
+(assert
+ (= |(decelerate)2_dur| 0.0))
+(assert
+ (= |(decelerate)3_dur| 0.0))
+(assert
+ (= |(decelerate)4_dur| 0.0))
+(assert
+ (= |(decelerate)5_dur| 0.0))
+(assert
+ (= |(decelerate)6_dur| 0.0))
+(assert
+ (= |(decelerate)7_dur| 0.0))
+(assert
+ (= |(decelerate)8_dur| 0.0))
+(assert
+ (= |(decelerate)9_dur| 0.0))
+(assert
+ (= |(stop)0_dur| 0.0))
+(assert
+ (= |(stop)1_dur| 0.0))
+(assert
+ (= |(stop)2_dur| 0.0))
+(assert
+ (= |(stop)3_dur| 0.0))
+(assert
+ (= |(stop)4_dur| 0.0))
+(assert
+ (= |(stop)5_dur| 0.0))
+(assert
+ (= |(stop)6_dur| 0.0))
+(assert
+ (= |(stop)7_dur| 0.0))
+(assert
+ (= |(stop)8_dur| 0.0))
+(assert
+ (= |(stop)9_dur| 0.0))
+(assert
+ (= |(moving)0_run| (and |(running)0_1|)))
+(assert
+ (= |(moving)1_run| (and |(running)1_1|)))
+(assert
+ (= |(moving)2_run| (and |(running)2_1|)))
+(assert
+ (= |(moving)3_run| (and |(running)3_1|)))
+(assert
+ (= |(moving)4_run| (and |(running)4_1|)))
+(assert
+ (= |(moving)5_run| (and |(running)5_1|)))
+(assert
+ (= |(moving)6_run| (and |(running)6_1|)))
+(assert
+ (= |(moving)7_run| (and |(running)7_1|)))
+(assert
+ (= |(moving)8_run| (and |(running)8_1|)))
+(assert
+ (= |(moving)9_run| (and |(running)9_1|)))
+(assert
+ (=> |(accelerate)0_sta| (= |(a)0_1| (+ 1.0 |(a)0_0|))))
+(assert
+ (=> |(accelerate)0_sta| |(running)0_0|))
+(assert
+ (=> |(accelerate)0_sta| (< |(a)0_0| 1.0)))
+(assert
+ (=> |(accelerate)1_sta| (= |(a)1_1| (+ 1.0 |(a)1_0|))))
+(assert
+ (=> |(accelerate)1_sta| |(running)1_0|))
+(assert
+ (=> |(accelerate)1_sta| (< |(a)1_0| 1.0)))
+(assert
+ (=> |(accelerate)2_sta| (= |(a)2_1| (+ 1.0 |(a)2_0|))))
+(assert
+ (=> |(accelerate)2_sta| |(running)2_0|))
+(assert
+ (=> |(accelerate)2_sta| (< |(a)2_0| 1.0)))
+(assert
+ (=> |(accelerate)3_sta| (= |(a)3_1| (+ 1.0 |(a)3_0|))))
+(assert
+ (=> |(accelerate)3_sta| |(running)3_0|))
+(assert
+ (=> |(accelerate)3_sta| (< |(a)3_0| 1.0)))
+(assert
+ (=> |(accelerate)4_sta| (= |(a)4_1| (+ 1.0 |(a)4_0|))))
+(assert
+ (=> |(accelerate)4_sta| |(running)4_0|))
+(assert
+ (=> |(accelerate)4_sta| (< |(a)4_0| 1.0)))
+(assert
+ (=> |(accelerate)5_sta| (= |(a)5_1| (+ 1.0 |(a)5_0|))))
+(assert
+ (=> |(accelerate)5_sta| |(running)5_0|))
+(assert
+ (=> |(accelerate)5_sta| (< |(a)5_0| 1.0)))
+(assert
+ (=> |(accelerate)6_sta| (= |(a)6_1| (+ 1.0 |(a)6_0|))))
+(assert
+ (=> |(accelerate)6_sta| |(running)6_0|))
+(assert
+ (=> |(accelerate)6_sta| (< |(a)6_0| 1.0)))
+(assert
+ (=> |(accelerate)7_sta| (= |(a)7_1| (+ 1.0 |(a)7_0|))))
+(assert
+ (=> |(accelerate)7_sta| |(running)7_0|))
+(assert
+ (=> |(accelerate)7_sta| (< |(a)7_0| 1.0)))
+(assert
+ (=> |(accelerate)8_sta| (= |(a)8_1| (+ 1.0 |(a)8_0|))))
+(assert
+ (=> |(accelerate)8_sta| |(running)8_0|))
+(assert
+ (=> |(accelerate)8_sta| (< |(a)8_0| 1.0)))
+(assert
+ (=> |(accelerate)9_sta| (= |(a)9_1| (+ 1.0 |(a)9_0|))))
+(assert
+ (=> |(accelerate)9_sta| |(running)9_0|))
+(assert
+ (=> |(accelerate)9_sta| (< |(a)9_0| 1.0)))
+(assert
+ (=> |(decelerate)0_sta| (= |(a)0_1| (- |(a)0_0| 1.0))))
+(assert
+ (=> |(decelerate)0_sta| |(running)0_0|))
+(assert
+ (=> |(decelerate)0_sta| (> |(a)0_0| (- 1.0))))
+(assert
+ (=> |(decelerate)1_sta| (= |(a)1_1| (- |(a)1_0| 1.0))))
+(assert
+ (=> |(decelerate)1_sta| |(running)1_0|))
+(assert
+ (=> |(decelerate)1_sta| (> |(a)1_0| (- 1.0))))
+(assert
+ (=> |(decelerate)2_sta| (= |(a)2_1| (- |(a)2_0| 1.0))))
+(assert
+ (=> |(decelerate)2_sta| |(running)2_0|))
+(assert
+ (=> |(decelerate)2_sta| (> |(a)2_0| (- 1.0))))
+(assert
+ (=> |(decelerate)3_sta| (= |(a)3_1| (- |(a)3_0| 1.0))))
+(assert
+ (=> |(decelerate)3_sta| |(running)3_0|))
+(assert
+ (=> |(decelerate)3_sta| (> |(a)3_0| (- 1.0))))
+(assert
+ (=> |(decelerate)4_sta| (= |(a)4_1| (- |(a)4_0| 1.0))))
+(assert
+ (=> |(decelerate)4_sta| |(running)4_0|))
+(assert
+ (=> |(decelerate)4_sta| (> |(a)4_0| (- 1.0))))
+(assert
+ (=> |(decelerate)5_sta| (= |(a)5_1| (- |(a)5_0| 1.0))))
+(assert
+ (=> |(decelerate)5_sta| |(running)5_0|))
+(assert
+ (=> |(decelerate)5_sta| (> |(a)5_0| (- 1.0))))
+(assert
+ (=> |(decelerate)6_sta| (= |(a)6_1| (- |(a)6_0| 1.0))))
+(assert
+ (=> |(decelerate)6_sta| |(running)6_0|))
+(assert
+ (=> |(decelerate)6_sta| (> |(a)6_0| (- 1.0))))
+(assert
+ (=> |(decelerate)7_sta| (= |(a)7_1| (- |(a)7_0| 1.0))))
+(assert
+ (=> |(decelerate)7_sta| |(running)7_0|))
+(assert
+ (=> |(decelerate)7_sta| (> |(a)7_0| (- 1.0))))
+(assert
+ (=> |(decelerate)8_sta| (= |(a)8_1| (- |(a)8_0| 1.0))))
+(assert
+ (=> |(decelerate)8_sta| |(running)8_0|))
+(assert
+ (=> |(decelerate)8_sta| (> |(a)8_0| (- 1.0))))
+(assert
+ (=> |(decelerate)9_sta| (= |(a)9_1| (- |(a)9_0| 1.0))))
+(assert
+ (=> |(decelerate)9_sta| |(running)9_0|))
+(assert
+ (=> |(decelerate)9_sta| (> |(a)9_0| (- 1.0))))
+(assert
+ (=> |(engineexplode)0_0| |(engineblown)0_1|))
+(assert
+ (let (($x715 (not |(running)0_1|)))
+ (=> |(engineexplode)0_0| $x715)))
+(assert
+ (=> |(engineexplode)0_0| (= |(a)0_1| 0.0)))
+(assert
+ (= |(engineexplode)0_0| (and |(running)0_0| (>= |(a)0_0| 1.0) (>= |(v)0_0| 100.0))))
+(assert
+ (=> |(engineexplode)1_0| |(engineblown)1_1|))
+(assert
+ (let (($x726 (not |(running)1_1|)))
+ (=> |(engineexplode)1_0| $x726)))
+(assert
+ (=> |(engineexplode)1_0| (= |(a)1_1| 0.0)))
+(assert
+ (= |(engineexplode)1_0| (and |(running)1_0| (>= |(a)1_0| 1.0) (>= |(v)1_0| 100.0))))
+(assert
+ (and (>= (* (- |(v)1_0| 100.0) (- |(v)0_1| 100.0)) 0.0) (>= (* (- |(a)1_0| 1.0) (- |(a)0_1| 1.0)) 0.0)))
+(assert
+ (=> |(engineexplode)2_0| |(engineblown)2_1|))
+(assert
+ (let (($x734 (not |(running)2_1|)))
+ (=> |(engineexplode)2_0| $x734)))
+(assert
+ (=> |(engineexplode)2_0| (= |(a)2_1| 0.0)))
+(assert
+ (= |(engineexplode)2_0| (and |(running)2_0| (>= |(a)2_0| 1.0) (>= |(v)2_0| 100.0))))
+(assert
+ (and (>= (* (- |(v)2_0| 100.0) (- |(v)1_1| 100.0)) 0.0) (>= (* (- |(a)2_0| 1.0) (- |(a)1_1| 1.0)) 0.0)))
+(assert
+ (=> |(engineexplode)3_0| |(engineblown)3_1|))
+(assert
+ (let (($x751 (not |(running)3_1|)))
+ (=> |(engineexplode)3_0| $x751)))
+(assert
+ (=> |(engineexplode)3_0| (= |(a)3_1| 0.0)))
+(assert
+ (= |(engineexplode)3_0| (and |(running)3_0| (>= |(a)3_0| 1.0) (>= |(v)3_0| 100.0))))
+(assert
+ (and (>= (* (- |(v)3_0| 100.0) (- |(v)2_1| 100.0)) 0.0) (>= (* (- |(a)3_0| 1.0) (- |(a)2_1| 1.0)) 0.0)))
+(assert
+ (=> |(engineexplode)4_0| |(engineblown)4_1|))
+(assert
+ (let (($x768 (not |(running)4_1|)))
+ (=> |(engineexplode)4_0| $x768)))
+(assert
+ (=> |(engineexplode)4_0| (= |(a)4_1| 0.0)))
+(assert
+ (= |(engineexplode)4_0| (and |(running)4_0| (>= |(a)4_0| 1.0) (>= |(v)4_0| 100.0))))
+(assert
+ (and (>= (* (- |(v)4_0| 100.0) (- |(v)3_1| 100.0)) 0.0) (>= (* (- |(a)4_0| 1.0) (- |(a)3_1| 1.0)) 0.0)))
+(assert
+ (=> |(engineexplode)5_0| |(engineblown)5_1|))
+(assert
+ (let (($x785 (not |(running)5_1|)))
+ (=> |(engineexplode)5_0| $x785)))
+(assert
+ (=> |(engineexplode)5_0| (= |(a)5_1| 0.0)))
+(assert
+ (= |(engineexplode)5_0| (and |(running)5_0| (>= |(a)5_0| 1.0) (>= |(v)5_0| 100.0))))
+(assert
+ (and (>= (* (- |(v)5_0| 100.0) (- |(v)4_1| 100.0)) 0.0) (>= (* (- |(a)5_0| 1.0) (- |(a)4_1| 1.0)) 0.0)))
+(assert
+ (=> |(engineexplode)6_0| |(engineblown)6_1|))
+(assert
+ (let (($x802 (not |(running)6_1|)))
+ (=> |(engineexplode)6_0| $x802)))
+(assert
+ (=> |(engineexplode)6_0| (= |(a)6_1| 0.0)))
+(assert
+ (= |(engineexplode)6_0| (and |(running)6_0| (>= |(a)6_0| 1.0) (>= |(v)6_0| 100.0))))
+(assert
+ (and (>= (* (- |(v)6_0| 100.0) (- |(v)5_1| 100.0)) 0.0) (>= (* (- |(a)6_0| 1.0) (- |(a)5_1| 1.0)) 0.0)))
+(assert
+ (=> |(engineexplode)7_0| |(engineblown)7_1|))
+(assert
+ (let (($x819 (not |(running)7_1|)))
+ (=> |(engineexplode)7_0| $x819)))
+(assert
+ (=> |(engineexplode)7_0| (= |(a)7_1| 0.0)))
+(assert
+ (= |(engineexplode)7_0| (and |(running)7_0| (>= |(a)7_0| 1.0) (>= |(v)7_0| 100.0))))
+(assert
+ (and (>= (* (- |(v)7_0| 100.0) (- |(v)6_1| 100.0)) 0.0) (>= (* (- |(a)7_0| 1.0) (- |(a)6_1| 1.0)) 0.0)))
+(assert
+ (=> |(engineexplode)8_0| |(engineblown)8_1|))
+(assert
+ (let (($x836 (not |(running)8_1|)))
+ (=> |(engineexplode)8_0| $x836)))
+(assert
+ (=> |(engineexplode)8_0| (= |(a)8_1| 0.0)))
+(assert
+ (= |(engineexplode)8_0| (and |(running)8_0| (>= |(a)8_0| 1.0) (>= |(v)8_0| 100.0))))
+(assert
+ (and (>= (* (- |(v)8_0| 100.0) (- |(v)7_1| 100.0)) 0.0) (>= (* (- |(a)8_0| 1.0) (- |(a)7_1| 1.0)) 0.0)))
+(assert
+ (=> |(engineexplode)9_0| |(engineblown)9_1|))
+(assert
+ (=> |(engineexplode)9_0| (not |(running)9_1|)))
+(assert
+ (=> |(engineexplode)9_0| (= |(a)9_1| 0.0)))
+(assert
+ (= |(engineexplode)9_0| (and |(running)9_0| (>= |(a)9_0| 1.0) (>= |(v)9_0| 100.0))))
+(assert
+ (and (>= (* (- |(v)9_0| 100.0) (- |(v)8_1| 100.0)) 0.0) (>= (* (- |(a)9_0| 1.0) (- |(a)8_1| 1.0)) 0.0)))
+(assert
+ (=> |(stop)0_sta| |(goal_reached)0_1|))
+(assert
+ (=> |(stop)0_sta| (and (<= |(v)0_0| 0.0) (>= |(v)0_0| 0.0))))
+(assert
+ (=> |(stop)0_sta| (>= |(d)0_0| 30.0)))
+(assert
+ (let (($x265 (not |(engineblown)0_0|)))
+ (=> |(stop)0_sta| $x265)))
+(assert
+ (=> |(stop)1_sta| |(goal_reached)1_1|))
+(assert
+ (=> |(stop)1_sta| (and (<= |(v)1_0| 0.0) (>= |(v)1_0| 0.0))))
+(assert
+ (=> |(stop)1_sta| (>= |(d)1_0| 30.0)))
+(assert
+ (let (($x892 (not |(engineblown)1_0|)))
+ (=> |(stop)1_sta| $x892)))
+(assert
+ (=> |(stop)2_sta| |(goal_reached)2_1|))
+(assert
+ (=> |(stop)2_sta| (and (<= |(v)2_0| 0.0) (>= |(v)2_0| 0.0))))
+(assert
+ (=> |(stop)2_sta| (>= |(d)2_0| 30.0)))
+(assert
+ (let (($x901 (not |(engineblown)2_0|)))
+ (=> |(stop)2_sta| $x901)))
+(assert
+ (=> |(stop)3_sta| |(goal_reached)3_1|))
+(assert
+ (=> |(stop)3_sta| (and (<= |(v)3_0| 0.0) (>= |(v)3_0| 0.0))))
+(assert
+ (=> |(stop)3_sta| (>= |(d)3_0| 30.0)))
+(assert
+ (let (($x910 (not |(engineblown)3_0|)))
+ (=> |(stop)3_sta| $x910)))
+(assert
+ (=> |(stop)4_sta| |(goal_reached)4_1|))
+(assert
+ (=> |(stop)4_sta| (and (<= |(v)4_0| 0.0) (>= |(v)4_0| 0.0))))
+(assert
+ (=> |(stop)4_sta| (>= |(d)4_0| 30.0)))
+(assert
+ (let (($x919 (not |(engineblown)4_0|)))
+ (=> |(stop)4_sta| $x919)))
+(assert
+ (=> |(stop)5_sta| |(goal_reached)5_1|))
+(assert
+ (=> |(stop)5_sta| (and (<= |(v)5_0| 0.0) (>= |(v)5_0| 0.0))))
+(assert
+ (=> |(stop)5_sta| (>= |(d)5_0| 30.0)))
+(assert
+ (let (($x928 (not |(engineblown)5_0|)))
+ (=> |(stop)5_sta| $x928)))
+(assert
+ (=> |(stop)6_sta| |(goal_reached)6_1|))
+(assert
+ (=> |(stop)6_sta| (and (<= |(v)6_0| 0.0) (>= |(v)6_0| 0.0))))
+(assert
+ (=> |(stop)6_sta| (>= |(d)6_0| 30.0)))
+(assert
+ (let (($x937 (not |(engineblown)6_0|)))
+ (=> |(stop)6_sta| $x937)))
+(assert
+ (=> |(stop)7_sta| |(goal_reached)7_1|))
+(assert
+ (=> |(stop)7_sta| (and (<= |(v)7_0| 0.0) (>= |(v)7_0| 0.0))))
+(assert
+ (=> |(stop)7_sta| (>= |(d)7_0| 30.0)))
+(assert
+ (let (($x946 (not |(engineblown)7_0|)))
+ (=> |(stop)7_sta| $x946)))
+(assert
+ (=> |(stop)8_sta| |(goal_reached)8_1|))
+(assert
+ (=> |(stop)8_sta| (and (<= |(v)8_0| 0.0) (>= |(v)8_0| 0.0))))
+(assert
+ (=> |(stop)8_sta| (>= |(d)8_0| 30.0)))
+(assert
+ (let (($x955 (not |(engineblown)8_0|)))
+ (=> |(stop)8_sta| $x955)))
+(assert
+ (=> |(stop)9_sta| |(goal_reached)9_1|))
+(assert
+ (=> |(stop)9_sta| (and (<= |(v)9_0| 0.0) (>= |(v)9_0| 0.0))))
+(assert
+ (=> |(stop)9_sta| (>= |(d)9_0| 30.0)))
+(assert
+ (let (($x964 (not |(engineblown)9_0|)))
+ (=> |(stop)9_sta| $x964)))
+(assert
+ (=> |(running)0_1| (or |(running)0_0|)))
+(assert
+ (let (($x715 (not |(running)0_1|)))
+ (=> $x715 (or (not |(running)0_0|) |(engineexplode)0_0|))))
+(assert
+ (=> |(running)1_1| (or |(running)1_0|)))
+(assert
+ (let (($x726 (not |(running)1_1|)))
+ (=> $x726 (or (not |(running)1_0|) |(engineexplode)1_0|))))
+(assert
+ (=> |(running)1_0| (or |(running)0_1|)))
+(assert
+ (=> (not |(running)1_0|) (or (not |(running)0_1|))))
+(assert
+ (=> |(running)2_1| (or |(running)2_0|)))
+(assert
+ (let (($x734 (not |(running)2_1|)))
+ (=> $x734 (or (not |(running)2_0|) |(engineexplode)2_0|))))
+(assert
+ (=> |(running)2_0| (or |(running)1_1|)))
+(assert
+ (=> (not |(running)2_0|) (or (not |(running)1_1|))))
+(assert
+ (=> |(running)3_1| (or |(running)3_0|)))
+(assert
+ (let (($x751 (not |(running)3_1|)))
+ (=> $x751 (or (not |(running)3_0|) |(engineexplode)3_0|))))
+(assert
+ (=> |(running)3_0| (or |(running)2_1|)))
+(assert
+ (=> (not |(running)3_0|) (or (not |(running)2_1|))))
+(assert
+ (=> |(running)4_1| (or |(running)4_0|)))
+(assert
+ (let (($x768 (not |(running)4_1|)))
+ (=> $x768 (or (not |(running)4_0|) |(engineexplode)4_0|))))
+(assert
+ (=> |(running)4_0| (or |(running)3_1|)))
+(assert
+ (=> (not |(running)4_0|) (or (not |(running)3_1|))))
+(assert
+ (=> |(running)5_1| (or |(running)5_0|)))
+(assert
+ (let (($x785 (not |(running)5_1|)))
+ (=> $x785 (or (not |(running)5_0|) |(engineexplode)5_0|))))
+(assert
+ (=> |(running)5_0| (or |(running)4_1|)))
+(assert
+ (=> (not |(running)5_0|) (or (not |(running)4_1|))))
+(assert
+ (=> |(running)6_1| (or |(running)6_0|)))
+(assert
+ (let (($x802 (not |(running)6_1|)))
+ (=> $x802 (or (not |(running)6_0|) |(engineexplode)6_0|))))
+(assert
+ (=> |(running)6_0| (or |(running)5_1|)))
+(assert
+ (=> (not |(running)6_0|) (or (not |(running)5_1|))))
+(assert
+ (=> |(running)7_1| (or |(running)7_0|)))
+(assert
+ (let (($x819 (not |(running)7_1|)))
+ (=> $x819 (or (not |(running)7_0|) |(engineexplode)7_0|))))
+(assert
+ (=> |(running)7_0| (or |(running)6_1|)))
+(assert
+ (=> (not |(running)7_0|) (or (not |(running)6_1|))))
+(assert
+ (=> |(running)8_1| (or |(running)8_0|)))
+(assert
+ (let (($x836 (not |(running)8_1|)))
+ (=> $x836 (or (not |(running)8_0|) |(engineexplode)8_0|))))
+(assert
+ (=> |(running)8_0| (or |(running)7_1|)))
+(assert
+ (=> (not |(running)8_0|) (or (not |(running)7_1|))))
+(assert
+ (=> |(running)9_1| (or |(running)9_0|)))
+(assert
+ (=> (not |(running)9_1|) (or (not |(running)9_0|) |(engineexplode)9_0|)))
+(assert
+ (=> |(running)9_0| (or |(running)8_1|)))
+(assert
+ (=> (not |(running)9_0|) (or (not |(running)8_1|))))
+(assert
+ (=> |(engineblown)0_1| (or |(engineblown)0_0| |(engineexplode)0_0|)))
+(assert
+ (=> (not |(engineblown)0_1|) (or (not |(engineblown)0_0|))))
+(assert
+ (=> |(engineblown)1_1| (or |(engineblown)1_0| |(engineexplode)1_0|)))
+(assert
+ (=> (not |(engineblown)1_1|) (or (not |(engineblown)1_0|))))
+(assert
+ (=> |(engineblown)1_0| (or |(engineblown)0_1|)))
+(assert
+ (let (($x892 (not |(engineblown)1_0|)))
+ (=> $x892 (or (not |(engineblown)0_1|)))))
+(assert
+ (=> |(engineblown)2_1| (or |(engineblown)2_0| |(engineexplode)2_0|)))
+(assert
+ (=> (not |(engineblown)2_1|) (or (not |(engineblown)2_0|))))
+(assert
+ (=> |(engineblown)2_0| (or |(engineblown)1_1|)))
+(assert
+ (let (($x901 (not |(engineblown)2_0|)))
+ (=> $x901 (or (not |(engineblown)1_1|)))))
+(assert
+ (=> |(engineblown)3_1| (or |(engineblown)3_0| |(engineexplode)3_0|)))
+(assert
+ (=> (not |(engineblown)3_1|) (or (not |(engineblown)3_0|))))
+(assert
+ (=> |(engineblown)3_0| (or |(engineblown)2_1|)))
+(assert
+ (let (($x910 (not |(engineblown)3_0|)))
+ (=> $x910 (or (not |(engineblown)2_1|)))))
+(assert
+ (=> |(engineblown)4_1| (or |(engineblown)4_0| |(engineexplode)4_0|)))
+(assert
+ (=> (not |(engineblown)4_1|) (or (not |(engineblown)4_0|))))
+(assert
+ (=> |(engineblown)4_0| (or |(engineblown)3_1|)))
+(assert
+ (let (($x919 (not |(engineblown)4_0|)))
+ (=> $x919 (or (not |(engineblown)3_1|)))))
+(assert
+ (=> |(engineblown)5_1| (or |(engineblown)5_0| |(engineexplode)5_0|)))
+(assert
+ (=> (not |(engineblown)5_1|) (or (not |(engineblown)5_0|))))
+(assert
+ (=> |(engineblown)5_0| (or |(engineblown)4_1|)))
+(assert
+ (let (($x928 (not |(engineblown)5_0|)))
+ (=> $x928 (or (not |(engineblown)4_1|)))))
+(assert
+ (=> |(engineblown)6_1| (or |(engineblown)6_0| |(engineexplode)6_0|)))
+(assert
+ (=> (not |(engineblown)6_1|) (or (not |(engineblown)6_0|))))
+(assert
+ (=> |(engineblown)6_0| (or |(engineblown)5_1|)))
+(assert
+ (let (($x937 (not |(engineblown)6_0|)))
+ (=> $x937 (or (not |(engineblown)5_1|)))))
+(assert
+ (=> |(engineblown)7_1| (or |(engineblown)7_0| |(engineexplode)7_0|)))
+(assert
+ (=> (not |(engineblown)7_1|) (or (not |(engineblown)7_0|))))
+(assert
+ (=> |(engineblown)7_0| (or |(engineblown)6_1|)))
+(assert
+ (let (($x946 (not |(engineblown)7_0|)))
+ (=> $x946 (or (not |(engineblown)6_1|)))))
+(assert
+ (=> |(engineblown)8_1| (or |(engineblown)8_0| |(engineexplode)8_0|)))
+(assert
+ (=> (not |(engineblown)8_1|) (or (not |(engineblown)8_0|))))
+(assert
+ (=> |(engineblown)8_0| (or |(engineblown)7_1|)))
+(assert
+ (let (($x955 (not |(engineblown)8_0|)))
+ (=> $x955 (or (not |(engineblown)7_1|)))))
+(assert
+ (=> |(engineblown)9_1| (or |(engineblown)9_0| |(engineexplode)9_0|)))
+(assert
+ (let (($x273 (not |(engineblown)9_1|)))
+ (=> $x273 (or (not |(engineblown)9_0|)))))
+(assert
+ (=> |(engineblown)9_0| (or |(engineblown)8_1|)))
+(assert
+ (let (($x964 (not |(engineblown)9_0|)))
+ (=> $x964 (or (not |(engineblown)8_1|)))))
+(assert
+ (=> |(goal_reached)0_1| (or |(goal_reached)0_0| |(stop)0_sta|)))
+(assert
+ (=> (not |(goal_reached)0_1|) (or (not |(goal_reached)0_0|))))
+(assert
+ (=> |(goal_reached)1_1| (or |(goal_reached)1_0| |(stop)1_sta|)))
+(assert
+ (=> (not |(goal_reached)1_1|) (or (not |(goal_reached)1_0|))))
+(assert
+ (=> |(goal_reached)1_0| (or |(goal_reached)0_1|)))
+(assert
+ (=> (not |(goal_reached)1_0|) (or (not |(goal_reached)0_1|))))
+(assert
+ (=> |(goal_reached)2_1| (or |(goal_reached)2_0| |(stop)2_sta|)))
+(assert
+ (=> (not |(goal_reached)2_1|) (or (not |(goal_reached)2_0|))))
+(assert
+ (=> |(goal_reached)2_0| (or |(goal_reached)1_1|)))
+(assert
+ (=> (not |(goal_reached)2_0|) (or (not |(goal_reached)1_1|))))
+(assert
+ (=> |(goal_reached)3_1| (or |(goal_reached)3_0| |(stop)3_sta|)))
+(assert
+ (=> (not |(goal_reached)3_1|) (or (not |(goal_reached)3_0|))))
+(assert
+ (=> |(goal_reached)3_0| (or |(goal_reached)2_1|)))
+(assert
+ (=> (not |(goal_reached)3_0|) (or (not |(goal_reached)2_1|))))
+(assert
+ (=> |(goal_reached)4_1| (or |(goal_reached)4_0| |(stop)4_sta|)))
+(assert
+ (=> (not |(goal_reached)4_1|) (or (not |(goal_reached)4_0|))))
+(assert
+ (=> |(goal_reached)4_0| (or |(goal_reached)3_1|)))
+(assert
+ (=> (not |(goal_reached)4_0|) (or (not |(goal_reached)3_1|))))
+(assert
+ (=> |(goal_reached)5_1| (or |(goal_reached)5_0| |(stop)5_sta|)))
+(assert
+ (=> (not |(goal_reached)5_1|) (or (not |(goal_reached)5_0|))))
+(assert
+ (=> |(goal_reached)5_0| (or |(goal_reached)4_1|)))
+(assert
+ (=> (not |(goal_reached)5_0|) (or (not |(goal_reached)4_1|))))
+(assert
+ (=> |(goal_reached)6_1| (or |(goal_reached)6_0| |(stop)6_sta|)))
+(assert
+ (=> (not |(goal_reached)6_1|) (or (not |(goal_reached)6_0|))))
+(assert
+ (=> |(goal_reached)6_0| (or |(goal_reached)5_1|)))
+(assert
+ (=> (not |(goal_reached)6_0|) (or (not |(goal_reached)5_1|))))
+(assert
+ (=> |(goal_reached)7_1| (or |(goal_reached)7_0| |(stop)7_sta|)))
+(assert
+ (=> (not |(goal_reached)7_1|) (or (not |(goal_reached)7_0|))))
+(assert
+ (=> |(goal_reached)7_0| (or |(goal_reached)6_1|)))
+(assert
+ (=> (not |(goal_reached)7_0|) (or (not |(goal_reached)6_1|))))
+(assert
+ (=> |(goal_reached)8_1| (or |(goal_reached)8_0| |(stop)8_sta|)))
+(assert
+ (=> (not |(goal_reached)8_1|) (or (not |(goal_reached)8_0|))))
+(assert
+ (=> |(goal_reached)8_0| (or |(goal_reached)7_1|)))
+(assert
+ (=> (not |(goal_reached)8_0|) (or (not |(goal_reached)7_1|))))
+(assert
+ (=> |(goal_reached)9_1| (or |(goal_reached)9_0| |(stop)9_sta|)))
+(assert
+ (=> (not |(goal_reached)9_1|) (or (not |(goal_reached)9_0|))))
+(assert
+ (=> |(goal_reached)9_0| (or |(goal_reached)8_1|)))
+(assert
+ (=> (not |(goal_reached)9_0|) (or (not |(goal_reached)8_1|))))
+(assert
+ (or (= |(running_time)0_0| |(running_time)0_1|)))
+(assert
+ (or (= |(running_time)1_0| |(running_time)1_1|)))
+(assert
+ (or (= |(running_time)2_0| |(running_time)2_1|)))
+(assert
+ (or (= |(running_time)3_0| |(running_time)3_1|)))
+(assert
+ (or (= |(running_time)4_0| |(running_time)4_1|)))
+(assert
+ (or (= |(running_time)5_0| |(running_time)5_1|)))
+(assert
+ (or (= |(running_time)6_0| |(running_time)6_1|)))
+(assert
+ (or (= |(running_time)7_0| |(running_time)7_1|)))
+(assert
+ (or (= |(running_time)8_0| |(running_time)8_1|)))
+(assert
+ (or (= |(running_time)9_0| |(running_time)9_1|)))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1255 (and (and (not |(moving)0_run|)) $x1253)))
+ (=> $x1255 (= |(running_time)1_0| |(running_time)0_1|)))))
+(assert
+ (let (($x1261 (= |(running_time)1_0| (+ (+ 0.0 (* 1.0 d0)) (* 1.0 |(running_time)0_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1263 (and (and |(moving)0_run|) $x1253)))
+ (=> $x1263 $x1261)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1267 (and (and (not |(moving)1_run|)) $x1253)))
+ (=> $x1267 (= |(running_time)2_0| |(running_time)1_1|)))))
+(assert
+ (let (($x1273 (= |(running_time)2_0| (+ (+ 0.0 (* 1.0 d1)) (* 1.0 |(running_time)1_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1275 (and (and |(moving)1_run|) $x1253)))
+ (=> $x1275 $x1273)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1279 (and (and (not |(moving)2_run|)) $x1253)))
+ (=> $x1279 (= |(running_time)3_0| |(running_time)2_1|)))))
+(assert
+ (let (($x1285 (= |(running_time)3_0| (+ (+ 0.0 (* 1.0 d2)) (* 1.0 |(running_time)2_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1287 (and (and |(moving)2_run|) $x1253)))
+ (=> $x1287 $x1285)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1291 (and (and (not |(moving)3_run|)) $x1253)))
+ (=> $x1291 (= |(running_time)4_0| |(running_time)3_1|)))))
+(assert
+ (let (($x1297 (= |(running_time)4_0| (+ (+ 0.0 (* 1.0 d3)) (* 1.0 |(running_time)3_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1299 (and (and |(moving)3_run|) $x1253)))
+ (=> $x1299 $x1297)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1303 (and (and (not |(moving)4_run|)) $x1253)))
+ (=> $x1303 (= |(running_time)5_0| |(running_time)4_1|)))))
+(assert
+ (let (($x1309 (= |(running_time)5_0| (+ (+ 0.0 (* 1.0 d4)) (* 1.0 |(running_time)4_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1311 (and (and |(moving)4_run|) $x1253)))
+ (=> $x1311 $x1309)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1315 (and (and (not |(moving)5_run|)) $x1253)))
+ (=> $x1315 (= |(running_time)6_0| |(running_time)5_1|)))))
+(assert
+ (let (($x1321 (= |(running_time)6_0| (+ (+ 0.0 (* 1.0 d5)) (* 1.0 |(running_time)5_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1323 (and (and |(moving)5_run|) $x1253)))
+ (=> $x1323 $x1321)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1327 (and (and (not |(moving)6_run|)) $x1253)))
+ (=> $x1327 (= |(running_time)7_0| |(running_time)6_1|)))))
+(assert
+ (let (($x1333 (= |(running_time)7_0| (+ (+ 0.0 (* 1.0 d6)) (* 1.0 |(running_time)6_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1335 (and (and |(moving)6_run|) $x1253)))
+ (=> $x1335 $x1333)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1339 (and (and (not |(moving)7_run|)) $x1253)))
+ (=> $x1339 (= |(running_time)8_0| |(running_time)7_1|)))))
+(assert
+ (let (($x1345 (= |(running_time)8_0| (+ (+ 0.0 (* 1.0 d7)) (* 1.0 |(running_time)7_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1347 (and (and |(moving)7_run|) $x1253)))
+ (=> $x1347 $x1345)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1351 (and (and (not |(moving)8_run|)) $x1253)))
+ (=> $x1351 (= |(running_time)9_0| |(running_time)8_1|)))))
+(assert
+ (let (($x1357 (= |(running_time)9_0| (+ (+ 0.0 (* 1.0 d8)) (* 1.0 |(running_time)8_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1359 (and (and |(moving)8_run|) $x1253)))
+ (=> $x1359 $x1357)))))
+(assert
+ (or (= |(d)0_0| |(d)0_1|)))
+(assert
+ (or (= |(d)1_0| |(d)1_1|)))
+(assert
+ (or (= |(d)2_0| |(d)2_1|)))
+(assert
+ (or (= |(d)3_0| |(d)3_1|)))
+(assert
+ (or (= |(d)4_0| |(d)4_1|)))
+(assert
+ (or (= |(d)5_0| |(d)5_1|)))
+(assert
+ (or (= |(d)6_0| |(d)6_1|)))
+(assert
+ (or (= |(d)7_0| |(d)7_1|)))
+(assert
+ (or (= |(d)8_0| |(d)8_1|)))
+(assert
+ (or (= |(d)9_0| |(d)9_1|)))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1255 (and (and (not |(moving)0_run|)) $x1253)))
+ (=> $x1255 (= |(d)1_0| |(d)0_1|)))))
+(assert
+ (let ((?x1390 (+ (+ 0.0 (* (* (/ 1.0 2.0) |(a)0_1|) (^ d0 2.0))) (* 1.0 |(d)0_1|))))
+ (let (($x1253 (and true)))
+ (let (($x1263 (and (and |(moving)0_run|) $x1253)))
+ (=> $x1263 (= |(d)1_0| (+ ?x1390 (* (* 1.0 |(v)0_1|) d0))))))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1267 (and (and (not |(moving)1_run|)) $x1253)))
+ (=> $x1267 (= |(d)2_0| |(d)1_1|)))))
+(assert
+ (let ((?x1403 (+ (+ 0.0 (* (* (/ 1.0 2.0) |(a)1_1|) (^ d1 2.0))) (* 1.0 |(d)1_1|))))
+ (let (($x1253 (and true)))
+ (let (($x1275 (and (and |(moving)1_run|) $x1253)))
+ (=> $x1275 (= |(d)2_0| (+ ?x1403 (* (* 1.0 |(v)1_1|) d1))))))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1279 (and (and (not |(moving)2_run|)) $x1253)))
+ (=> $x1279 (= |(d)3_0| |(d)2_1|)))))
+(assert
+ (let ((?x1416 (+ (+ 0.0 (* (* (/ 1.0 2.0) |(a)2_1|) (^ d2 2.0))) (* 1.0 |(d)2_1|))))
+ (let (($x1253 (and true)))
+ (let (($x1287 (and (and |(moving)2_run|) $x1253)))
+ (=> $x1287 (= |(d)3_0| (+ ?x1416 (* (* 1.0 |(v)2_1|) d2))))))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1291 (and (and (not |(moving)3_run|)) $x1253)))
+ (=> $x1291 (= |(d)4_0| |(d)3_1|)))))
+(assert
+ (let ((?x1429 (+ (+ 0.0 (* (* (/ 1.0 2.0) |(a)3_1|) (^ d3 2.0))) (* 1.0 |(d)3_1|))))
+ (let (($x1253 (and true)))
+ (let (($x1299 (and (and |(moving)3_run|) $x1253)))
+ (=> $x1299 (= |(d)4_0| (+ ?x1429 (* (* 1.0 |(v)3_1|) d3))))))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1303 (and (and (not |(moving)4_run|)) $x1253)))
+ (=> $x1303 (= |(d)5_0| |(d)4_1|)))))
+(assert
+ (let ((?x1442 (+ (+ 0.0 (* (* (/ 1.0 2.0) |(a)4_1|) (^ d4 2.0))) (* 1.0 |(d)4_1|))))
+ (let (($x1253 (and true)))
+ (let (($x1311 (and (and |(moving)4_run|) $x1253)))
+ (=> $x1311 (= |(d)5_0| (+ ?x1442 (* (* 1.0 |(v)4_1|) d4))))))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1315 (and (and (not |(moving)5_run|)) $x1253)))
+ (=> $x1315 (= |(d)6_0| |(d)5_1|)))))
+(assert
+ (let ((?x1455 (+ (+ 0.0 (* (* (/ 1.0 2.0) |(a)5_1|) (^ d5 2.0))) (* 1.0 |(d)5_1|))))
+ (let (($x1253 (and true)))
+ (let (($x1323 (and (and |(moving)5_run|) $x1253)))
+ (=> $x1323 (= |(d)6_0| (+ ?x1455 (* (* 1.0 |(v)5_1|) d5))))))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1327 (and (and (not |(moving)6_run|)) $x1253)))
+ (=> $x1327 (= |(d)7_0| |(d)6_1|)))))
+(assert
+ (let ((?x1468 (+ (+ 0.0 (* (* (/ 1.0 2.0) |(a)6_1|) (^ d6 2.0))) (* 1.0 |(d)6_1|))))
+ (let (($x1253 (and true)))
+ (let (($x1335 (and (and |(moving)6_run|) $x1253)))
+ (=> $x1335 (= |(d)7_0| (+ ?x1468 (* (* 1.0 |(v)6_1|) d6))))))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1339 (and (and (not |(moving)7_run|)) $x1253)))
+ (=> $x1339 (= |(d)8_0| |(d)7_1|)))))
+(assert
+ (let ((?x1481 (+ (+ 0.0 (* (* (/ 1.0 2.0) |(a)7_1|) (^ d7 2.0))) (* 1.0 |(d)7_1|))))
+ (let (($x1253 (and true)))
+ (let (($x1347 (and (and |(moving)7_run|) $x1253)))
+ (=> $x1347 (= |(d)8_0| (+ ?x1481 (* (* 1.0 |(v)7_1|) d7))))))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1351 (and (and (not |(moving)8_run|)) $x1253)))
+ (=> $x1351 (= |(d)9_0| |(d)8_1|)))))
+(assert
+ (let ((?x1494 (+ (+ 0.0 (* (* (/ 1.0 2.0) |(a)8_1|) (^ d8 2.0))) (* 1.0 |(d)8_1|))))
+ (let (($x1253 (and true)))
+ (let (($x1359 (and (and |(moving)8_run|) $x1253)))
+ (=> $x1359 (= |(d)9_0| (+ ?x1494 (* (* 1.0 |(v)8_1|) d8))))))))
+(assert
+ (or |(engineexplode)0_0| |(accelerate)0_sta| |(decelerate)0_sta| (= |(a)0_0| |(a)0_1|)))
+(assert
+ (or |(engineexplode)1_0| |(accelerate)1_sta| |(decelerate)1_sta| (= |(a)1_0| |(a)1_1|)))
+(assert
+ (or |(engineexplode)2_0| |(accelerate)2_sta| |(decelerate)2_sta| (= |(a)2_0| |(a)2_1|)))
+(assert
+ (or |(engineexplode)3_0| |(accelerate)3_sta| |(decelerate)3_sta| (= |(a)3_0| |(a)3_1|)))
+(assert
+ (or |(engineexplode)4_0| |(accelerate)4_sta| |(decelerate)4_sta| (= |(a)4_0| |(a)4_1|)))
+(assert
+ (or |(engineexplode)5_0| |(accelerate)5_sta| |(decelerate)5_sta| (= |(a)5_0| |(a)5_1|)))
+(assert
+ (or |(engineexplode)6_0| |(accelerate)6_sta| |(decelerate)6_sta| (= |(a)6_0| |(a)6_1|)))
+(assert
+ (or |(engineexplode)7_0| |(accelerate)7_sta| |(decelerate)7_sta| (= |(a)7_0| |(a)7_1|)))
+(assert
+ (or |(engineexplode)8_0| |(accelerate)8_sta| |(decelerate)8_sta| (= |(a)8_0| |(a)8_1|)))
+(assert
+ (or |(engineexplode)9_0| |(accelerate)9_sta| |(decelerate)9_sta| (= |(a)9_0| |(a)9_1|)))
+(assert
+ (or (= |(a)1_0| |(a)0_1|)))
+(assert
+ (or (= |(a)2_0| |(a)1_1|)))
+(assert
+ (or (= |(a)3_0| |(a)2_1|)))
+(assert
+ (or (= |(a)4_0| |(a)3_1|)))
+(assert
+ (or (= |(a)5_0| |(a)4_1|)))
+(assert
+ (or (= |(a)6_0| |(a)5_1|)))
+(assert
+ (or (= |(a)7_0| |(a)6_1|)))
+(assert
+ (or (= |(a)8_0| |(a)7_1|)))
+(assert
+ (or (= |(a)9_0| |(a)8_1|)))
+(assert
+ (or (= |(v)0_0| |(v)0_1|)))
+(assert
+ (or (= |(v)1_0| |(v)1_1|)))
+(assert
+ (or (= |(v)2_0| |(v)2_1|)))
+(assert
+ (or (= |(v)3_0| |(v)3_1|)))
+(assert
+ (or (= |(v)4_0| |(v)4_1|)))
+(assert
+ (or (= |(v)5_0| |(v)5_1|)))
+(assert
+ (or (= |(v)6_0| |(v)6_1|)))
+(assert
+ (or (= |(v)7_0| |(v)7_1|)))
+(assert
+ (or (= |(v)8_0| |(v)8_1|)))
+(assert
+ (or (= |(v)9_0| |(v)9_1|)))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1255 (and (and (not |(moving)0_run|)) $x1253)))
+ (=> $x1255 (= |(v)1_0| |(v)0_1|)))))
+(assert
+ (let (($x1564 (= |(v)1_0| (+ (+ 0.0 (* (* 1.0 |(a)0_1|) d0)) (* 1.0 |(v)0_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1263 (and (and |(moving)0_run|) $x1253)))
+ (=> $x1263 $x1564)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1267 (and (and (not |(moving)1_run|)) $x1253)))
+ (=> $x1267 (= |(v)2_0| |(v)1_1|)))))
+(assert
+ (let (($x1572 (= |(v)2_0| (+ (+ 0.0 (* (* 1.0 |(a)1_1|) d1)) (* 1.0 |(v)1_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1275 (and (and |(moving)1_run|) $x1253)))
+ (=> $x1275 $x1572)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1279 (and (and (not |(moving)2_run|)) $x1253)))
+ (=> $x1279 (= |(v)3_0| |(v)2_1|)))))
+(assert
+ (let (($x1580 (= |(v)3_0| (+ (+ 0.0 (* (* 1.0 |(a)2_1|) d2)) (* 1.0 |(v)2_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1287 (and (and |(moving)2_run|) $x1253)))
+ (=> $x1287 $x1580)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1291 (and (and (not |(moving)3_run|)) $x1253)))
+ (=> $x1291 (= |(v)4_0| |(v)3_1|)))))
+(assert
+ (let (($x1588 (= |(v)4_0| (+ (+ 0.0 (* (* 1.0 |(a)3_1|) d3)) (* 1.0 |(v)3_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1299 (and (and |(moving)3_run|) $x1253)))
+ (=> $x1299 $x1588)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1303 (and (and (not |(moving)4_run|)) $x1253)))
+ (=> $x1303 (= |(v)5_0| |(v)4_1|)))))
+(assert
+ (let (($x1596 (= |(v)5_0| (+ (+ 0.0 (* (* 1.0 |(a)4_1|) d4)) (* 1.0 |(v)4_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1311 (and (and |(moving)4_run|) $x1253)))
+ (=> $x1311 $x1596)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1315 (and (and (not |(moving)5_run|)) $x1253)))
+ (=> $x1315 (= |(v)6_0| |(v)5_1|)))))
+(assert
+ (let (($x1604 (= |(v)6_0| (+ (+ 0.0 (* (* 1.0 |(a)5_1|) d5)) (* 1.0 |(v)5_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1323 (and (and |(moving)5_run|) $x1253)))
+ (=> $x1323 $x1604)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1327 (and (and (not |(moving)6_run|)) $x1253)))
+ (=> $x1327 (= |(v)7_0| |(v)6_1|)))))
+(assert
+ (let (($x1612 (= |(v)7_0| (+ (+ 0.0 (* (* 1.0 |(a)6_1|) d6)) (* 1.0 |(v)6_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1335 (and (and |(moving)6_run|) $x1253)))
+ (=> $x1335 $x1612)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1339 (and (and (not |(moving)7_run|)) $x1253)))
+ (=> $x1339 (= |(v)8_0| |(v)7_1|)))))
+(assert
+ (let (($x1620 (= |(v)8_0| (+ (+ 0.0 (* (* 1.0 |(a)7_1|) d7)) (* 1.0 |(v)7_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1347 (and (and |(moving)7_run|) $x1253)))
+ (=> $x1347 $x1620)))))
+(assert
+ (let (($x1253 (and true)))
+ (let (($x1351 (and (and (not |(moving)8_run|)) $x1253)))
+ (=> $x1351 (= |(v)9_0| |(v)8_1|)))))
+(assert
+ (let (($x1628 (= |(v)9_0| (+ (+ 0.0 (* (* 1.0 |(a)8_1|) d8)) (* 1.0 |(v)8_1|)))))
+ (let (($x1253 (and true)))
+ (let (($x1359 (and (and |(moving)8_run|) $x1253)))
+ (=> $x1359 $x1628)))))
+(assert
+ |(goal_reached)9_1|)
+(assert
+ (not |(engineblown)9_1|))
+(assert
+ |(<= \|(running_time)9_1\| 50.0)|)
+(assert
+ |(transmission_fine)9_1|)
+(check-sat)
+
