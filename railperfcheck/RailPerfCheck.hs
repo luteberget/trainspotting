@@ -83,16 +83,19 @@ main = do
               sat_timer <- newIORef =<< getCPUTime
               sat_timer_sum <- newIORef 0
               des_timer_sum <- newIORef 0
+              des_counter <- newIORef 0
 
               final <- Solver.plan maxminSteps maxFailedSteps solverInput $ \plan -> do
                 t <- getCPUTime
                 lastt <- readIORef sat_timer
                 modifyIORef sat_timer_sum ((+) (t-lastt))
+                writeIORef sat_timer t
                 let dispatchString = Convert.dispatchPlan solverInput plan
                 -- putStrLn dispatchString
                 Sim.withDispatch dispatchString $ \dispatch -> do
                   (sim_t, history) <- time (run dispatch)
                   modifyIORef des_timer_sum ((+) sim_t)
+                  modifyIORef des_counter (+ 1)
                   return (eval history)
 
               t <- getCPUTime
@@ -101,8 +104,12 @@ main = do
 
               sat_time <- readIORef sat_timer_sum
               des_time <- readIORef des_timer_sum
+              n_des <- readIORef des_counter
+              putStrLn $ "Number of routes: " ++ (show (length ((\(_,p,_,_) -> p) solverInput)))
+              putStrLn $ "Number of partial routes: " ++ (show (length ((\(r,_,_,_) -> r) solverInput)))
               putStrLn $ "Time SAT: " ++ (show (conv_time sat_time))
               putStrLn $ "Time DES: " ++ (show (conv_time des_time))
+              putStrLn $ "Number of simulations: " ++ (show n_des)
 
               case final of
                 Just plan -> do
