@@ -42,7 +42,7 @@ src/%-history.js: $(ROLLING) %/infrastructure %/routes %/plan
 src/%-vis.js: $(GRIDVIS) %/graph
 	[ -f $*/nooptgrid ] && $(GRIDVIS) -n $*/graph > src/$*-vis.js || $(GRIDVIS) $*/graph > src/$*-vis.js
 
-%/plan: $(RAILPERFCHECK) %/infrastructure %/routes %/usage
+%/plan %/time: $(RAILPERFCHECK) %/infrastructure %/routes %/usage
 	{ time $(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan | tee $*/railperfchecklog > /dev/null ; } 2> $*/time
 
 %/infrastructure %/routes: $(ROLLINGRAILML) %/railmlinfrastructure

@@ -36,7 +36,7 @@
         <trackBegin>
             <connection id="conn2-b" ref="conn2-a"/>
         </trackBegin>
-        <trackEnd pos="450">
+        <trackEnd pos="550">
             <connection id="conn3-b" ref="conn3-a"/>
         </trackEnd>
         <connections>
@@ -44,11 +44,11 @@
     </trackTopology>
     <ocsElements>
         <signals>
-            <signal id="sig1" name="sig1" pos="330" type="main" dir="up"/>
+            <signal id="sig1" name="sig1" pos="430" type="main" dir="up"/>
         </signals>
         <trainDetectionElements>
             <trainDetector id="det3" name="det3" pos="45" dir="both"/>
-            <trainDetector id="det4" name="det4" pos="330" dir="both"/>
+            <trainDetector id="det4" name="det4" pos="430" dir="both"/>
         </trainDetectionElements>
     </ocsElements>
 </track>
@@ -57,32 +57,80 @@
         <trackBegin>
             <connection id="conn0-b" ref="conn0-a"/>
         </trackBegin>
-        <trackEnd pos="550">
+        <trackEnd pos="650">
             <connection id="conn1-a" ref="conn1-b"/>
         </trackEnd>
         <connections>
             <switch id="sw0" pos="50">
                 <connection id="conn2-a" ref="conn2-b" course="left" orientation="outgoing"/>
             </switch>
-            <switch id="sw1" pos="500">
+            <switch id="sw1" pos="600">
                 <connection id="conn3-a" ref="conn3-b" course="right" orientation="incoming"/>
             </switch>
         </connections>
     </trackTopology>
     <ocsElements>
         <signals>
-            <signal id="sig2" name="sig2" pos="430" type="main" dir="up"/>
+            <signal id="sig2" name="sig2" pos="530" type="main" dir="up"/>
         </signals>
         <trainDetectionElements>
             <trainDetector id="det5" name="det5" pos="45" dir="both"/>
-            <trainDetector id="det6" name="det6" pos="430" dir="both"/>
+            <trainDetector id="det6" name="det6" pos="530" dir="both"/>
         </trainDetectionElements>
     </ocsElements>
 </track>
 <track name="track3">
     <trackTopology>
         <trackBegin>
+            <connection id="conn5-b" ref="conn5-a"/>
+        </trackBegin>
+        <trackEnd pos="550">
+            <connection id="conn6-b" ref="conn6-a"/>
+        </trackEnd>
+        <connections>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig3" name="sig3" pos="430" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det7" name="det7" pos="45" dir="both"/>
+            <trainDetector id="det8" name="det8" pos="430" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track4">
+    <trackTopology>
+        <trackBegin>
             <connection id="conn1-b" ref="conn1-a"/>
+        </trackBegin>
+        <trackEnd pos="650">
+            <connection id="conn4-a" ref="conn4-b"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw2" pos="50">
+                <connection id="conn5-a" ref="conn5-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw3" pos="600">
+                <connection id="conn6-a" ref="conn6-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig4" name="sig4" pos="530" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det9" name="det9" pos="45" dir="both"/>
+            <trainDetector id="det10" name="det10" pos="530" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track5">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn4-b" ref="conn4-a"/>
         </trackBegin>
         <trackEnd pos="500">
             <openEnd id="out"/>
@@ -92,12 +140,12 @@
     </trackTopology>
     <ocsElements>
         <signals>
-            <signal id="sig3" name="sig3" pos="400" type="main" dir="up"/>
+            <signal id="sig5" name="sig5" pos="400" type="main" dir="up"/>
         </signals>
         <trainDetectionElements>
-            <trainDetector id="det7" name="det7" pos="50" dir="both"/>
-            <trainDetector id="det8" name="det8" pos="400" dir="both"/>
-            <trainDetector id="det9" name="det9" pos="450" dir="both"/>
+            <trainDetector id="det11" name="det11" pos="50" dir="both"/>
+            <trainDetector id="det12" name="det12" pos="400" dir="both"/>
+            <trainDetector id="det13" name="det13" pos="450" dir="both"/>
         </trainDetectionElements>
     </ocsElements>
 </track>

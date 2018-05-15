@@ -4,4 +4,3 @@ movement passengertrain {
   visit #start [in]
   visit #end [out]
 }
-
