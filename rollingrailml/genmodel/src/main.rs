@@ -61,7 +61,7 @@ fn mk_station_track(tracks :&mut Vec<Track>, spec :&ModelSpec,
             detectors: vec![spec.switch_length - 5.0, length - 2.0*spec.switch_length - 20.0],
         };
 
-        if num > 0 {
+        if num > 1 {
             // Add switches and another track.
             
             let (sw1ca,sw1cb) = mk_connection(conn_i);
