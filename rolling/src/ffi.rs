@@ -53,7 +53,7 @@ pub unsafe extern fn parse_dispatch(input :*const c_char) -> *mut dispatch::Disp
 pub unsafe extern fn eval_simplified(inf :*mut StaticInfrastructure,
                                     routes: *mut Routes,
                              dis :*mut dispatch::Dispatch) -> *mut c_char {
-    let result = evaluate_plan(&*inf,&*routes,&*dis);
+    let result = evaluate_plan(&*inf,&*routes,&*dis, None);
     let result = output::history::visits(&*inf, &result);
 
     match result {

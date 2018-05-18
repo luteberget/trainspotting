@@ -54,6 +54,10 @@ struct Opt {
     /// Output directed graph for graphical conversion
     #[structopt(short = "g", long = "graphical", parse(from_os_str))]
     graphical: Option<PathBuf>,
+
+    /// Maximum time step 
+    #[structopt(short = "d", long = "time-step")]
+    timestep: Option<f64>,
 }
 
 fn run(opt :&Opt) -> AppResult<()> {
@@ -89,7 +93,7 @@ fn run(opt :&Opt) -> AppResult<()> {
         }
 
         // Eval -> history
-        let history = rolling::evaluate_plan(&infrastructure, &routes, &dispatch);
+        let history = rolling::evaluate_plan(&infrastructure, &routes, &dispatch, opt.timestep);
 
         // Print
         println!("# Infrastructure history:");

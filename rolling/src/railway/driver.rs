@@ -32,6 +32,7 @@ pub struct Driver {
     connected_signals: SmallVec<[(ObjectId, f64); 4]>,
     logger: Box<Fn(TrainLogEvent)>,
     activation: Activation,
+    timestep: Option<f64>,
 }
 
 impl Driver {
@@ -40,7 +41,8 @@ impl Driver {
                node: NodeId,
                auth: f64,
                params: TrainParams,
-               logger: Box<Fn(TrainLogEvent)>)
+               logger: Box<Fn(TrainLogEvent)>,
+               timestep: Option<f64>)
                -> Self {
 
         let train = Train {
@@ -57,6 +59,7 @@ impl Driver {
             connected_signals: SmallVec::new(),
             logger: logger,
             activation: Activation::Wait(activated),
+            timestep: timestep
         };
 
         d
@@ -279,8 +282,12 @@ impl<'a> Process<Infrastructure<'a>> for Driver {
 
                 let mut events = SmallVec::new();
                 if plan.dt > 1e-5 {
-                    //println!("SET TIMOUT {:?}", plan.dt);
-                    events.push(sim.create_timeout(plan.dt));
+                    let dt = match self.timestep {
+                        Some(m) => if m < plan.dt && plan.dt.is_normal() { m } else { plan.dt },
+                        None => plan.dt,
+                    };
+                    //println!("SET TIMOUT {:?} {:?}", plan.dt, dt);
+                    events.push(sim.create_timeout(dt));
                 } else {
                     if self.train.velocity > 1e-5 { panic!("Velocity, but no plan."); }
                     self.train.velocity = 0.0;

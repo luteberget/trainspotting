@@ -32,7 +32,7 @@ modelexit re1 to b2 {
   entrysection a4
   length 2000.0
   sections [a4]
-  switches []
+  switches [sw2 left]
   contains []
 }
 
@@ -41,7 +41,7 @@ modelexit re2 to b2 {
   entrysection a4
   length 2000.0
   sections [a4]
-  switches []
+  switches [sw2 right]
   contains []
 }
   

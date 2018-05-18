@@ -35,7 +35,7 @@ src/%.md: src/%-history.js src/%-vis.js %/template %/infrastructure %/routes %/p
 
 src/%-history.js: $(ROLLING) %/infrastructure %/routes %/plan
 	$(ROLLING) $*/infrastructure $*/routes $*/plan -vv \
-	    -J src/$*-history.js
+	    -J src/$*-history.js -d 1.0
 
 %/graph: $(ROLLING) %/infrastructure
 	$(ROLLING) $*/infrastructure $*/routes $*/plan -vv -g $*/graph

@@ -18,7 +18,7 @@ use output::history::InfrastructureLogEvent;
 
 pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticInfrastructure,
                      routes: &HashMap<String,input::staticinfrastructure::Route>,
-                     dispatch: &input::dispatch::Dispatch) -> output::history::History {
+                     dispatch: &input::dispatch::Dispatch, timestep :Option<f64>) -> output::history::History {
 
 
     let mut train_logs = Vec::new();
@@ -80,7 +80,7 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
                 });
                 let driver = Box::new(
                     railway::driver::Driver::new(&mut sim, activated, node_idx, auth_dist, 
-                          *params, logger));
+                          *params, logger, timestep));
                 sim.start_process(driver);
             }
         }
