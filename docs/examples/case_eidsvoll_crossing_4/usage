@@ -1,0 +1,30 @@
+vehicle short length 120.0 accel 1.0 brake 0.9 maxspeed 40.0
+vehicle long length 220.0 accel 1.0 brake 0.9 maxspeed 30.0
+vehicle goods length 650.0 accel 0.7 brake 0.65 maxspeed 10.0
+
+movement short {
+  visit #a1in [gardermobanen]
+  visit #a1out [dovrebanen]
+}
+
+movement short {
+  visit #a2in [gardermobanen]
+  visit #a2out [dovrebanen]
+}
+
+movement short {
+  visit #b1in [dovrebanen]
+  visit #b1out [gardermobanen]
+}
+
+movement short {
+  visit #b2in [dovrebanen]
+  visit #b2out [gardermobanen]
+}
+
+timing a1in b1in
+timing b1out a1out
+timing a2in b1in
+timing b1out a2out
+timing b1in b2in
+timing b2out b1out

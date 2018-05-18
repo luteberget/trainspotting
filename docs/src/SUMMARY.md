@@ -32,13 +32,25 @@
     - [Kolbotn overtaking 3](./examples/case_kolbotn_overtaking_3.md)
     - [Kolbotn running time](./examples/case_kolbotn_running.md)
   - [Eidsvoll](./examples/case_eidsvoll.md)
-    - [Eidsvoll crossing 2](./examples/case_eidsvoll_crossing_2.md)
+    - [Eidsvoll crossing 3](./examples/case_eidsvoll_crossing_3.md)
+    - [Eidsvoll crossing 4](./examples/case_eidsvoll_crossing_4.md)
     - [Eidsvoll rearrange](./examples/case_eidsvoll_rearrange_while_2_waiting.md)
     - [Eidsvoll running](./examples/case_eidsvoll_running.md)
   - [Holmlia](./examples/case_holmlia.md)
   - [Asker](./examples/case_asker.md)
-  - [Arna A20](./examples/case_arna.md)
-  - [Arna A20 by hand](./examples/case_arna_byhand.md)
+    - [Asker overtake 2](./examples/case_asker_overtake2.md)
+    - [Asker overtake 3](./examples/case_asker_overtake3.md)
+    - [Asker crossing 4](./examples/case_asker_crossing4.md)
+  - [Arna (CAD)](./examples/case_arna.md)
+    - [Arna running time](./examples/case_arna_running.md)
+    - [Arna overtake 2](./examples/case_arna_overtaking2.md)
+    - [Arna overtake 3](./examples/case_arna_overtaking3.md)
+    - [Arna crossing 4](./examples/case_arna_crossing4.md)
+<!--  - [Arna A20 by hand](./examples/case_arna_byhand.md)  -->
+<!--    - [Arna running time](./examples/case_arna_byhand_running.md)  -->
+<!--    - [Arna overtaking 2](./examples/case_arna_byhand_overtaking2.md)  -->
+<!--    - [Arna overtaking 3](./examples/case_arna_byhand_overtaking3.md)  -->
+<!--    - [Arna crossing 3](./examples/case_arna_byhand_crossing3.md)  -->
 - [Test cases](./testcases.md)
   - [Trivial](./examples/gen_trivial.md)
   - [Two track](./examples/gen_twotrack.md)

@@ -1,0 +1,34 @@
+vehicle short length 110.0 accel 1.0 brake 0.9 maxspeed 20.0
+vehicle long length 220.0 accel 1.0 brake 0.9 maxspeed 10.0
+
+movement short {
+  visit #a1 [DBinH]
+  visit #a2 [DBoutH]
+}
+
+movement short {
+  visit #b1 [DBinH]
+  visit #b2 [DBoutH]
+}
+
+timing a1 b1
+timing b2 a2
+
+movement short {
+  visit #c1 [ABoutH]
+  visit #c2 [SBin]
+}
+
+movement short {
+  visit #d1 [DBinH]
+  visit #d2 [ABoutH]
+}
+
+timing c1 d2
+timing d1 c2
+
+movement short {
+  visit #e1 [DBinH]
+  visit #e2 [ABoutH]
+}
+

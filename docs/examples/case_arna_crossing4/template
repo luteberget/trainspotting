@@ -1,0 +1,32 @@
+# Arna
+
+Station converted from engineering project using [RailCOMPLETE](https://www.railcomplete.com/) software.
+This example demonstrates conversion from railML 
+for a single to double track junction with additional station tracks
+including a pendulum train cul-de-sac.
+
+Tracks, switches, signals and detectors are imported from railML, while 
+routes are derived from signal and detector placement. This may or may not be 
+equal to the actual routes in use on the station, but suffices for our 
+demonstrations.
+
+![Arna](arna.png "Arna")
+
+## View
+
+$RAILWAYVIEW
+
+## Usage
+
+The view above solves the following usage scenario:
+
+```haskell
+$RAILWAYUSAGE
+```
+
+... by presenting the following dispatch plan:
+
+```haskell
+$RAILWAYDISPATCH
+```
+

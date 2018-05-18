@@ -1,0 +1,8 @@
+vehicle passengertrain length 150.0 accel 1.0 brake 0.9 maxspeed 20.0
+
+movement passengertrain {
+  visit #a [b1]
+  visit #b [b2iii]
+}
+
+timing a b 10.0

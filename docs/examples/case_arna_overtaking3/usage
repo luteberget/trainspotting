@@ -11,7 +11,15 @@ movement short {
   visit #b2 [bergen]
 }
 
+movement short {
+  visit #c1 [rbff4z]
+  visit #c2 [bergen]
+}
+
 
 timing a1 b1
+timing b1 c1
+
+timing c2 b2
 timing b2 a2
 
