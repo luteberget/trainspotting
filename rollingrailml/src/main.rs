@@ -153,13 +153,10 @@ pub struct RouteEntry {
 #[derive(Debug, Clone)]
 pub struct Path {
     node: PartNodeIdx,
-    section: Option<String>,
-    sections: Vec<(String, f64)>,
-    switches: Vec<(String, Side)>,
-    partial_length: f64,
-    partial_resources: Vec<String>,
-    releases: Vec<(String, f64, Vec<String>)>,
     length: f64,
+    entered_sections: Vec<(String, f64)>,
+    exited_sections: Vec<(String, f64, f64)>,
+    switches: Vec<(String, f64, Side)>,
 }
 
 #[derive(Debug, Clone)]
@@ -170,12 +167,55 @@ pub enum DirEdge {
     Boundary,
 }
 
-pub fn find_routes(model: &Model) -> Vec<Route> {
 
+fn switch_list(sw :&[(String, f64, Side)]) -> Vec<(String, Side)> {
+    sw.iter().map(|x| (x.0.clone(), x.2)).collect()
+}
+
+pub fn convert_state_to_route(state: &Path, entry: RouteBoundary,  
+                              exit: RouteBoundary) -> Option<Route> {
     let section_tolerance = 15.0;
 
-    let mut routes = Vec::new();
+    let mut sections = state.exited_sections.clone();
+    sections.extend(state.entered_sections.iter()
+                    .map(|&(ref x,l)| (x.clone(), l, state.length)));
+    sections.retain(|&(_,a,b)| (b-a) > section_tolerance);
 
+    let mut cleared_length = 0.0;
+    let mut releases = sections.iter().map(|&(ref x,start,end)| {
+        let trigger = x.clone();
+        let start = if cleared_length > start { cleared_length } else { start };
+        let length = end-start;
+        cleared_length += length;
+        let mut resources = vec![trigger.clone()];
+        for &(ref sw,pos,_side) in &state.switches {
+            if start <= pos && pos < end {
+                resources.push(sw.clone());
+            }
+        }
+        (trigger,length,resources)
+    }).collect::<Vec<_>>();
+
+    let release_length = releases.iter().map(|&(_,l,_)| l).sum::<f64>();
+    if release_length != state.length {
+        println!("Release length and route length differ by {} {} {:?} {:?}", state.length, release_length, entry, exit);
+        releases.last_mut().unwrap().1 += state.length - release_length;
+    }
+
+    let route = Route {
+        length: state.length,
+        entry: entry,
+        exit: exit,
+        sections: sections.iter().map(|&(ref x,_,_)| x.clone()).collect(),
+        switches: state.switches.iter().map(|&(ref x,_,s)| (x.clone(), s)).collect(),
+        releases: releases,
+    };
+    //println!("Route {:?}", route);
+
+    Some(route)
+}
+
+fn convert_model(model  :&Model) -> HashMap<PartNodeIdx, DirEdge> {
     let mut dir_edges: HashMap<PartNodeIdx, DirEdge> = HashMap::new();
     for edge in &model.edges {
         match *edge {
@@ -195,17 +235,22 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
             }
         }
     }
+    dir_edges
+}
 
+pub fn find_routes(model: &Model) -> Vec<Route> {
+    let mut routes = Vec::new();
+    let dir_edges = convert_model(&model);
     let boundary_nodes = model.edges.iter().filter_map(|x| if let Edge::Boundary(n) = *x {
         Some(n)
     } else {
         None
     });
 
+    let mut entry_visited = HashSet::new();
     for boundary in boundary_nodes {
         println!("Boundary start {:?}", boundary);
         let mut entry_stack = Vec::new();
-        let mut entry_visited = HashSet::new();
         entry_stack.push(RouteEntry {
             node: boundary.opposite(),
             entry: RouteBoundary::ModelBoundary(boundary),
@@ -217,7 +262,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
             let entry = entry_stack.pop().unwrap();
             let mut search_stack = Vec::new();
 
-            println!("Entry from {:?}", entry);
+            //println!("Entry from {:?}", entry);
 
             // A route path may only visit a given switch in a given direction
             // (trailing or facing) once, because using a given switch
@@ -236,13 +281,10 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
 
             search_stack.push(Path {
                 node: entry.node,
-                sections: entry.section.iter().map(|x| (x.clone(), 0.0)).collect(),
-                section: entry.section.clone(),
+                entered_sections: entry.section.iter().map(|x| (x.clone(), 0.0)).collect(),
+                exited_sections: vec![],
                 switches: vec![],
-                releases: vec![],
                 length: 0.0,
-                partial_length: 0.0,
-                partial_resources: entry.section.iter().cloned().collect(),
             });
 
             while search_stack.len() > 0 {
@@ -262,65 +304,32 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                             match *obj {
                                 Signal(ref x) => {
 
-                                    let release_length = curr_state.releases.iter().map(|&(_,l,_)| l).sum();
-                                    if curr_state.length > release_length {
-                                        if curr_state.section.is_some() {
-                                            curr_state.releases.push(( curr_state.section.clone()
-                                                          .expect("route ends outside detection area"), 
-                                                          curr_state.partial_length,
-                                                          curr_state.partial_resources.drain(0..).collect()));
-                                        } else {
-                                            curr_state.releases.iter_mut().last().expect("no release sections").1
-                                                 += curr_state.length - release_length;
-                                        }
-                                    }
-
-                                    let route = Route {
-                                        entry: entry.entry.clone(),
-                                        exit: RouteBoundary::Signal(x.clone()),
-                                        sections: curr_state.sections
-                                            .iter()
-                                            .filter_map(|&(ref x, d)| if d > section_tolerance {
-                                                Some(x.clone())
-                                            } else {
-                                                None
-                                            })
-                                            .collect(),
-                                        switches: curr_state.switches.clone(),
-                                        releases: curr_state.releases.clone(),
-                                        length: curr_state.length,
-                                    };
-
-                                    if route.length < section_tolerance {
-                                        println!("Warning: route is too short. {:?}", route);
-                                    } else {
+                                    if let Some(route) = convert_state_to_route(&curr_state, 
+                                                            entry.entry.clone(), RouteBoundary::Signal(x.clone())) {
                                         routes.push(route);
+                                    } else {
+                                        panic!("Route conversion failed");
                                     }
 
                                     if entry_visited.insert(curr_state.node) {
                                         entry_stack.push(RouteEntry {
                                             node: curr_state.node,
                                             entry: RouteBoundary::Signal(x.clone()),
-                                            section: curr_state.section.clone(),
+                                            section: curr_state.entered_sections.iter().nth(0).map(|x| x.0.clone()),
                                         });
                                     }
 
                                     is_exit = true;
-                                    break; // Don't count TVDEnter on same node
                                 }
                                 TVDEnter(ref x) => {
-                                    curr_state.section = Some(x.clone());
-                                    curr_state.sections.push((x.clone(), 0.0));
-                                    curr_state.partial_resources.push(x.clone());
+                                    curr_state.entered_sections.push((x.clone(), curr_state.length));
                                 }
                                 TVDExit(ref x) => {
-                                    if curr_state.section == Some(x.clone()) {
-                                        curr_state.section = None;
-                                    }
-                                    if curr_state.sections.iter().any(|&(ref y, d)| x == y && d > section_tolerance) {
-                                        curr_state.releases.push((x.clone(), curr_state.partial_length,
-                                                                  curr_state.partial_resources.drain(0..).collect()));
-                                        curr_state.partial_length = 0.0;
+                                    if let Some(i) = curr_state.entered_sections.iter().position(|y| y.0 == *x) {
+                                        let e = curr_state.entered_sections.remove(i);
+                                        curr_state.exited_sections.push((e.0, e.1, curr_state.length));
+                                    } else {
+                                        panic!("Exited unexpected section");
                                     }
                                 }
                                 Sight(_,_) => {}
@@ -328,112 +337,53 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                         }
                     }
 
-                    match (is_exit, dir_edges.get(&curr_state.node).cloned()) {
-                        (false, Some(DirEdge::Linear((other, d)))) => {
+                    if is_exit { break; }
+
+                    match dir_edges.get(&curr_state.node).cloned() {
+                        Some(DirEdge::Linear((other,d))) => {
                             curr_state.node = other.opposite();
                             curr_state.length += d;
-                            curr_state.partial_length += d;
-                            if let Some(&mut (ref s, ref mut l)) =
-                                curr_state.sections.iter_mut().last() {
-                                if Some(s) == curr_state.section.as_ref() {
-                                    *l += d;
-                                }
-                            }
-                        }
-                        (false, Some(DirEdge::TrailingSwitch(sw, pos, (other, d)))) => {
+                        },
+                        Some(DirEdge::TrailingSwitch(sw,pos,(other,d))) => {
                             curr_state.node = other.opposite();
                             curr_state.length += d;
-                            curr_state.partial_length += d;
-                            curr_state.partial_resources.push(sw.clone());
-                            curr_state.switches.push((sw, pos));
-                            if let Some(&mut (ref s, ref mut l)) =
-                                curr_state.sections.iter_mut().last() {
-                                if Some(s) == curr_state.section.as_ref() {
-                                    *l += d;
-                                }
-                            }
-                            if !switches_path_visited.insert(curr_state.switches.clone()) {
+                            curr_state.switches.push((sw,curr_state.length,pos));
+                            if !switches_path_visited.insert(switch_list(&curr_state.switches)) {
+                                // We have been here before. Abort without adding a new route,
+                                // to avoid having routes with loops.
                                 break;
                             }
-                        }
-                        (false, Some(DirEdge::FacingSwitch(sw, (other1, d1), (other2, d2)))) => {
+                        },
+                        Some(DirEdge::FacingSwitch(sw, (other1, d1), (other2, d2))) => {
                             let mut right_state = curr_state.clone();
 
                             curr_state.node = other1.opposite();
+                            curr_state.switches.push((sw.clone(), curr_state.length, Side::Left));
                             curr_state.length += d1;
-                            curr_state.partial_length += d1;
-                            if let Some(&mut (ref s, ref mut l)) =
-                                curr_state.sections.iter_mut().last() {
-                                if Some(s) == curr_state.section.as_ref() {
-                                    *l += d1;
-                                }
-                            }
-                            curr_state.partial_resources.push(sw.clone());
-                            curr_state.switches.push((sw.clone(), Side::Left));
 
                             right_state.node = other2.opposite();
+                            right_state.switches.push((sw, curr_state.length, Side::Right));
                             right_state.length += d2;
-                            right_state.partial_length += d2;
-                            if let Some(&mut (ref s, ref mut l)) =
-                                right_state.sections.iter_mut().last() {
-                                if Some(s) == right_state.section.as_ref() {
-                                    *l += d2;
-                                }
-                            }
-                            right_state.partial_resources.push(sw.clone());
-                            right_state.switches.push((sw, Side::Right));
 
-                            if switches_path_visited.insert(right_state.switches.clone()) {
+                            if switches_path_visited.insert(switch_list(&right_state.switches)) {
                                 search_stack.push(right_state);
                             }
-                            if !switches_path_visited.insert(curr_state.switches.clone()) {
+                            if !switches_path_visited.insert(switch_list(&curr_state.switches)) {
                                 break;
                             }
-                        }
-                        (false, Some(DirEdge::Boundary)) => {
-                            let release_length = curr_state.releases.iter().map(|&(_,l,_)| l).sum();
-                            println!("BOUNDARY HERE");
-                            if curr_state.length > release_length {
-                                if curr_state.section.is_some() {
-                                    println!("ADDING SECTION");
-                                    curr_state.releases.push(( curr_state.section.clone()
-                                                  .expect("route ends outside detection area"), 
-                                                  curr_state.partial_length,
-                                                  curr_state.partial_resources.drain(0..).collect()));
-                                } else {
-                                    println!("EXTENDING SECTION");
-                                    curr_state.releases.iter_mut().last().expect("no release sections").1
-                                         += curr_state.length - release_length;
-                                }
-                            }
-                                    println!("{:#?}", curr_state);
-
-                            let route = Route {
-                                entry: entry.entry.clone(),
-                                exit: RouteBoundary::ModelBoundary(curr_state.node),
-                                sections: curr_state.sections
-                                    .iter()
-                                    .filter_map(|&(ref x, d)| if d > section_tolerance {
-                                        Some(x.clone())
-                                    } else {
-                                        None
-                                    })
-                                    .collect(),
-                                switches: curr_state.switches.clone(),
-                                releases: curr_state.releases.clone(),
-                                length: curr_state.length,
-                            };
-
-                            if route.length < section_tolerance {
-                                println!("Warning: route is too short. {:?}", route);
-                            } else {
-                                println!("BOUNDARY ROUTE {:?}", route);
+                        },
+                        Some(DirEdge::Boundary) => {
+                            if let Some(route) = convert_state_to_route(&curr_state, 
+                                        entry.entry.clone(), RouteBoundary::ModelBoundary(curr_state.node)) {
                                 routes.push(route);
+                                break; 
+                            } else {
+                                panic!("Could not convert route");
                             }
-
-                            break;
+                        },
+                        None => {
+                            break; 
                         }
-                        _ => break,
                     }
                 }
             }
