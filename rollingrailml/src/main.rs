@@ -197,7 +197,7 @@ pub fn convert_state_to_route(state: &Path, entry: RouteBoundary,
     }).collect::<Vec<_>>();
 
     let release_length = releases.iter().map(|&(_,l,_)| l).sum::<f64>();
-    if release_length != state.length {
+    if releases.len() > 0 && release_length != state.length {
         println!("Release length and route length differ by {} {} {:?} {:?}", state.length, release_length, entry, exit);
         releases.last_mut().unwrap().1 += state.length - release_length;
     }

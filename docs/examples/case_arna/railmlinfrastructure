@@ -502,6 +502,8 @@
             <trainDetector id="t31BDE83" name="Tp(901/201)" pos="363.156">
               <geoCoord coord="306161.43811760982 6703665.5241342615 0" />
             </trainDetector>
+            <trainDetector id="t31BDE83-x" name="Tp(901/201)-X" pos="10.156">
+            </trainDetector>
             <trainDetector id="t2B7EDA0-X" name="Tp(x/y)" pos="9848.193">
             </trainDetector>
           </trainDetectionElements>
