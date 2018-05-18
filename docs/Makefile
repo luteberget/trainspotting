@@ -4,6 +4,7 @@ examples = $(addsuffix .md, $(addprefix src/,\
 example_history = $(patsubst %.md,%-history.js, $(examples))
 example_vis     = $(patsubst %.md,%-vis.js, $(examples))
 example_plans   = $(patsubst src/%.md,%/plan, $(examples))
+example_timing  = $(patsubst src/%.md,%/time, $(examples))
 
 ROLLING = ../rolling/target/debug/rolling
 GRIDVIS = ../gridvis/gridjson
@@ -15,7 +16,7 @@ book: $(examples) $(example_history) $(example_vis)
 	mdbook build
 
 .PHONY: time
-time: $(example_plans)
+time: $(example_timing)
 
 src/%.md: src/%-history.js src/%-vis.js %/template %/infrastructure %/routes %/plan
 	sed \
@@ -40,7 +41,7 @@ src/%-history.js: $(ROLLING) %/infrastructure %/routes %/plan
 	$(ROLLING) $*/infrastructure $*/routes $*/plan -vv -g $*/graph
 
 src/%-vis.js: $(GRIDVIS) %/graph
-	[ -f $*/nooptgrid ] && $(GRIDVIS) -n $*/graph > src/$*-vis.js || $(GRIDVIS) $*/graph > src/$*-vis.js
+	[ -f $*/nograph ] && touch src/$*-vis.js || ([ -f $*/nooptgrid ] && $(GRIDVIS) -n $*/graph > src/$*-vis.js || $(GRIDVIS) $*/graph > src/$*-vis.js)
 
 %/plan %/time: $(RAILPERFCHECK) %/infrastructure %/routes %/usage
 	{ time $(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan | tee $*/railperfchecklog > /dev/null ; } 2> $*/time
