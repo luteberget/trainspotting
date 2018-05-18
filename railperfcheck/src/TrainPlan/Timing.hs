@@ -63,8 +63,9 @@ evaluate :: UsagePattern -> [Event] -> Bool
 evaluate usage history = all (\x -> x == Resolved) (traceShowId final)
       
   where
+    relevantTimings = [ x | x@(TimingSpec a b (Just t)) <- timings usage ]
     final = execState go (Map.fromList [(i,Untriggered) 
-                           | i <- [0..((length (timings usage))-1)] ])
+                           | i <- [0..((length (relevantTimings))-1)] ])
     go = do
       forM (sortOn (\(Event _ t _) -> t) (traceShowId history)) $ \(Event trainName time node) -> do
         case Map.lookup (trainName, node) (traceShowId startTriggers) of
@@ -97,13 +98,13 @@ evaluate usage history = all (\x -> x == Resolved) (traceShowId final)
 
     startTriggers :: Map (TrainName, NodeRef) (Set Int)
     startTriggers = Map.fromListWith Set.union [ ((tName,nName),Set.singleton i)
-                                              | (i,(TimingSpec visitA visitB dt)) <- zip [0..] (timings usage)
+                                              | (i,(TimingSpec visitA visitB dt)) <- zip [0..] relevantTimings
                                               , let (tName,nodes,dt) = visitMap Map.! visitA
                                               , nName <- nodes ]
 
     endTriggers :: Map (TrainName, NodeRef) (Set Int)
     endTriggers = Map.fromListWith Set.union [ ((tName,nName),Set.singleton i)
-                                              | (i,(TimingSpec visitA visitB dt)) <- zip [0..] (timings usage)
+                                              | (i,(TimingSpec visitA visitB dt)) <- zip [0..] relevantTimings
                                               , let (tName,nodes,dt) = visitMap Map.! visitB
                                               , nName <- nodes ]
                                               
@@ -113,5 +114,5 @@ evaluate usage history = all (\x -> x == Resolved) (traceShowId final)
                             , (visitName, nodes, dt) <- visits movement, isJust visitName ]
 
     timingFromId :: Map Int TimingSpec
-    timingFromId = Map.fromList (zip [0..] (timings usage))
+    timingFromId = Map.fromList (zip [0..] relevantTimings)
  
