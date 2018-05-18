@@ -174,7 +174,13 @@ fn switch_list(sw :&[(String, f64, Side)]) -> Vec<(String, Side)> {
 
 pub fn convert_state_to_route(state: &Path, entry: RouteBoundary,  
                               exit: RouteBoundary) -> Option<Route> {
+
     let section_tolerance = 15.0;
+
+    if state.length < section_tolerance {
+        println!("Warning: route too short");
+        return None;
+    }
 
     let mut sections = state.exited_sections.clone();
     sections.extend(state.entered_sections.iter()
@@ -308,7 +314,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                                                             entry.entry.clone(), RouteBoundary::Signal(x.clone())) {
                                         routes.push(route);
                                     } else {
-                                        panic!("Route conversion failed");
+                                        println!("Warning: Route conversion failed");
                                     }
 
                                     if entry_visited.insert(curr_state.node) {
