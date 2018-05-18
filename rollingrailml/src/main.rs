@@ -384,7 +384,7 @@ pub fn find_routes(model: &Model) -> Vec<Route> {
                                 routes.push(route);
                                 break; 
                             } else {
-                                panic!("Could not convert route");
+                                println!("Warning: Could not convert route");
                             }
                         },
                         None => {
