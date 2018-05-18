@@ -1,0 +1,17 @@
+# Crossing
+Two-track station with two-way traffic. Verify that 
+trains can cross.
+
+```haskell
+$RAILWAYUSAGE
+```
+
+### Dispatch
+```haskell
+$RAILWAYDISPATCH
+```
+
+### Result 
+
+$RAILWAYVIEW
+
