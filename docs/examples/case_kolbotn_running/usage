@@ -6,3 +6,4 @@ movement short {
   visit #ax2 [outR]
 }
 
+timing ax1 ax2 135.5

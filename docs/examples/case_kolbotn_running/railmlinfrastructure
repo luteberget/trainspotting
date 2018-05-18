@@ -259,7 +259,7 @@
             <switch id="sw26528" pos="73.000000" absPos="12804" name="Sporveksel/sporkryss, 627B, Kolbotn stasjon">
               <connection id="co26528_2" ref="co26528_1" orientation="incoming" course="left"/>
             </switch>
-            <switch id="sw26589" pos="250.000000" absPos="12981" name="Sporveksel/sporkryss, 626A, Kolbotn stasjon">
+            <switch id="sw26589" pos="310.000000" absPos="12981" name="Sporveksel/sporkryss, 626A, Kolbotn stasjon">
               <connection id="co26591_2" ref="co26591_1" orientation="outgoing" course="right"/>
             </switch>
           </connections>
@@ -585,7 +585,7 @@
             <switch id="sw26298" pos="590.000000" absPos="12733" name="Sporveksel/sporkryss, 627A, Kolbotn stasjon" trackContinueCourse="right">
               <connection id="co26300_1" ref="co26300_2" orientation="outgoing" course="left"/>
             </switch>
-            <switch id="sw26338" pos="911.000000" absPos="13054" name="Sporveksel/sporkryss, 626B, Kolbotn stasjon" trackContinueCourse="left">
+            <switch id="sw26338" pos="811.000000" absPos="13054" name="Sporveksel/sporkryss, 626B, Kolbotn stasjon" trackContinueCourse="left">
               <connection id="co26338_1" ref="co26338_2" orientation="incoming" course="right"/>
             </switch>
           </connections>
