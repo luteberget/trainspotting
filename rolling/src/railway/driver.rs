@@ -155,7 +155,10 @@ impl Driver {
         let log = &mut self.logger;
         self.connected_signals.retain(|&mut (obj, ref mut dist)| {
             *dist -= update.dx;
-            let lost = *dist < 1e-4;
+            let lost = *dist < 10.0; // If closer than 10 m, signal should already be green
+                                     // and seeing a red for a very short time should be because
+                                     // detector is placed in front of signal and this should not 
+                                     // bother the driver.
             if lost { log(TrainLogEvent::Sight(obj, false)); } 
             !lost
         });
@@ -213,10 +216,12 @@ impl Driver {
                         Some(d) => {
                             //println!("Signal green in sight dist{} sigauth{} self.auth{}", dist, d, dist+d-20.0);
                             self.authority = dist + d - 20.0;
+                            if self.authority < 0.0 { self.authority = 0.0; }
                         }
                         None => {
                             //println!("Signal red in sight dist{} self.auth{}", dist,dist-20.0);
                             self.authority = dist - 20.0;
+                            if self.authority < 0.0 { self.authority = 0.0; }
                             break;
                         }
                     }
