@@ -15,8 +15,8 @@ ROLLINGRAILML = ../rollingrailml/target/debug/rollingrailml
 book: $(examples) $(example_history) $(example_vis)
 	mdbook build
 
-.PHONY: time
-time: $(example_timing)
+performance: book
+	./performance.sh
 
 src/%.md: src/%-history.js src/%-vis.js %/template %/infrastructure %/routes %/plan
 	sed \
