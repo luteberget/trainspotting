@@ -44,7 +44,7 @@
             <signal id="sig0" name="Hs." pos="200" absPos="200" dir="up" sight="250" type="main">
               <geoCoord coord="-137.54257946542816 700.2213528006688 0" />
             </signal>
-            <signal id="sig1" name="Hs." pos="200" absPos="199" dir="down" sight="250" type="main">
+            <signal id="sig1" name="Hs." pos="199" absPos="199" dir="down" sight="250" type="main">
               <geoCoord coord="-137.80035943716481 693.22137812562232 0" />
             </signal>
             <signal id="sig2" name="Hs." pos="1335" absPos="1335" dir="down" sight="250" type="main">

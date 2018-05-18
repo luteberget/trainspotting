@@ -1,4 +1,4 @@
-vehicle short length 110.0 accel 1.0 brake 0.9 maxspeed 40.0
+vehicle short length 120.0 accel 1.0 brake 0.9 maxspeed 40.0
 vehicle long length 220.0 accel 1.0 brake 0.9 maxspeed 30.0
 vehicle goods length 650.0 accel 0.7 brake 0.65 maxspeed 10.0
 
@@ -8,16 +8,16 @@ movement short {
 }
 
 movement short {
-  visit #a2in [gardermobanen]
+  visit #a2in [hovedbanen]
   visit #a2out [dovrebanen]
 }
 
-movement long {
+movement short {
   visit #bin [dovrebanen]
   visit #bout [gardermobanen]
 }
 
 timing a1in bin
-timing a2in bin
 timing bout a1out
+timing a2in bin
 timing bout a2out

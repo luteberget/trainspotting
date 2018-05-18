@@ -19,7 +19,7 @@ movement long {
 
 movement long {
   visit #az1 [dovrebanen]
-  visit #az2 [hovedbanen]
+  visit #az2 [gardermobanen]
 }
 
 movement goods {
@@ -27,4 +27,13 @@ movement goods {
   visit #cz2 [hovedbanen]
 }
 
+
+timing cz1 az1
+timing az2 cz2
+
+timing ax1 az1
+timing az2 ax2
+
+timing ay1 az1
+timing az2 ay2
 
