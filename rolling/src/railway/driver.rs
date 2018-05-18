@@ -101,7 +101,7 @@ impl Driver {
 
     fn move_train(&mut self, sim: &mut Sim) -> ModelContainment {
         let dt = *sim.time() - self.step.1;
-        if dt <= 1e-4 {
+        if dt <= 1e-5 {
             return ModelContainment::Inside;
         }
 
@@ -136,7 +136,7 @@ impl Driver {
 
         self.train.under_train.retain(|&mut (node, ref mut dist)| {
             *dist -= update.dx;
-            if *dist < 1e-4 {
+            if *dist < 1e-5 {
                 // Cleared a node.
                 
                 for obj in sim.world.statics.nodes[node].objects.clone() {
@@ -168,7 +168,7 @@ impl Driver {
     fn move_train_discrete(&mut self, sim :&mut Sim) {
         loop {
             let (_, (end_node, dist)) = self.train.location;
-            if dist > 1e-4 || end_node.is_none() { break; }
+            if dist > 1e-5 || end_node.is_none() { break; }
 
             let new_start = sim.world.statics.nodes[end_node.unwrap()].other_node;
             (self.logger)(TrainLogEvent::Node(end_node.unwrap()));
@@ -275,13 +275,14 @@ impl<'a> Process<Infrastructure<'a>> for Driver {
             ModelContainment::Inside => {
                 let plan = self.plan_ahead(sim);
                 self.step = (plan.action, *sim.time());
+                    println!("PLAN  {:?}", plan);
 
                 let mut events = SmallVec::new();
-                if plan.dt > 1e-4 {
+                if plan.dt > 1e-5 {
                     //println!("SET TIMOUT {:?}", plan.dt);
                     events.push(sim.create_timeout(plan.dt));
                 } else {
-                    if self.train.velocity > 1e-4 { panic!("Velocity, but no plan."); }
+                    if self.train.velocity > 1e-5 { panic!("Velocity, but no plan."); }
                     self.train.velocity = 0.0;
                     self.step.0 = DriverAction::Coast;
                 }
