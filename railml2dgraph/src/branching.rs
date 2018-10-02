@@ -7,6 +7,7 @@ pub struct BranchingModel {
     pub connections:  HashMap<(String,String), BrCursor>,
 }
 
+#[derive(Clone)]
 pub struct BrTrack {
     pub begin :BrTrackEnd,
     pub objs :Vec<BrObject>,
@@ -28,12 +29,14 @@ pub enum BrTrackEnd {
     Connection((String,String)),
 }
 
+#[derive(Clone)]
 pub struct BrObject {
     pub name :String,
     pub pos: f64,
     pub data :BrObjectData,
 }
 
+#[derive(Clone)]
 pub enum BrObjectData {
     Signal { dir: Dir, sight: f64 },
     Sight { dir: Dir, signal: String, distance: f64 },
@@ -243,3 +246,140 @@ fn add_switches(vec :&mut Vec<BrObject>, connections :&mut HashMap<(String,Strin
     }
 }
 
+
+pub enum WalkResult {
+    Ok(BrCursor),
+    End(f64, BrCursor),
+    TrailingSwitch(f64, BrCursor, BrCursor),
+    FacingSwitch(f64, BrCursor, BrCursor, BrCursor),
+}
+
+pub fn walk(m :&BranchingModel, cursor :&BrCursor, dist: f64, delta :f64) -> WalkResult {
+    let track = &m.tracks[cursor.track];
+    let mut objs = track.objs.clone();
+    match cursor.dir {
+        Dir::Up => {
+            objs.sort_by(|a,b| a.pos.partial_cmp(&b.pos).unwrap());
+            for obj in &objs {
+                if obj.pos < cursor.offset { continue; }
+                if obj.pos > cursor.offset + dist {
+                    return WalkResult::Ok(BrCursor {
+                        track: cursor.track,
+                        offset: cursor.offset + dist,
+                        dir: cursor.dir,
+                    });
+                }
+                match &obj.data {
+                    BrObjectData::Switch { dir: Dir::Up, conn, .. } => {
+                        let c1 = BrCursor {
+                            track: cursor.track,
+                            offset: obj.pos - delta,
+                            dir: cursor.dir,
+                        };
+                        let c2 = BrCursor {
+                            track: cursor.track,
+                            offset: obj.pos + delta,
+                            dir: cursor.dir,
+                        };
+                        let c3 = m.connections[&conn].clone();
+                        return WalkResult::FacingSwitch((obj.pos - cursor.offset).abs(), c1, c2, c3);
+                    },
+                    BrObjectData::Switch { dir: Dir::Down, conn, .. } => {
+                        let c1 = BrCursor {
+                            track: cursor.track,
+                            offset: obj.pos + delta,
+                            dir: cursor.dir,
+                        };
+                        let c2 = m.connections[&conn].clone();
+                        return WalkResult::TrailingSwitch((obj.pos - cursor.offset).abs(), c1,c2);
+                    },
+                    _ => {},
+                }
+            }
+
+            if m.tracks[cursor.track].length - cursor.offset > dist {
+                return WalkResult::Ok(BrCursor {
+                    track: cursor.track,
+                    offset: cursor.offset + dist,
+                    dir: cursor.dir});
+            } else {
+                match &m.tracks[cursor.track].end {
+                    BrTrackEnd::Stop | BrTrackEnd::Boundary(_) => {
+                        return WalkResult::End((m.tracks[cursor.track].length - cursor.offset).abs(),
+                                               BrCursor {
+                                                   track: cursor.track,
+                                                   offset: m.tracks[cursor.track].length - delta,
+                                                   dir: cursor.dir,
+                                               });
+                    },
+                    BrTrackEnd::Connection(c) => {
+                        let c = m.connections[&c].clone();
+                        return walk(m, &c, dist - (m.tracks[cursor.track].length - cursor.offset).abs(), delta);
+                    }
+                }
+            }
+        }
+        Dir::Down => {
+            objs.sort_by(|a,b| (-a.pos).partial_cmp(&(-b.pos)).unwrap());
+            for obj in &objs {
+                if obj.pos > cursor.offset { continue; }
+                if obj.pos < cursor.offset - dist {
+                    return WalkResult::Ok(BrCursor {
+                        track: cursor.track,
+                        offset: cursor.offset - dist,
+                        dir: cursor.dir,
+                    });
+                }
+                match &obj.data {
+                    BrObjectData::Switch { dir: Dir::Down, conn, .. } => {
+                        let c1 = BrCursor {
+                            track: cursor.track,
+                            offset: obj.pos + delta,
+                            dir: cursor.dir,
+                        };
+                        let c2 = BrCursor {
+                            track: cursor.track,
+                            offset: obj.pos - delta,
+                            dir: cursor.dir,
+                        };
+                        let c3 = m.connections[&conn].clone();
+                        return WalkResult::FacingSwitch((obj.pos - cursor.offset).abs(), c1, c2, c3);
+                    },
+                    BrObjectData::Switch { dir: Dir::Up, conn, .. } => {
+                        let c1 = BrCursor {
+                            track: cursor.track,
+                            offset: obj.pos - delta,
+                            dir: cursor.dir,
+                        };
+                        let c2 = m.connections[&conn].clone();
+                        return WalkResult::TrailingSwitch((obj.pos - cursor.offset).abs(), c1,c2);
+                    },
+                    _ => {},
+                }
+            }
+
+            if cursor.offset - 0.0 > dist {
+                return WalkResult::Ok(BrCursor {
+                    track: cursor.track,
+                    offset: cursor.offset - dist,
+                    dir: cursor.dir});
+            } else {
+                match &m.tracks[cursor.track].begin {
+                    BrTrackEnd::Stop | BrTrackEnd::Boundary(_) => {
+                        return WalkResult::End((0.0 - cursor.offset).abs(),
+                                               BrCursor {
+                                                   track: cursor.track,
+                                                   offset: delta,
+                                                   dir: cursor.dir,
+                                               });
+                    },
+                    BrTrackEnd::Connection(c) => {
+                        let c = m.connections[&c].clone();
+                        return walk(m, &c, dist - (m.tracks[cursor.track].length - cursor.offset).abs(), delta);
+                    }
+                }
+            }
+
+        }
+    }
+}

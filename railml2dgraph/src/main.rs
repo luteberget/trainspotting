@@ -23,8 +23,8 @@ struct Opts<'a> {
 }
 
 fn main() {
-    let opts = App::new("railML 2.3 to Rolling converter")
-        .about("Convert railML 2.3 files to rolling D-graph format")
+    let opts = App::new("railML 2.x to Rolling converter")
+        .about("Convert railML 2.x files to rolling D-graph format")
         .arg(Arg::with_name("INPUT")
             .help("railML file")
             .required(true)

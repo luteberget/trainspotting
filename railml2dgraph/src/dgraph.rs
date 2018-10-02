@@ -114,7 +114,7 @@ fn empty_node(name :&str) -> DGraphNode {
 }
 
 
-fn new_node(ns :&mut Vec<DGraphNode>, name: Option<String>) -> (PartNodeIdx, PartNodeIdx) {
+fn new_node(ns :&mut Vec<DGraphNode>) -> (PartNodeIdx, PartNodeIdx) {
     let i = ns.len();
     let name = format!("n{}",i);
     ns.push(empty_node(&name));
@@ -129,7 +129,7 @@ pub fn convert(bm :BranchingModel) -> Result<DGraphModel, String> {
 
     let mut named_connections = HashMap::new();
     for mut t in bm.tracks {
-        let (mut na, mut nb) = new_node(&mut model.nodes, None);
+        let (mut na, mut nb) = new_node(&mut model.nodes);
         match t.begin {
             BrTrackEnd::Stop => {},
             BrTrackEnd::Boundary(_name) => { model.edges.push(Edge::Boundary(na)); },
@@ -141,13 +141,13 @@ pub fn convert(bm :BranchingModel) -> Result<DGraphModel, String> {
 
         t.objs.sort_by(|a, b| (a.pos).partial_cmp(&b.pos).unwrap());
         for obj in t.objs {
-            let (mut na, mut nb) = new_node(&mut model.nodes, None);
+            let (mut na, mut nb) = new_node(&mut model.nodes);
             use branching::BrObjectData::*;
 
             match obj.data {
                 Switch { dir, side, conn: (cid,cref) } => {
-                    let (na_branch, nb_branch) = new_node(&mut model.nodes, None);
-                    let (na_straight, nb_straight) = new_node(&mut model.nodes, None);
+                    let (na_branch, nb_branch) = new_node(&mut model.nodes);
+                    let (na_straight, nb_straight) = new_node(&mut model.nodes);
 
                     model.edges.push(Edge::Switch(obj.name, Some(side),
                         if dir == Dir::Up { nb } else { na },
@@ -184,7 +184,7 @@ pub fn convert(bm :BranchingModel) -> Result<DGraphModel, String> {
         }
 
         // Last node
-        let (mut na, mut nb) = new_node(&mut model.nodes, None);
+        let (mut na, mut nb) = new_node(&mut model.nodes);
         model.edges.push(Edge::Linear(last_node, (na, t.length - last_pos)));
         match t.end {
             BrTrackEnd::Stop => {},
@@ -198,6 +198,7 @@ pub fn convert(bm :BranchingModel) -> Result<DGraphModel, String> {
         let id1 = named_connections.keys().next().unwrap().clone();
         let (ref1, node_a) = named_connections.remove(&id1).unwrap();
         let (ref2, node_b) = named_connections.remove(&ref1).unwrap(); // TODO err msg
+        if ref2 != id1 { panic!("Inconsistent connections."); }
         model.edges.push(Edge::Linear(node_a, (node_b, 0.0)));
     }
 
