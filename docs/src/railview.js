@@ -76,11 +76,11 @@ grid.selectAll("line.schematicline").data(lines).enter().append("line")
   .attr("y1", function(d) { return gridy(-d[0][1]); })
   .attr("y2", function(d) { return gridy(-d[1][1]); });
 
-  grid.selectAll("circle.node").data(points).enter().append("circle")
-  .attr("class","node")
-  .attr("r", 3)
-  .attr("cx", function(d) { return gridx(d[0]); })
-  .attr("cy", function(d) { return gridy(-d[1]); });
+  //grid.selectAll("circle.node").data(points).enter().append("circle")
+  //.attr("class","node")
+  //.attr("r", 3)
+  //.attr("cx", function(d) { return gridx(d[0]); })
+  //.attr("cy", function(d) { return gridy(-d[1]); });
 
 var traingroup = grid.append("g").attr("id","traingroup");
 var signalgroup = grid.append("g").attr("id","signalgroup");

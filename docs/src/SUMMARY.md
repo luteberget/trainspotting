@@ -14,6 +14,7 @@
     - [Multiple trains](./examples/multipletrains.md)
     - [Partial release](./examples/partialrelease.md)
     - [Two-way traffic](./examples/twoway.md)
+    - [Balloon loop](./examples/balloon.md)
 - [Verification mode](./verification.md)
   - [Usage](./usage.md)
   - [Verification examples](./plannerexamples.md)

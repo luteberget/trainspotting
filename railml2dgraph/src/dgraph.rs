@@ -132,7 +132,10 @@ pub fn convert(bm :BranchingModel) -> Result<DGraphModel, String> {
         let (mut na, mut nb) = new_node(&mut model.nodes);
         match t.begin {
             BrTrackEnd::Stop => {},
-            BrTrackEnd::Boundary(_name) => { model.edges.push(Edge::Boundary(na)); },
+            BrTrackEnd::Boundary(name) => { 
+                model.edges.push(Edge::Boundary(na)); 
+                model.nodes[nb.node_idx()].a.name = name;
+            },
             BrTrackEnd::Connection((a,b)) => { named_connections.insert(a,(b,na)); },
         };
 
@@ -188,7 +191,10 @@ pub fn convert(bm :BranchingModel) -> Result<DGraphModel, String> {
         model.edges.push(Edge::Linear(last_node, (na, t.length - last_pos)));
         match t.end {
             BrTrackEnd::Stop => {},
-            BrTrackEnd::Boundary(_name) => { model.edges.push(Edge::Boundary(nb)); },
+            BrTrackEnd::Boundary(name) => { 
+                model.edges.push(Edge::Boundary(nb)); 
+                model.nodes[nb.node_idx()].b.name = name;
+            },
             BrTrackEnd::Connection((a,b)) => { named_connections.insert(a,(b,nb)); },
         };
     }

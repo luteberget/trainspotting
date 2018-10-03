@@ -7,9 +7,9 @@ example_plans   = $(patsubst src/%.md,%/plan, $(examples))
 example_timing  = $(patsubst src/%.md,%/time, $(examples))
 
 ROLLING = ../rolling/target/debug/rolling
-GRIDVIS = ../gridvis/gridjson
+VIS = ../vis-rs/target/debug/vis-rs
 RAILPERFCHECK = ../railperfcheck/railperfcheck
-ROLLINGRAILML = ../rollingrailml/target/debug/rollingrailml
+RAILML = ../railml2dgraph/target/debug/railml2dgraph
 
 .PHONY: book
 book: $(examples) $(example_history) $(example_vis)
@@ -40,12 +40,12 @@ src/%-history.js: $(ROLLING) %/infrastructure %/routes %/plan
 %/graph: $(ROLLING) %/infrastructure
 	$(ROLLING) $*/infrastructure $*/routes $*/plan -vv -g $*/graph
 
-src/%-vis.js: $(GRIDVIS) %/graph
-	[ -f $*/nograph ] && touch src/$*-vis.js || ([ -f $*/nooptgrid ] && $(GRIDVIS) -n $*/graph > src/$*-vis.js || $(GRIDVIS) $*/graph > src/$*-vis.js)
+src/%-vis.js: $(VIS) %/infrastructure
+	$(VIS) -i $*/infrastructure -j src/$*-vis.js
 
 %/plan %/time: $(RAILPERFCHECK) %/infrastructure %/routes %/usage
 	{ time $(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan | tee $*/railperfchecklog > /dev/null ; } 2> $*/time
 
-%/infrastructure %/routes: $(ROLLINGRAILML) %/railmlinfrastructure
-	$(ROLLINGRAILML) $*/railmlinfrastructure -o $*/infrastructure -r $*/routes
+%/infrastructure %/routes: $(RAILML) %/railmlinfrastructure
+	$(RAILML) $*/railmlinfrastructure -o $*/infrastructure -r $*/routes
 
