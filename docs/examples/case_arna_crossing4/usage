@@ -2,23 +2,23 @@ vehicle short length 110.0 accel 1.0 brake 0.9 maxspeed 20.0
 vehicle long length 220.0 accel 1.0 brake 0.9 maxspeed 10.0
 
 movement short {
-  visit #a1 [rbff4z]
-  visit #a2 [bergen2]
+  visit #a1 [rbff4z_in]
+  visit #a2 [bergen2_out]
 }
 
 movement short {
-  visit #b1 [rbff4z]
-  visit #b2 [bergen2]
+  visit #b1 [rbff4z_in]
+  visit #b2 [bergen2_out]
 }
 
 movement short {
-  visit #c1 [bergen2]
-  visit #c2 [rbff4z]
+  visit #c1 [bergen2_in]
+  visit #c2 [rbff4z_out]
 }
 
 movement short {
-  visit #d1 [bergen2]
-  visit #d2 [rbff4z]
+  visit #d1 [bergen2_in]
+  visit #d2 [rbff4z_out]
 }
 
 timing a1 c2

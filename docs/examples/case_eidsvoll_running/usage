@@ -3,8 +3,8 @@ vehicle long length 220.0 accel 1.0 brake 0.9 maxspeed 30.0
 vehicle goods length 650.0 accel 0.7 brake 0.65 maxspeed 10.0
 
 movement goods {
-  visit #ax1 [dovrebanen]
-  visit #ax2 [gardermobanen]
+  visit #ax1 [dovrebanen_in]
+  visit #ax2 [gardermobanen_out]
 }
 
 timing ax1 ax2 322

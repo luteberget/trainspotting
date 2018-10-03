@@ -1,7 +1,7 @@
 vehicle passengertrain length 150.0 accel 1.0 brake 0.9 maxspeed 20.0
 
 movement passengertrain {
-  visit #start [inR_in]
-  visit #end [outR_out]
+  visit #start [b1_in]
+  visit #end [b1_out]
 }
 
