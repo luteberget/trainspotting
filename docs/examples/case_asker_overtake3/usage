@@ -2,18 +2,18 @@ vehicle short length 110.0 accel 1.0 brake 0.9 maxspeed 20.0
 vehicle long length 220.0 accel 1.0 brake 0.9 maxspeed 10.0
 
 movement short {
-  visit #a1 [DBinH_in]
-  visit #a2 [DBoutH_out]
+  visit #a1 [DBinH]
+  visit #a2 [DBoutH]
 }
 
 movement short {
-  visit #b1 [DBinH_in]
-  visit #b2 [DBoutH_out]
+  visit #b1 [DBinH]
+  visit #b2 [DBoutH]
 }
 
 movement short {
-  visit #c1 [DBinH_in]
-  visit #c2 [DBoutH_out]
+  visit #c1 [DBinH]
+  visit #c2 [DBoutH]
 }
 
 

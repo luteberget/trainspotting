@@ -3,23 +3,23 @@ vehicle long length 220.0 accel 1.0 brake 0.9 maxspeed 30.0
 vehicle goods length 650.0 accel 0.7 brake 0.65 maxspeed 10.0
 
 movement short {
-  visit #a1in [gardermobanen_in]
-  visit #a1out [dovrebanen_out]
+  visit #a1in [gardermobanen]
+  visit #a1out [dovrebanen]
 }
 
 movement short {
-  visit #a2in [gardermobanen_in]
-  visit #a2out [dovrebanen_out]
+  visit #a2in [gardermobanen]
+  visit #a2out [dovrebanen]
 }
 
 movement short {
-  visit #b1in [dovrebanen_in]
-  visit #b1out [gardermobanen_out]
+  visit #b1in [dovrebanen]
+  visit #b1out [gardermobanen]
 }
 
 movement short {
-  visit #b2in [dovrebanen_in]
-  visit #b2out [gardermobanen_out]
+  visit #b2in [dovrebanen]
+  visit #b2out [gardermobanen]
 }
 
 timing a1in b1in

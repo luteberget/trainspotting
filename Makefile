@@ -1,15 +1,17 @@
-.PHONY: rolling railml2dgraph vis-rs docs railperfcheck
+.PHONY: rolling rollingrailml gridvis docs railperfcheck
 
-docs: rolling railml2dgraph vis-rs railperfcheck
+docs: rolling rollingrailml gridvis railperfcheck
 	$(MAKE) -C docs
+
+
 rolling:
 	$(MAKE) -C rolling 
 
 railperfcheck: rolling
 	$(MAKE) -C railperfcheck
 
-vis-rs:
-	$(MAKE) -C vis-rs 
+gridvis:
+	$(MAKE) -C gridvis
 
-railml2dgraph:
-	$(MAKE) -C railml2dgraph
+rollingrailml:
+	$(MAKE) -C rollingrailml

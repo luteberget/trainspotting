@@ -71,7 +71,7 @@ pub fn print_routes<W: std::io::Write>(buf: &mut W,
         match (&r.entry, &r.exit) {
             (&ModelBoundary(ref b), &Signal(ref s)) => {
                 writeln!(buf,
-                         "modelentry r{} from {}_in {{",
+                         "modelentry r{} from {} {{",
                          i,
                          model.nodes[b.node_idx()].get_part(b.node_part()).name)?;
                 writeln!(buf, "  exit {}", s)?;
@@ -82,7 +82,7 @@ pub fn print_routes<W: std::io::Write>(buf: &mut W,
             }
             (&Signal(ref s), &ModelBoundary(ref b)) => {
                 writeln!(buf,
-                         "modelexit r{} to {}_out {{",
+                         "modelexit r{} to {} {{",
                          i,
                          model.nodes[b.node_idx()].get_part(b.node_part()).name)?;
                 writeln!(buf, "  entry {}", s)?;
