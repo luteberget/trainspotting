@@ -203,9 +203,12 @@ pub fn convert(bm :BranchingModel) -> Result<DGraphModel, String> {
     while !named_connections.is_empty() {
         let id1 = named_connections.keys().next().unwrap().clone();
         let (ref1, node_a) = named_connections.remove(&id1).unwrap();
-        let (ref2, node_b) = named_connections.remove(&ref1).unwrap(); // TODO err msg
-        if ref2 != id1 { panic!("Inconsistent connections."); }
-        model.edges.push(Edge::Linear(node_a, (node_b, 0.0)));
+        if let Some((ref2, node_b)) = named_connections.remove(&ref1) {
+            if ref2 != id1 { panic!("Inconsistent connections."); }
+            model.edges.push(Edge::Linear(node_a, (node_b, 0.0)));
+        } else {
+            println!("WARNING: Inconsitent connection {:?} {:?}", id1, ref1);
+        }
     }
 
     Ok(model)

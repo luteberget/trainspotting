@@ -1,14 +1,17 @@
 use minidom; 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use base::*;
 
 pub struct BranchingModel {
     pub tracks:       Vec<BrTrack>,
     pub connections:  HashMap<(String,String), BrCursor>,
+    pub switch_conns: HashSet<(String,String)>,
 }
 
 #[derive(Clone)]
 pub struct BrTrack {
+    pub name: String,
     pub begin :BrTrackEnd,
     pub objs :Vec<BrObject>,
     pub length: f64,
@@ -58,6 +61,7 @@ pub fn get_branching_model<'a>(doc :&'a minidom::Element, ns: &str)
     let mut model = BranchingModel {
         tracks: Vec::new(),
         connections: HashMap::new(),
+        switch_conns: HashSet::new(),
     };
 
     let infrastructure = {
@@ -122,9 +126,10 @@ pub fn get_branching_model<'a>(doc :&'a minidom::Element, ns: &str)
         let mut objs = Vec::new();
         add_signals(&mut objs, &track, ns);
         add_detectors(&mut objs, &track, ns);
-        add_switches(&mut objs, &mut model.connections, &track, track_idx, ns);
+        add_switches(&mut objs, &mut model.connections, &mut model.switch_conns,
+                     &track, track_idx, ns);
 
-        model.tracks.push(BrTrack { begin, objs, length: track_length, end });
+        model.tracks.push(BrTrack { name: name.to_string(), begin, objs, length: track_length, end });
     }
 
     Ok(model)
@@ -195,7 +200,7 @@ fn add_detectors(vec :&mut Vec<BrObject>, track :&minidom::Element, ns :&str) {
     }
 }
 
-fn add_switches(vec :&mut Vec<BrObject>, connections :&mut HashMap<(String,String), BrCursor>, track :&minidom::Element, track_idx: usize, ns :&str) {
+fn add_switches(vec :&mut Vec<BrObject>, connections :&mut HashMap<(String,String), BrCursor>, switch_conns :&mut HashSet<(String,String)>, track :&minidom::Element, track_idx: usize, ns :&str) {
     let switches = track.get_child("trackTopology",ns)
         .and_then(|o| o.get_child("connections", ns))
         .map(|c| {
@@ -242,11 +247,14 @@ fn add_switches(vec :&mut Vec<BrObject>, connections :&mut HashMap<(String,Strin
 
         connections.insert((conn_name.1.clone(), conn_name.0.clone()), 
                            BrCursor { track: track_idx, offset: pos, dir: dir.opposite() });
+        switch_conns.insert((conn_name.0.clone(), conn_name.1.clone()));
+        switch_conns.insert((conn_name.1.clone(), conn_name.0.clone()));
         vec.push(BrObject { name, pos, data: BrObjectData::Switch { dir, side, conn: conn_name }});
     }
 }
 
 
+#[derive(Debug)]
 pub enum WalkResult {
     Ok(BrCursor),
     End(f64, BrCursor),
@@ -257,6 +265,7 @@ pub enum WalkResult {
 pub fn walk(m :&BranchingModel, cursor :&BrCursor, dist: f64, delta :f64) -> WalkResult {
     let track = &m.tracks[cursor.track];
     let mut objs = track.objs.clone();
+    println!("WAlk from {:?}", cursor);
     match cursor.dir {
         Dir::Up => {
             objs.sort_by(|a,b| a.pos.partial_cmp(&b.pos).unwrap());
@@ -284,13 +293,17 @@ pub fn walk(m :&BranchingModel, cursor :&BrCursor, dist: f64, delta :f64) -> Wal
                         let c3 = m.connections[&conn].clone();
                         return WalkResult::FacingSwitch((obj.pos - cursor.offset).abs(), c1, c2, c3);
                     },
-                    BrObjectData::Switch { dir: Dir::Down, conn, .. } => {
+                    BrObjectData::Switch { dir: Dir::Down, .. } => {
                         let c1 = BrCursor {
+                            track: cursor.track,
+                            offset: obj.pos - delta,
+                            dir: cursor.dir,
+                        };
+                        let c2 = BrCursor {
                             track: cursor.track,
                             offset: obj.pos + delta,
                             dir: cursor.dir,
                         };
-                        let c2 = m.connections[&conn].clone();
                         return WalkResult::TrailingSwitch((obj.pos - cursor.offset).abs(), c1,c2);
                     },
                     _ => {},
@@ -303,18 +316,29 @@ pub fn walk(m :&BranchingModel, cursor :&BrCursor, dist: f64, delta :f64) -> Wal
                     offset: cursor.offset + dist,
                     dir: cursor.dir});
             } else {
+                let end = BrCursor {
+                   track: cursor.track,
+                   offset: m.tracks[cursor.track].length - delta,
+                   dir: cursor.dir,
+                };
                 match &m.tracks[cursor.track].end {
                     BrTrackEnd::Stop | BrTrackEnd::Boundary(_) => {
-                        return WalkResult::End((m.tracks[cursor.track].length - cursor.offset).abs(),
-                                               BrCursor {
-                                                   track: cursor.track,
-                                                   offset: m.tracks[cursor.track].length - delta,
-                                                   dir: cursor.dir,
-                                               });
+                        return WalkResult::End((m.tracks[cursor.track].length - cursor.offset).abs(), end);
                     },
                     BrTrackEnd::Connection(c) => {
-                        let c = m.connections[&c].clone();
-                        return walk(m, &c, dist - (m.tracks[cursor.track].length - cursor.offset).abs(), delta);
+                        // Connection on track end must be a continuation or a trailing switch
+                        match m.connections.get(&c) {
+                            Some(after) => {
+                                if m.switch_conns.contains(&c) {
+                                    return WalkResult::TrailingSwitch((m.tracks[cursor.track].length - cursor.offset).abs(), end, *after);
+                                } else {
+                                    return walk(m, after, dist - (m.tracks[cursor.track].length - cursor.offset).abs(), delta);
+                                }
+                            }
+                            None => {
+                                return WalkResult::End((m.tracks[cursor.track].length - cursor.offset).abs(), end);
+                            }
+                        }
                     }
                 }
             }
@@ -345,13 +369,17 @@ pub fn walk(m :&BranchingModel, cursor :&BrCursor, dist: f64, delta :f64) -> Wal
                         let c3 = m.connections[&conn].clone();
                         return WalkResult::FacingSwitch((obj.pos - cursor.offset).abs(), c1, c2, c3);
                     },
-                    BrObjectData::Switch { dir: Dir::Up, conn, .. } => {
+                    BrObjectData::Switch { dir: Dir::Up, .. } => {
                         let c1 = BrCursor {
                             track: cursor.track,
                             offset: obj.pos - delta,
                             dir: cursor.dir,
                         };
-                        let c2 = m.connections[&conn].clone();
+                        let c2 = BrCursor {
+                            track: cursor.track,
+                            offset: obj.pos + delta,
+                            dir: cursor.dir,
+                        };
                         return WalkResult::TrailingSwitch((obj.pos - cursor.offset).abs(), c1,c2);
                     },
                     _ => {},
@@ -364,18 +392,29 @@ pub fn walk(m :&BranchingModel, cursor :&BrCursor, dist: f64, delta :f64) -> Wal
                     offset: cursor.offset - dist,
                     dir: cursor.dir});
             } else {
-                match &m.tracks[cursor.track].begin {
-                    BrTrackEnd::Stop | BrTrackEnd::Boundary(_) => {
-                        return WalkResult::End((0.0 - cursor.offset).abs(),
-                                               BrCursor {
+                let end = BrCursor {
                                                    track: cursor.track,
                                                    offset: delta,
                                                    dir: cursor.dir,
-                                               });
+                                               };
+                match &m.tracks[cursor.track].begin {
+                    BrTrackEnd::Stop | BrTrackEnd::Boundary(_) => {
+                        return WalkResult::End((0.0 - cursor.offset).abs(), end);
                     },
                     BrTrackEnd::Connection(c) => {
-                        let c = m.connections[&c].clone();
-                        return walk(m, &c, dist - (m.tracks[cursor.track].length - cursor.offset).abs(), delta);
+                        match m.connections.get(&c) {
+                            Some(after) => {
+                                if m.switch_conns.contains(&c) {
+                                    // Trailing switch over track begin connection
+                                    return WalkResult::TrailingSwitch((0.0 - cursor.offset).abs(), end, *after);
+                                } else {
+                                    return walk(m, after, dist - (0.0 - cursor.offset).abs(), delta);
+                                }
+                            }
+                            None =>  {
+                                return WalkResult::End((0.0 - cursor.offset).abs(), end);
+                            }
+                        }
                     }
                 }
             }
