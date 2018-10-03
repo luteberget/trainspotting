@@ -47,6 +47,7 @@
     - [Arna overtake 2](./examples/case_arna_overtaking2.md)
     - [Arna overtake 3](./examples/case_arna_overtaking3.md)
     - [Arna crossing 4](./examples/case_arna_crossing4.md)
+    - [Arna alternative](./examples/case_arna_remvx.md)
 <!--  - [Arna A20 by hand](./examples/case_arna_byhand.md)  -->
 <!--    - [Arna running time](./examples/case_arna_byhand_running.md)  -->
 <!--    - [Arna overtaking 2](./examples/case_arna_byhand_overtaking2.md)  -->

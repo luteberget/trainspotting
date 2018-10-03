@@ -41,7 +41,7 @@ src/%-history.js: $(ROLLING) %/infrastructure %/routes %/plan
 	$(ROLLING) $*/infrastructure $*/routes $*/plan -vv -g $*/graph
 
 src/%-vis.js: $(VIS) %/infrastructure
-	$(VIS) -i $*/infrastructure -j src/$*-vis.js
+	$(VIS) -i $*/infrastructure -j src/$*-vis.js -vv
 
 %/plan %/time: $(RAILPERFCHECK) %/infrastructure %/routes %/usage
 	{ time $(RAILPERFCHECK) $*/infrastructure $*/routes $*/usage -p $*/plan | tee $*/railperfchecklog > /dev/null ; } 2> $*/time
