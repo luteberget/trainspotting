@@ -72,7 +72,7 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
                 tokens.push(Token::Number(num.parse::<f64>().unwrap()));
             }
             x if x.is_alphabetic() => {
-                let s: String = consume_while(&mut input, |a| a.is_alphanumeric())
+                let s: String = consume_while(&mut input, |a| a == '_' || a.is_alphanumeric())
                     .into_iter()
                     .collect();
                 tokens.push(match s.as_ref() {
