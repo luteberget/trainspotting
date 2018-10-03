@@ -58,7 +58,7 @@ for (var l in lines) {
 }
 
 gridx.domain(d3.extent(points, function(e) { return e[0]; }))
-gridy.domain(d3.extent(points.concat([[0,2.5]]), function(e) { return -e[1]; }))
+gridy.domain(d3.extent(points.concat([[0,2.5]]), function(e) { return e[1]; }))
 
 
 gridsvg.call(d3.zoom()
@@ -73,8 +73,8 @@ grid.selectAll("line.schematicline").data(lines).enter().append("line")
   .attr("class", "schematicline")
   .attr("x1", function(d) { return gridx(d[0][0]); })
   .attr("x2", function(d) { return gridx(d[1][0]); })
-  .attr("y1", function(d) { return gridy(-d[0][1]); })
-  .attr("y2", function(d) { return gridy(-d[1][1]); });
+  .attr("y1", function(d) { return gridy(d[0][1]); })
+  .attr("y2", function(d) { return gridy(d[1][1]); });
 
   //grid.selectAll("circle.node").data(points).enter().append("circle")
   //.attr("class","node")
@@ -288,7 +288,7 @@ function set_t(t) {
       .attr("y", function(d) { 
           var halfwidth = 10.0/2.0; 
           if(d.green) { halfwidth = 17.0/2.0; }
-          return gridy(-(d.pt[1] - offset*d.offset[1])) - halfwidth; })
+          return gridy((d.pt[1] - offset*d.offset[1])) + halfwidth; })
       .attr("width", function(d) { if(d.green) { return 17; } else { return 10; }})
       .attr("height", function(d) { if(d.green) { return 17; } else { return 10; }})
       .attr("rx", function(d) { if(d.green) { return 17; } else { return 0; }})
@@ -454,8 +454,8 @@ function set_t(t) {
         //.transition(train_transition)
         .attr("x1", function(d) { return gridx(d[0][0]); })
         .attr("x2", function(d) { return gridx(d[1][0]); })
-        .attr("y1", function(d) { return gridy(-d[0][1]); })
-        .attr("y2", function(d) { return gridy(-d[1][1]); })
+        .attr("y1", function(d) { return gridy(d[0][1]); })
+        .attr("y2", function(d) { return gridy(d[1][1]); })
   }
 }
 

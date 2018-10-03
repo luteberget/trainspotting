@@ -1,9 +1,0 @@
-vehicle short length 110.0 accel 1.0 brake 0.9 maxspeed 20.0
-vehicle long length 220.0 accel 1.0 brake 0.9 maxspeed 10.0
-
-movement short {
-  visit #ax1 [inR]
-  visit #ax2 [outR]
-}
-
-timing ax1 ax2 135.5

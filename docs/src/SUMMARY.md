@@ -15,6 +15,7 @@
     - [Partial release](./examples/partialrelease.md)
     - [Two-way traffic](./examples/twoway.md)
     - [Balloon loop](./examples/balloon.md)
+    - [Balloon loop alternative](./examples/balloon_alt.md)
 - [Verification mode](./verification.md)
   - [Usage](./usage.md)
   - [Verification examples](./plannerexamples.md)
@@ -31,7 +32,7 @@
   - [Kolbotn](./examples/case_kolbotn.md)
     - [Kolbotn overtaking 2x2](./examples/case_kolbotn_overtaking_2x2.md)
     - [Kolbotn overtaking 3](./examples/case_kolbotn_overtaking_3.md)
-    - [Kolbotn running time](./examples/case_kolbotn_running.md)
+<!-- [Kolbotn running time](./examples/case_kolbotn_running.md)-->
   - [Eidsvoll](./examples/case_eidsvoll.md)
     - [Eidsvoll crossing 3](./examples/case_eidsvoll_crossing_3.md)
     - [Eidsvoll crossing 4](./examples/case_eidsvoll_crossing_4.md)
