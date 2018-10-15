@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, BTreeSet};
 use base::*;
 use dgraph::*;
 
@@ -164,7 +164,7 @@ pub fn find_routes(model: &DGraphModel) -> Vec<Route> {
             //     so it would not be possible to require a switch to be in
             //     two positions at once.
 
-            let mut switches_path_visited = HashSet::new();
+            let mut switches_path_visited :BTreeSet<BTreeSet<(String,Side)>> = BTreeSet::new();
 
             search_stack.push(Path {
                 node: entry.node,
@@ -235,7 +235,8 @@ pub fn find_routes(model: &DGraphModel) -> Vec<Route> {
                             curr_state.node = other.opposite();
                             curr_state.length += d;
                             curr_state.switches.push((sw,curr_state.length,pos));
-                            if !switches_path_visited.insert(switch_list(&curr_state.switches)) {
+                            //println!("Switch list {:?}", switch_list(&curr_state.switches));
+                            if !switches_path_visited.insert(switch_list(&curr_state.switches).into_iter().collect()) {
                                 // We have been here before. Abort without adding a new route,
                                 // to avoid having routes with loops.
                                 break;
@@ -251,10 +252,10 @@ pub fn find_routes(model: &DGraphModel) -> Vec<Route> {
                             right_state.switches.push((sw, curr_state.length, Side::Right));
                             right_state.length += d2;
 
-                            if switches_path_visited.insert(switch_list(&right_state.switches)) {
+                            if switches_path_visited.insert(switch_list(&right_state.switches).into_iter().collect()) {
                                 search_stack.push(right_state);
                             }
-                            if !switches_path_visited.insert(switch_list(&curr_state.switches)) {
+                            if !switches_path_visited.insert(switch_list(&curr_state.switches).into_iter().collect()) {
                                 break;
                             }
                         },

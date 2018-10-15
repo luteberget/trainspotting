@@ -1,6 +1,6 @@
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Dir { Up, Down }
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Side { Left, Right }
 
 impl Side {
