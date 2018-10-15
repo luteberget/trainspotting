@@ -8,3 +8,7 @@ quick-xml = "*"
 minidom = "*"
 clap = "*"
 petgraph="*"
+
+[lib]
+crate-type=["rlib","staticlib"]
+

@@ -1,19 +1,13 @@
 extern crate minidom;
 extern crate clap;
-extern crate petgraph;
+extern crate railml2dgraph;
 
 use std::fs::File;
 use std::io::prelude::*;
 use clap::{Arg, App};
 use std::path;
 
-mod base;
-mod branching;
-mod sight;
-mod dgraph;
-mod sections;
-mod routes;
-mod output;
+use railml2dgraph::*;
 
 struct Opts<'a> {
     input_fn: &'a path::Path,
