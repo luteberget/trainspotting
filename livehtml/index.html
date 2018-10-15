@@ -1,0 +1,24 @@
+<!DOCTYPE html><html>
+    <head>
+        <meta charset="utf-8">
+    </head>
+<script src="/d3.js"></script>
+<body>
+    <div id="top">
+    <h1>View</h1>
+    
+    <script>
+var socket = new WebSocket("ws://" + window.location.host + "/ws");
+socket.onmessage = function(event) {
+    var data = JSON.parse(event.data);
+    if (data.key == "reload") {
+        window.location.reload(true);
+    } else if (data.key == "schematic") {
+    } else {
+        console.log("Unknown key in message.");
+        console.log(data);
+    }
+}
+    </script>
+</body
+</html>
