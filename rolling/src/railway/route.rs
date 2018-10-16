@@ -64,10 +64,10 @@ fn require_tvd(s :ObjectId, endpoint :Option<ObjectId>, inf :&Infrastructure) ->
 
 fn unavailable_resource(r: &Route, overlap: Option<&Overlap>, infrastructure: &Infrastructure) -> Result<(),EventId> {
 
-    let exit = if let RouteEntryExit::Signal(x) = r.exit { Some(x) } else { None };
+    let overlap_endpoint = if let RouteEntryExit::SignalTrigger { signal, .. } = r.entry { Some(signal) } else { None };
 
     for s in r.resources.sections.iter() {
-        require_tvd(*s, exit, infrastructure)?;
+        require_tvd(*s, overlap_endpoint, infrastructure)?;
     }
 
     for &(sw, _pos) in r.resources.switch_positions.iter() {
@@ -76,7 +76,7 @@ fn unavailable_resource(r: &Route, overlap: Option<&Overlap>, infrastructure: &I
 
     if let Some(overlap) = overlap {
         for s in overlap.sections.iter() {
-            require_tvd(*s, exit, infrastructure)?;
+            require_tvd(*s, overlap_endpoint, infrastructure)?;
         }
 
         for &(sw, _pos) in overlap.switch_positions.iter() {
