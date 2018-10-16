@@ -1,0 +1,16 @@
+[package]
+name = "milelang"
+version = "0.1.0"
+authors = ["Bjørnar Luteberget <luteberget@gmail.com>"]
+build="build.rs"
+
+[dependencies]
+lalrpop-util = "0.16.0"
+regex = "0.2.0"
+
+[build-dependencies]
+lalrpop = "0.16.0"
+
+
+[lib]
+

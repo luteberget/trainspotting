@@ -1,0 +1,24 @@
+use std::str::FromStr;
+use ast::*;
+
+grammar;
+
+String : String = <s:r#""[^"]*""#> => {
+  let literal = s[1..s.len()-1].to_string();
+  literal
+};
+
+pub Statement: Statement = {
+    "railml" "(" <String> ")" ";" => Statement::RailmlFile(<>),
+};
+
+pub Milelang : Vec<Statement> = {
+  <v:(<Statement> ",")*> <e:Statement?> => match e {
+    None => v,
+    Some(e) => {
+      let mut v = v;
+      v.push(e);
+      v
+    }
+  }
+};
