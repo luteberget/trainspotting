@@ -278,7 +278,7 @@ impl<'a> Process<Infrastructure<'a>> for Driver {
             ModelContainment::Inside => {
                 let plan = self.plan_ahead(sim);
                 self.step = (plan.action, *sim.time());
-                    println!("PLAN  {:?}", plan);
+                    //println!("PLAN  {:?}", plan);
 
                 let mut events = SmallVec::new();
                 if plan.dt > 1e-5 {

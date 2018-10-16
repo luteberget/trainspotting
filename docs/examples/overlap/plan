@@ -1,0 +1,8 @@
+train t1 l=175.0 a=0.8 b=0.8 v=25.0 rentrya
+route ra2
+wait
+train t2 l=175.0 a=0.8 b=0.8 v=25.0 rentryb
+route rb1
+wait
+route rexitb1
+route rexita2

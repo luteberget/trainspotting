@@ -1,4 +1,4 @@
-use eventsim::{Process, ProcessState, EventId};
+use eventsim::{Process, ProcessState, EventId, observable::*};
 use super::Sim;
 use smallvec::SmallVec;
 use input::staticinfrastructure::*;
@@ -12,45 +12,129 @@ enum ActivateRouteState {
 
 pub struct ActivateRoute {
     route: Route,
+    overlap: Option<usize>,
     state: ActivateRouteState,
 }
 
 impl ActivateRoute {
     pub fn new(r: Route) -> Self {
+        let overlap = if r.overlaps.len() > 0 { Some(0) } else { None };
+        println!("NEW ACTIVATE ROUTE {:?} {:?}", overlap, r);
         ActivateRoute {
             route: r,
+            overlap: overlap,
             state: ActivateRouteState::Allocate,
         }
     }
 }
 
-fn unavailable_resource(r: &Route, infrastructure: &Infrastructure) -> Option<EventId> {
+fn require_observable_bool_false(b :&Observable<bool>) -> Result<(), EventId> {
+    if *b.get() {
+        return Err(b.event());
+    }
+    Ok(())
+}
+
+fn require_switch(s :ObjectId, inf :&Infrastructure) -> Result<(), EventId> {
+    if let ObjectState::Switch { ref reserved, .. } = inf.state[s] {
+        require_observable_bool_false(&reserved)?;
+    } else {
+        panic!("Not a switch.");
+    }
+    Ok(())
+}
+
+fn require_tvd(s :ObjectId, endpoint :Option<ObjectId>, inf :&Infrastructure) -> Result<(), EventId> {
+    if let ObjectState::TVDSection { ref reserved, ref occupied, .. } = inf.state[s] {
+
+        // Require the section to be free, or previously allocated 
+        // as overlap from this end point.
+        match *reserved.get() {
+            TVDReservation::Free => {},
+            TVDReservation::Locked => return Err(reserved.event()),
+            TVDReservation::Overlap(sig) => if Some(sig) != endpoint { return Err(reserved.event()); },
+        };
+
+        require_observable_bool_false(&occupied)?;
+    } else {
+        panic!("Not a TVD.");
+    }
+    Ok(())
+}
+
+fn unavailable_resource(r: &Route, overlap: Option<&Overlap>, infrastructure: &Infrastructure) -> Result<(),EventId> {
+
+    let exit = if let RouteEntryExit::Signal(x) = r.exit { Some(x) } else { None };
+
     for s in r.resources.sections.iter() {
-        match infrastructure.state[*s] {
-            ObjectState::TVDSection { ref reserved, ref occupied, .. } => {
-                if *reserved.get() {
-                    return Some(reserved.event());
-                }
-                if *occupied.get() {
-                    return Some(occupied.event());
-                }
+        require_tvd(*s, exit, infrastructure)?;
+    }
+
+    for &(sw, _pos) in r.resources.switch_positions.iter() {
+        require_switch(sw, infrastructure)?;
+    }
+
+    if let Some(overlap) = overlap {
+        for s in overlap.sections.iter() {
+            require_tvd(*s, exit, infrastructure)?;
+        }
+
+        for &(sw, _pos) in overlap.switch_positions.iter() {
+            require_switch(sw, infrastructure)?;
+        }
+    }
+    
+    Ok(())
+}
+
+fn release_overlap(overlap: &Overlap, sim :&mut Sim) {
+    let state = &mut sim.world.state;
+    let logger = &mut sim.world.logger;
+    let scheduler = &mut sim.scheduler;
+    for s in overlap.sections.iter() {
+        match state[*s] {
+            ObjectState::TVDSection { ref mut reserved, .. } => {
+                reserved.set(scheduler, TVDReservation::Free);
+                logger(InfrastructureLogEvent::Reserved(*s,false));
             }
             _ => panic!("Not a TVD"),
         };
     }
 
-    for &(sw, _pos) in r.resources.switch_positions.iter() {
-        match infrastructure.state[sw] {
-            ObjectState::Switch { ref reserved, .. } => {
-                if *reserved.get() {
-                    return Some(reserved.event());
-                }
+    for &(sw, _pos) in overlap.switch_positions.iter() {
+        match state[sw] {
+            ObjectState::Switch { ref mut reserved, .. } => {
+                reserved.set(scheduler, false);
+                logger(InfrastructureLogEvent::Reserved(sw,false));
+            }
+            _ => panic!("Not a switch"),
+        };
+    }
+}
+
+fn allocate_overlap(overlap: &Overlap, exit :ObjectId, sim :&mut Sim) {
+    let state = &mut sim.world.state;
+    let logger = &mut sim.world.logger;
+    let scheduler = &mut sim.scheduler;
+    for s in overlap.sections.iter() {
+        match state[*s] {
+            ObjectState::TVDSection { ref mut reserved, .. } => {
+                reserved.set(scheduler, TVDReservation::Overlap(exit));
+                logger(InfrastructureLogEvent::Reserved(*s,true));
+            }
+            _ => panic!("Not a TVD"),
+        };
+    }
+
+    for &(sw, _pos) in overlap.switch_positions.iter() {
+        match state[sw] {
+            ObjectState::Switch { ref mut reserved, .. } => {
+                reserved.set(scheduler, true);
+                logger(InfrastructureLogEvent::Reserved(sw,true));
             }
             _ => panic!("Not a switch"),
         }
     }
-
-    None
 }
 
 fn allocate_resources(r: &Route, sim :&mut Sim) {
@@ -60,7 +144,7 @@ fn allocate_resources(r: &Route, sim :&mut Sim) {
     for s in r.resources.sections.iter() {
         match state[*s] {
             ObjectState::TVDSection { ref mut reserved, .. } => {
-                reserved.set(scheduler, true);
+                reserved.set(scheduler, TVDReservation::Locked);
                 logger(InfrastructureLogEvent::Reserved(*s,true));
             }
             _ => panic!("Not a TVD"),
@@ -123,13 +207,34 @@ fn movable_events(r: &Route, sim: &mut Sim) -> Vec<EventId> {
 
 impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
     fn resume(&mut self, sim: &mut Sim) -> ProcessState {
+        let overlap = self.overlap.map(|i| self.route.overlaps[i].clone());
         (sim.world.logger)(InfrastructureLogEvent::Route(0, RouteStatus::Pending)); // TODO id from where?
         if let ActivateRouteState::Allocate = self.state {
-            match unavailable_resource(&self.route, &sim.world) {
-                Some(ev) => return ProcessState::Wait(SmallVec::from_slice(&[ev])),
-                None => {
+            match unavailable_resource(&self.route, overlap.as_ref(), &sim.world) {
+                Ok(()) => {
                     allocate_resources(&self.route, sim);
+                    if let Some(ref overlap) = overlap { 
+                        if let RouteEntryExit::Signal(end) = self.route.exit {
+                            println!("ALLOCATING OVERLAP on {:?}", self.route);
+                            allocate_overlap(overlap, end, sim); 
+                            if let RouteEntryExit::SignalTrigger { ref trigger_section, .. } = self.route.entry {
+                                if let Some(t) = overlap.timeout {
+                                    sim.start_process(Box::new(OverlapTimeout {
+                                        overlap: overlap.clone(),
+                                        trigger: *trigger_section,
+                                        time: t,
+                                        state: OverlapTimeoutState::Start,
+                                    }));
+                                }
+                            }
+                        } else {
+                            panic!("Overlap has no end point.");
+                        }
+                    }
                     self.state = ActivateRouteState::Move;
+                }
+                Err(ev) => {
+                    return ProcessState::Wait(SmallVec::from_slice(&[ev]));
                 }
             }
         }
@@ -145,7 +250,7 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
 
         // Set the signal to green
         match self.route.entry {
-            RouteEntry::Signal { ref signal, ref trigger_section } => {
+            RouteEntryExit::SignalTrigger { ref signal, ref trigger_section } => {
                 //println!("SIGNAL GREEN {:?}", self.route.entry);
                 match sim.world.state[*signal] {
                     ObjectState::Signal { ref mut authority } => {
@@ -162,7 +267,7 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
                     state: CatchSignalState::Start,
                 }));
            },
-           RouteEntry::Boundary(_) =>  {},
+           _ =>  {},
         };
 
         //println!("ROUTE RELEASES: {:?}", self.route.resources.releases);
@@ -176,6 +281,40 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
 
         (sim.world.logger)(InfrastructureLogEvent::Route(0, RouteStatus::Active)); // TODO id from where?
         ProcessState::Finished
+    }
+}
+
+enum OverlapTimeoutState {
+    Start, AwaitTrigger, AwaitTimer,
+}
+
+struct OverlapTimeout {
+    overlap: Overlap,
+    trigger: ObjectId,
+    time: f64,
+    state: OverlapTimeoutState,
+}
+
+impl<'a> Process<Infrastructure<'a>> for OverlapTimeout {
+    fn resume(&mut self, sim: &mut Sim) -> ProcessState {
+        match self.state {
+            OverlapTimeoutState::Start => {
+                let event = match sim.world.state[self.trigger] {
+                    ObjectState::TVDSection { ref mut occupied, .. } => occupied.event(),
+                    _ => panic!("Not a TVD section"),
+                };
+                self.state = OverlapTimeoutState::AwaitTrigger;
+                ProcessState::Wait(SmallVec::from_slice(&[event]))
+            }
+            OverlapTimeoutState::AwaitTrigger => {
+                self.state = OverlapTimeoutState::AwaitTimer;
+                ProcessState::Wait(SmallVec::from_slice(&[sim.create_timeout(self.time)]))
+            },
+            OverlapTimeoutState::AwaitTimer => {
+                release_overlap(&self.overlap, sim);
+                ProcessState::Finished
+            },
+        }
     }
 }
 
@@ -246,7 +385,10 @@ impl<'a> Process<Infrastructure<'a>> for ReleaseRoute {
             ReleaseRouteState::AwaitExit => {
                 for obj in &self.resources {
                     match sim.world.state[*obj] {
-                        ObjectState::TVDSection { ref mut reserved, .. } |
+                        ObjectState::TVDSection { ref mut reserved, .. } => {
+                            reserved.set(&mut sim.scheduler, TVDReservation::Free);
+                            (sim.world.logger)(InfrastructureLogEvent::Reserved(*obj,false));
+                        }
                         ObjectState::Switch { ref mut reserved, .. } => {
                             reserved.set(&mut sim.scheduler, false);
                             (sim.world.logger)(InfrastructureLogEvent::Reserved(*obj,false));

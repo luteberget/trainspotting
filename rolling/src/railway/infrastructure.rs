@@ -34,10 +34,17 @@ pub enum ObjectState {
         reserved: Observable<bool>,
     },
     TVDSection {
-        reserved: Observable<bool>,
+        reserved: Observable<TVDReservation>,
         occupied: Observable<bool>,
     },
     TVDLimit,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum TVDReservation {
+    Free,
+    Locked,
+    Overlap(ObjectId),
 }
 
 pub struct MoveSwitch {
@@ -160,7 +167,7 @@ impl<'a> Infrastructure<'a> {
                 TVDLimit { .. } => ObjectState::TVDLimit,
                 TVDSection => {
                     ObjectState::TVDSection {
-                        reserved: Observable::new(scheduler, false),
+                        reserved: Observable::new(scheduler, TVDReservation::Free),
                         occupied: Observable::new(scheduler, false),
                     }
                 }

@@ -48,6 +48,49 @@ fn lookup(names: &HashMap<String, usize>, name: &str) -> Result<usize, ParseErro
         .ok_or_else(|| ParseError::UnknownName(name.to_string(), "infrastructure".to_string()))
 }
 
+pub fn parse_overlaps(i :&mut usize, t: &[Token], objnames :&Map) -> Result<Vec<Overlap>, ParseError> {
+    let mut overlaps = Vec::new();
+    while matches(i, t, Token::Identifier("overlap".to_string())) {
+        let mut name = None;
+        while matches(i, t, Token::Named) {
+            name = Some(identifier(i,t)?);
+        }
+        must_match(i, t, Token::BraceOpen)?;
+
+        symbol(i, t, "sections")?;
+        let sections = list(i, t, |i, t| lookup(objnames, &identifier(i, t)?))?;
+        symbol(i, t, "switches")?;
+        let switches = list(i, t, |i, t| {
+            //must_match(i, t, Token::ParensOpen)?;
+            let sw = lookup(objnames, &identifier(i, t)?)?;
+            let pos = alt(i,
+                          t,
+                          &[&|i, t| {
+                                symbol(i, t, "left")?;
+                                Ok(SwitchPosition::Left)
+                            },
+                            &|i, t| {
+                                symbol(i, t, "right")?;
+                                Ok(SwitchPosition::Right)
+                            }])?;
+            //must_match(i, t, Token::ParensClose)?;
+            Ok((sw, pos))
+        })?;
+
+        let mut timeout = None;
+        while matches(i, t, Token::Identifier("timeout".to_string())) {
+            timeout = Some(number(i,t)?);
+        }
+
+        must_match(i, t, Token::BraceClose)?;
+
+        overlaps.push(Overlap { name, sections: sections.into(),
+        switch_positions: switches.into(), timeout });
+    }
+
+    Ok(overlaps)
+}
+
 pub fn parse_resources(i :&mut usize, t: &[Token], objnames :&Map, nodenames: &Map) -> Result<RouteResources, ParseError> {
     symbol(i, t, "sections")?;
     let sections = list(i, t, |i, t| lookup(objnames, &identifier(i, t)?))?;
@@ -109,22 +152,25 @@ pub fn parse_route(i: &mut usize,
         let node = lookup(nodenames, &identifier(i,t)?)?;
         must_match(i,t,Token::BraceOpen)?;
         symbol(i,t,"exit")?;
-        let _exit = identifier(i,t)?;
+        let exit = lookup(objnames, &identifier(i,t)?)?;
         symbol(i,t,"length")?;
         let length = number(i,t)?;
         let resources = parse_resources(i,t,objnames,nodenames)?;
         must_match(i,t,Token::BraceClose)?;
         Ok(Some((name, Route {
-            entry: RouteEntry::Boundary(node),
+            entry: RouteEntryExit::Boundary(node),
+            exit: RouteEntryExit::Signal(exit),
             length: length,
             resources: resources.into(),
+            overlaps: vec![].into(),
+            swinging_overlap: false,
         })))
     },
           &|i, t| {
         symbol(i, t, "modelexit")?;
         let name = identifier(i, t)?;
         symbol(i, t, "to")?;
-        let _node = identifier(i, t)?;
+        let node = lookup(nodenames, &identifier(i,t)?)?;
         must_match(i,t,Token::BraceOpen)?;
         symbol(i,t,"entry")?;
         let entry = lookup(objnames, &identifier(i,t)?)?;
@@ -135,10 +181,13 @@ pub fn parse_route(i: &mut usize,
         let resources = parse_resources(i,t,objnames,nodenames)?;
         must_match(i,t,Token::BraceClose)?;
         Ok(Some((name, Route {
-            entry: RouteEntry::Signal { signal: entry,
+            entry: RouteEntryExit::SignalTrigger { signal: entry,
                                          trigger_section: entrysection },
+            exit: RouteEntryExit::Boundary(node),
             length: length,
             resources: resources.into(),
+            overlaps: vec![].into(),
+            swinging_overlap: false,
         })))
     },
           &|i, t| {
@@ -148,20 +197,28 @@ pub fn parse_route(i: &mut usize,
         symbol(i, t, "entry")?;
         let entry = lookup(objnames, &identifier(i, t)?)?;
         symbol(i, t, "exit")?;
-        let _exit = identifier(i, t)?;
+        let exit = lookup(objnames, &identifier(i, t)?)?;
         // println!("to parse entrysection in route {}", route_name);
         symbol(i, t, "entrysection")?;
         let entrysection = lookup(objnames, &identifier(i, t)?)?;
         symbol(i, t, "length")?;
         let length = number(i, t)?;
         let resources = parse_resources(i,t,objnames,nodenames)?;
+        let overlaps = parse_overlaps(i,t,objnames)?;
+        let mut swinging = false;
+        while matches(i, t, Token::Identifier("swinging".to_string())) {
+            swinging = true;
+        }
         must_match(i, t, Token::BraceClose)?;
         Ok(Some((route_name,
                  Route {
-                     entry: RouteEntry::Signal { signal: entry,
+                     entry: RouteEntryExit::SignalTrigger { signal: entry,
                                                  trigger_section: entrysection },
+                     exit: RouteEntryExit::Signal(exit),
                      length: length,
-                     resources: resources
+                     resources: resources,
+                         overlaps: overlaps.into(),
+                         swinging_overlap: swinging,
                  })))
     }])
 }
@@ -216,6 +273,7 @@ pub fn number(i: &mut usize, tokens: &[Token]) -> Result<f64, ParseError> {
 //
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
+    Named,
     BraceOpen,
     BraceClose,
     ListOpen,
@@ -247,6 +305,10 @@ pub fn lexer(x: &mut Iterator<Item = char>) -> Result<Vec<Token>, LexerError> {
                     .into_iter()
                     .collect();
                 tokens.push(Token::Identifier(s));
+            }
+            '#' => {
+                input.next().unwrap();
+                tokens.push(Token::Named);
             }
             '[' => {
                 input.next().unwrap();

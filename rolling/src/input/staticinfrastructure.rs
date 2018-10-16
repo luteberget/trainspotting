@@ -56,16 +56,20 @@ pub enum SwitchPosition {
 pub type Routes = HashMap<String, Route>;
 
 #[derive(Debug,Clone)]
-pub enum RouteEntry {
+pub enum RouteEntryExit {
     Boundary(NodeId),
-    Signal { signal: ObjectId, trigger_section: ObjectId },
+    Signal(ObjectId),
+    SignalTrigger { signal: ObjectId, trigger_section: ObjectId },
 }
 
 #[derive(Debug,Clone)]
 pub struct Route {
-    pub entry: RouteEntry,
+    pub entry: RouteEntryExit,
+    pub exit: RouteEntryExit,
     pub length: f64,
     pub resources: RouteResources,
+    pub overlaps: SmallVec<[Overlap;2]>,
+    pub swinging_overlap: bool,
 }
 
 #[derive(Debug,Clone)]
@@ -79,4 +83,12 @@ pub struct RouteResources {
 pub struct Release {
     pub trigger: ObjectId,
     pub resources: SmallVec<[ObjectId; 4]>,
+}
+
+#[derive(Debug,Clone)]
+pub struct Overlap {
+    pub name :Option<String>,
+    pub sections: SmallVec<[ObjectId; 4]>,
+    pub switch_positions: SmallVec<[(ObjectId, SwitchPosition); 2]>,
+    pub timeout: Option<f64>,
 }

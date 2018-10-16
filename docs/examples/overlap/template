@@ -1,0 +1,12 @@
+# Crossing
+Two-track station with two-way traffic. Shows example of crossing.
+
+### Dispatch
+```haskell
+$RAILWAYDISPATCH
+```
+
+### Result 
+
+$RAILWAYVIEW
+
