@@ -3,7 +3,6 @@ extern crate clap;
 extern crate railml2dgraph;
 
 use std::fs::File;
-use std::io::prelude::*;
 use clap::{Arg, App};
 use std::path;
 
@@ -55,14 +54,9 @@ fn main() {
 }
 
 fn run(opts :&Opts) -> Result<(), String> {
-    // 1. read xml
     let (doc, ns) = get_xml(opts.input_fn, opts.verbose)?;
-    // 2. read branching model from xml
-    let mut branching = branching::get_branching_model(&doc, &ns)?;
-    // 3. add sight to branching model
-    sight::add_sight(&mut branching);
-    // 4. convert to d-graph representation
-    let mut dgraph = dgraph::convert(branching)?;
+    let dgraph = convert(&doc,&ns)?;
+
 
     //println!("DGRAPH {:?}", dgraph);
     println!("DGRAPH nodes");
@@ -75,9 +69,6 @@ fn run(opts :&Opts) -> Result<(), String> {
     }
 
 
-    sections::create_sections_from_detectors(&mut dgraph);
-
-    let routes = routes::find_routes(&dgraph);
 
     // 9. output infrastructure rolling dgraph format
     if let Some(f) = opts.infrastructure_fn {
@@ -87,26 +78,12 @@ fn run(opts :&Opts) -> Result<(), String> {
 
     // 10. output routes
     if let Some(f) = opts.routes_fn {
+        let routes = routes::find_routes(&dgraph);
+
         let mut buffer = File::create(f).map_err(|e| e.to_string())?;
         output::print_routes(&mut buffer, &dgraph, &routes).map_err(|e| e.to_string())?;
     }
 
     Ok(())
-}
-
-
-fn get_xml(input_fn: &path::Path, verbose: bool) -> Result<(minidom::Element, String), String> {
-    let mut f = File::open(input_fn).expect("file not found");
-    let mut contents = String::new();
-    f.read_to_string(&mut contents)
-        .expect("something went wrong reading the file");
-
-    let doc: minidom::Element = contents.parse().expect("XML parse error");
-    let ns = doc.ns().ok_or("Missing XML namespace.")?.to_string();
-    if verbose {
-        println!("Namespace {:?}", ns);
-    }
-
-    Ok((doc, ns))
 }
 

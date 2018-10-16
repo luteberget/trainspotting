@@ -116,9 +116,13 @@ pub fn read_file(f :&Path) -> AppResult<String> {
 use input::staticinfrastructure;
 use input::dispatch;
 pub fn get_infrastructure(s :&Path) -> AppResult<staticinfrastructure::StaticInfrastructure> {
-    use input::staticinfrastructure_parser::{lexer, parse, model_from_ast};
     let contents = read_file(s)?;
-  let lex = lexer(&mut contents.chars())?;
+    get_infrastructure_string(&contents)
+}
+
+pub fn get_infrastructure_string(s :&str) -> AppResult<staticinfrastructure::StaticInfrastructure> {
+    use input::staticinfrastructure_parser::{lexer, parse, model_from_ast};
+  let lex = lexer(&mut s.chars())?;
   let stmts = parse(&lex)?;
   let model = model_from_ast(&stmts)?;
   Ok(model)

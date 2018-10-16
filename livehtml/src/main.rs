@@ -1,7 +1,11 @@
 #[macro_use]
 extern crate serde_json;
+extern crate webbrowser;
 extern crate ws;
 extern crate notify;
+extern crate milelang;
+extern crate vis_rs;
+extern crate rolling;
 
 mod listen_railcomplete;
 mod watch_milelang;
@@ -61,13 +65,14 @@ struct Opt {
     port :u16,
 }
 
-use std::thread;
+use std::{thread, time};
 fn main() {
     let opt :Opt = Opt {
         listen_railcomplete: Some(format!("localhost:1409")),
-        watch_milelang: Some("input.mile".into()),
+        watch_milelang: Some("examples/input.mile".into()),
         port: 1409,
     };
+    let port = opt.port.clone();
 
     let (ext_tx,ext_rx) = channel();
 
@@ -86,6 +91,17 @@ fn main() {
     }
 
     // Start frontend
-    let broadcast = frontend::serve(opt.port, ext_tx);
+    let broadcast = frontend::serve(port, ext_tx);
+
+    // Start web browser
+    //
+    thread::spawn(move || {
+        let addr = format!("http://localhost:{}/",port);
+        thread::sleep(time::Duration::from_millis(100));
+        eprintln!("Info: Opening web browser, address {}", &addr);
+        webbrowser::open(&addr).unwrap();
+    });
+
+
     run(ext_rx, broadcast).unwrap();
 }

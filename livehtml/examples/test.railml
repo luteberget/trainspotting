@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<railml xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.railml.org/schemas/2013">
+  <infrastructure>
+    <tracks>
+        <track name="SP3">
+            <trackTopology>
+                <trackBegin pos="0.0">
+                    <connection id="t3b" ref="sw2b" />
+                </trackBegin>
+                <trackEnd pos="100.0">
+                    <openEnd id="t3b2" />
+                </trackEnd>
+            </trackTopology>
+        </track>
+        <track name="SP2">
+            <trackTopology>
+                <trackBegin pos="0.0">
+                    <connection id="t2b" ref="sw1b" />
+                </trackBegin>
+                <trackEnd pos="100.0">
+                    <openEnd id="t2b2" />
+                </trackEnd>
+                <connections>
+                    <switch id="sw2" name="Spv.2" pos="50.0" dir="up">
+                        <connection id="sw2b" ref="t3b" course="left" orientation="outgoing" />
+                    </switch>
+                </connections>
+            </trackTopology>
+        </track>
+        <track name="SP1">
+            <trackTopology>
+                <trackBegin pos="0.0">
+                    <openEnd id="b1" />
+                </trackBegin>
+                <trackEnd pos="1000.0">
+                    <openEnd id="b2" />
+                </trackEnd>
+                <connections>
+                    <switch id="sw1" name="Spv.1" pos="200.0" dir="up">
+                        <connection id="sw1b" ref="t2b" course="left" orientation="outgoing" />
+                    </switch>
+                </connections>
+            </trackTopology>
+            <ocsElements>
+                <signals>
+                    <signal id="sig1" name="Signal 1" pos="50.0" type="main"  dir="up"/>
+                    <signal id="sig2" name="Signal 2" pos="250.0" type="main" dir="up"/>
+                    <signal id="sig3" name="Signal 3" pos="350.0" type="main" dir="up"/>
+                </signals>
+                <trainDetectionElements>
+                    <trainDetector id="d0" name="detector 1" pos="10.0" />
+                    <trainDetector id="d1" name="detector 1" pos="50.0" />
+                    <trainDetector id="d2" name="detector 2" pos="250.0" />
+                    <trainDetector id="d3" name="detector 2" pos="350.0" />
+                    <trainDetector id="d4" name="detector 2" pos="390.0" />
+                </trainDetectionElements>
+            </ocsElements>
+        </track>
+    </tracks>
+  </infrastructure>
+</railml>

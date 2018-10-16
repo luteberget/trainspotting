@@ -3,13 +3,13 @@ use ast::*;
 
 grammar;
 
-String : String = <s:r#""[^"]*""#> => {
+LitString : String = <s:r#""[^"]*""#> => {
   let literal = s[1..s.len()-1].to_string();
   literal
 };
 
 pub Statement: Statement = {
-    "railml" "(" <String> ")" ";" => Statement::RailmlFile(<>),
+    "railml" "(" <LitString> ")" ";" => Statement::RailmlFile(<>),
 };
 
 pub Milelang : Vec<Statement> = {

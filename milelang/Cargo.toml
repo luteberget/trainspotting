@@ -5,6 +5,8 @@ authors = ["Bjørnar Luteberget <luteberget@gmail.com>"]
 build="build.rs"
 
 [dependencies]
+rolling = { path = "../rolling" }
+railml2dgraph = { path = "../railml2dgraph" }
 lalrpop-util = "0.16.0"
 regex = "0.2.0"
 

@@ -4,8 +4,10 @@ version = "0.1.0"
 authors = ["Bjørnar Luteberget <luteberget@gmail.com>"]
 
 [dependencies]
+webbrowser="*"
 serde_json = "*"
 ws = "*"
 notify = "*"
-#railml2dgraph = {path = "../railml2dgraph"}
-#vis-rs = {path = "../vis-rs"}
+milelang = { path = "../milelang" }
+vis_rs = { path = "../vis-rs" }
+rolling = { path = "../rolling" }

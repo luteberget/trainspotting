@@ -16,6 +16,15 @@ pub fn update_file_bytes<F:FnMut(&[u8])+Send+'static>(f :&Path, mut update :F) {
         let mut watcher = notify::watcher(watcher_tx, time::Duration::from_millis(100)).unwrap();
         let canonical = fs::canonicalize(f).unwrap();
         let path = canonical.parent().unwrap().to_path_buf();
+
+        {
+            eprintln!("Info: File read before starting watch.");
+            let mut buf = Vec::new();
+            let mut f = File::open(&canonical).expect("Could not open file.");
+            f.read_to_end(&mut buf).expect("Could not read file.");
+            update(&buf);
+        }
+
     thread::spawn(move || {
         watcher.watch(&path, notify::RecursiveMode::Recursive).unwrap();
 
@@ -53,6 +62,15 @@ pub fn update_file_string<F:FnMut(&str)+Send+'static>(f :&Path, mut update :F) {
         let mut watcher = notify::watcher(watcher_tx, time::Duration::from_millis(100)).unwrap();
         let canonical = fs::canonicalize(f).unwrap();
         let path = canonical.parent().unwrap().to_path_buf();
+
+        {
+            eprintln!("Info: File read before starting watch.");
+            let mut buf = String::new();
+            let mut f = File::open(&canonical).expect("Could not open file.");
+            f.read_to_string(&mut buf).expect("Could not read file.");
+            update(&buf);
+        }
+
     thread::spawn(move || {
         watcher.watch(&path, notify::RecursiveMode::Recursive).unwrap();
 

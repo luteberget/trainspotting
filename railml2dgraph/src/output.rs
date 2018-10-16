@@ -119,6 +119,11 @@ pub fn print_routes<W: std::io::Write>(buf: &mut W,
     Ok(())
 }
 
+pub fn dgraph_string(model :&DGraphModel) -> Result<String, String> {
+    let mut v = Vec::new();
+    print_rolling(&mut v, model).map_err(|e| format!("{:?}", e))?;
+    Ok(std::str::from_utf8(&v).map_err(|e| format!("{:?}", e))?.into())
+}
 
 pub fn print_rolling<W: std::io::Write>(buf: &mut W, model: &DGraphModel) -> std::io::Result<()> {
     for n in &model.nodes {

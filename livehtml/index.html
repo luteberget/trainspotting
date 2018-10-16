@@ -1,19 +1,89 @@
 <!DOCTYPE html><html>
     <head>
         <meta charset="utf-8">
+        <style>
+body {background-color: powderblue;}
+h1   {color: blue;}
+p    {color: red;}
+.schematicline {
+  stroke: #bb0066;
+  stroke-opacity: 1.0;
+  stroke-width: 4px;
+}
+
+                svg.schematic {
+                    background-color: #dda;
+                }
+
+</style>
+
     </head>
 <script src="/d3.js"></script>
 <body>
     <div id="top">
     <h1>View</h1>
+    <svg id="schematic" class="schematic"></svg>
     
     <script>
-var socket = new WebSocket("ws://" + window.location.host + "/ws");
-socket.onmessage = function(event) {
+    function make_schematic(id) {
+        var gridwidth = 960;
+        var gridheight = 300;
+        var svg = d3.select("svg#" + id)
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .attr("viewBox", "0 0 960 300");
+        var x = d3.scaleLinear().rangeRound([10, gridwidth-10]);
+        var y = d3.scaleLinear().rangeRound([gridheight-10, 10]);
+        var grid = svg.append("g");
+
+        function update_schematic(data) {
+            let all_lines = [];
+            for (var edge in data.value) {
+                for (var l in data.value[edge].lines) {
+                    all_lines.push(data.value[edge].lines[l]);
+                }
+            }
+            let all_points = all_lines.reduce((acc, x) => acc.concat(x), []);
+            x.domain(d3.extent(all_points, (p) => p[0]));
+            y.domain(d3.extent(all_points, (p) => p[1]));
+            console.log(x.domain());
+            console.log(y.domain());
+            console.log(all_lines);
+
+            var tr = d3.transition().duration(300);
+            var lineelems = grid.selectAll("line.schematicline").data(all_lines);
+
+            lineelems.enter().append("line")
+                .attr("class","schematicline")
+                .attr("x1", (d) => x(d[0][0]))
+                .attr("y1", (d) => y(d[0][1]))
+                .attr("x2", (d) => x(d[1][0]))
+                .attr("y2", (d) => y(d[1][1]))
+                .style("stroke","orange").transition(tr).style("stroke",null);
+
+            lineelems.exit().transition(tr).style("stroke","blue").remove();
+
+            lineelems.transition(tr)
+                .attr("x1", (d) => x(d[0][0]))
+                .attr("y1", (d) => y(d[0][1]))
+                .attr("x2", (d) => x(d[1][0]))
+                .attr("y2", (d) => y(d[1][1]));
+        }
+
+        return { update: update_schematic };
+    }
+
+    var schematic = make_schematic("schematic");
+
+    var socket = new WebSocket("ws://" + window.location.host + "/ws");
+    socket.onmessage = function(event) {
+
     var data = JSON.parse(event.data);
+
     if (data.key == "reload") {
         window.location.reload(true);
     } else if (data.key == "schematic") {
+        console.log("Update schematic");
+        schematic.update(data);
     } else {
         console.log("Unknown key in message.");
         console.log(data);
