@@ -1,0 +1,9 @@
+[workspace]
+
+members = [
+    "rolling",
+    "railml2dgraph",
+    "vis-rs",
+    "livehtml",
+    "milelang"
+]
