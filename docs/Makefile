@@ -6,10 +6,10 @@ example_vis     = $(patsubst %.md,%-vis.js, $(examples))
 example_plans   = $(patsubst src/%.md,%/plan, $(examples))
 example_timing  = $(patsubst src/%.md,%/time, $(examples))
 
-ROLLING = ../rolling/target/debug/rolling
-VIS = ../vis-rs/target/debug/vis-rs
+ROLLING = ../target/debug/rolling
+VIS = ../target/debug/vis_rs
 RAILPERFCHECK = ../railperfcheck/railperfcheck
-RAILML = ../railml2dgraph/target/debug/railml2dgraph
+RAILML = ../target/debug/railml2dgraph
 
 .PHONY: book
 book: $(examples) $(example_history) $(example_vis)

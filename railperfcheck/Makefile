@@ -1,2 +1,2 @@
 railperfcheck: RailPerfCheck.hs
-	ghc -O2 -isrc -isatplus -o railperfcheck RailPerfCheck.hs ../rolling/target/release/librolling.a -lpthread
+	ghc -O2 -isrc -isatplus -o railperfcheck RailPerfCheck.hs ../target/release/librolling.a -lpthread
