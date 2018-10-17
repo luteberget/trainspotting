@@ -59,7 +59,7 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
                 let (activated, node_idx, auth_dist) = match routes.get(route_name) {
                     Some(route) => {
                         match route.entry {
-                            staticinfrastructure::RouteEntryExit::Boundary(id) => {
+                            staticinfrastructure::RouteEntryExit::Boundary(Some(id)) => {
                                 let activated = sim.start_process(Box::new(
                                     railway::route::ActivateRoute::new(route.clone())));
                                 (activated, id, route.length)

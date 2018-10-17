@@ -57,7 +57,7 @@ pub type Routes = HashMap<String, Route>;
 
 #[derive(Debug,Clone)]
 pub enum RouteEntryExit {
-    Boundary(NodeId),
+    Boundary(Option<NodeId>),
     Signal(ObjectId),
     SignalTrigger { signal: ObjectId, trigger_section: ObjectId },
 }

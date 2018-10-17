@@ -14,6 +14,7 @@
     - [Multiple trains](./examples/multipletrains.md)
     - [Partial release](./examples/partialrelease.md)
     - [Two-way traffic](./examples/twoway.md)
+    - [Overlap](./examples/overlap.md)
     - [Balloon loop](./examples/balloon.md)
     - [Balloon loop alternative](./examples/balloon_alt.md)
 - [Verification mode](./verification.md)
@@ -32,7 +33,6 @@
   - [Kolbotn](./examples/case_kolbotn.md)
     - [Kolbotn overtaking 2x2](./examples/case_kolbotn_overtaking_2x2.md)
     - [Kolbotn overtaking 3](./examples/case_kolbotn_overtaking_3.md)
-<!-- [Kolbotn running time](./examples/case_kolbotn_running.md)-->
   - [Eidsvoll](./examples/case_eidsvoll.md)
     - [Eidsvoll crossing 3](./examples/case_eidsvoll_crossing_3.md)
     - [Eidsvoll crossing 4](./examples/case_eidsvoll_crossing_4.md)
@@ -49,19 +49,9 @@
     - [Arna overtake 3](./examples/case_arna_overtaking3.md)
     - [Arna crossing 4](./examples/case_arna_crossing4.md)
     - [Arna alternative](./examples/case_arna_remvx.md)
-<!--  - [Arna A20 by hand](./examples/case_arna_byhand.md)  -->
-<!--    - [Arna running time](./examples/case_arna_byhand_running.md)  -->
-<!--    - [Arna overtaking 2](./examples/case_arna_byhand_overtaking2.md)  -->
-<!--    - [Arna overtaking 3](./examples/case_arna_byhand_overtaking3.md)  -->
-<!--    - [Arna crossing 3](./examples/case_arna_byhand_crossing3.md)  -->
 - [Test cases](./testcases.md)
   - [Trivial](./examples/gen_trivial.md)
   - [Two track](./examples/gen_twotrack.md)
   - [Five tracks](./examples/gen_5track.md)
   - [3x2 tracks](./examples/gen_3by2.md)
 
-<!--
-  - [Through train + pendulum](./examples/pendulum.md)
-  - [Double track](./examples/double.md)
-  - [Double track merge](./examples/doublemerge.md)
--->

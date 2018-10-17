@@ -158,7 +158,7 @@ pub fn parse_route(i: &mut usize,
         let resources = parse_resources(i,t,objnames,nodenames)?;
         must_match(i,t,Token::BraceClose)?;
         Ok(Some((name, Route {
-            entry: RouteEntryExit::Boundary(node),
+            entry: RouteEntryExit::Boundary(Some(node)),
             exit: RouteEntryExit::Signal(exit),
             length: length,
             resources: resources.into(),
@@ -170,7 +170,7 @@ pub fn parse_route(i: &mut usize,
         symbol(i, t, "modelexit")?;
         let name = identifier(i, t)?;
         symbol(i, t, "to")?;
-        let node = lookup(nodenames, &identifier(i,t)?)?;
+        let node = lookup(nodenames, &identifier(i,t)?).ok();
         must_match(i,t,Token::BraceOpen)?;
         symbol(i,t,"entry")?;
         let entry = lookup(objnames, &identifier(i,t)?)?;
