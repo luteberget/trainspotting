@@ -533,7 +533,7 @@ function animate_from(last_t,last_real_t,factor) {
     var real_t = (new Date()).getTime() / 1000.0;
     var real_dt = real_t - last_real_t;
     var dt = real_dt * factor;
-    var t = last_t + dt;
+    var t = (last_t + dt) % (x.domain()[1]);
     set_t(t);
     requestAnimationFrame(function() {
         animate_from(t,real_t,factor);

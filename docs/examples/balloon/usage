@@ -4,3 +4,12 @@ movement passengertrain {
   visit [b1]
   visit [b1out]
 }
+
+movement passengertrain {
+  visit [b1]
+  visit [b1out]
+}
+movement passengertrain {
+  visit [b1]
+  visit [b1out]
+}
