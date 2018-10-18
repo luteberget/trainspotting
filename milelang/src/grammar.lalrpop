@@ -7,18 +7,50 @@ LitString : String = <s:r#""[^"]*""#> => {
   let literal = s[1..s.len()-1].to_string();
   literal
 };
-
-pub Statement: Statement = {
-    "railml" "(" <LitString> ")" ";" => Statement::RailmlFile(<>),
+Id : String = { <s:r#"[a-zA-Z][_a-zA-Z0-9]*"#> => { s.to_string() }} ;
+LitInt: i64 = {
+    r"[0-9]+" => i64::from_str(<>).unwrap()
 };
 
-pub Milelang : Vec<Statement> = {
-  <v:(<Statement> ",")*> <e:Statement?> => match e {
-    None => v,
-    Some(e) => {
-      let mut v = v;
-      v.push(e);
-      v
+
+pub Milelang : Vec<Statement> = <Statement*>;
+
+Statement: Statement = {
+  <mods:Id*> <action:Id> <name:(("#" <Id>)?)> 
+    <conns:Connections> <args:Args> <block:Block?> ";" => 
+      Statement { mods, action, name, conns, args, block }
+};
+
+Block : Vec<Statement> = "{" <Statement*> "}";
+Connections :Vec<Connection> = { <cs:("<" <Comma<Connection>> ">")?> => cs.unwrap_or(vec![]) };
+Args :Vec<(String,Box<Expr>)> = { <args:("(" <Comma<Arg>>")")?> => args.unwrap_or(vec![]) };
+
+Connection : Connection = {
+  "!" => Connection::Stop,
+  "_" => Connection::Anonymous,
+  <Id> => Connection::Named(<>),
+};
+
+Arg : (String, Box<Expr>) = {
+    <i:Id> "=" <e:Expr> => (i,e),
+    <i:Id> => (i, Box::new(Expr::Value(Value::Bool(true)))),
+};
+
+Expr : Box<Expr> = { 
+    <LitString> => Box::new(Expr::Value(Value::Text(<>))),
+    <LitInt> => Box::new(Expr::Value(Value::Int(<>))),
+    <Id> =>  Box::new(Expr::Var(<>)) 
+};
+
+
+Comma<T>: Vec<T> = { // (1)
+    <v:(<T> ",")*> <e:T?> => match e { // (2)
+        None => v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
     }
-  }
 };
+
