@@ -212,10 +212,10 @@ fn add_switches(vec :&mut Vec<BrObject>, connections :&mut HashMap<(String,Strin
 
 
     for sw in &switches {
-        let id = sw.attr("id").expect("detector id missing");
+        let id = sw.attr("id").expect("switch id missing");
         let name = id.to_string();
-        let pos = sw.attr("pos").expect("detector pos missing")
-        .parse::<f64>().expect("detector pos is not a valid number");
+        let pos = sw.attr("pos").expect("switch pos missing")
+        .parse::<f64>().expect("switch pos is not a valid number");
 
         let conns = sw.children().filter(|x| x.name() == "connection").collect::<Vec<_>>();
         if conns.len() == 0 {
