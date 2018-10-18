@@ -20,7 +20,11 @@ pub fn get_xml(input_fn: &path::Path, verbose: bool) -> Result<(minidom::Element
     let mut contents = String::new();
     f.read_to_string(&mut contents)
         .map_err(|e| format!("Could not read file: {:?}",e))?;
+    get_xml_string(&contents, verbose)
 
+}
+
+pub fn get_xml_string(contents :&str, verbose: bool) -> Result<(minidom::Element, String), String> {
     let doc: minidom::Element = contents.parse()
         .map_err(|e| format!("Could not parse XML: {:?}",e))?;
     let ns = doc.ns().ok_or("Missing XML namespace.")?.to_string();
