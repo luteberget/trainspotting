@@ -45,6 +45,7 @@ p    {color: red;}
             let all_points = all_lines.reduce((acc, x) => acc.concat(x), []);
             x.domain(d3.extent(all_points, (p) => p[0]));
             y.domain(d3.extent(all_points, (p) => p[1]));
+            if (y.domain()[0] == y.domain()[1]) { y.domain(d3.extent([y.domain()[0]-1.0, y.domain()[0]+1.0])); }
             console.log(x.domain());
             console.log(y.domain());
             console.log(all_lines);
