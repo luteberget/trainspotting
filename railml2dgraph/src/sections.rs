@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use petgraph;
 use dgraph::*;
 
-pub fn create_sections_from_detectors(m: &mut DGraphModel) {
+pub fn create_sections_from_detectors(m: &mut DGraphModel) -> HashMap<String, Vec<(PartNodeIdx,PartNodeIdx)>> {
 
     let num_nodes = m.nodes.len() * 2 + 1;
     let is_boundary_idx = 0;
@@ -34,6 +34,7 @@ pub fn create_sections_from_detectors(m: &mut DGraphModel) {
     }
     let mut sec_num_counter = 0;
     let mut sec_num_map = HashMap::new();
+
 
     // Go back to each node and insert tvd entry/exit
     for (node_idx, node) in m.nodes.iter_mut().enumerate() {
@@ -72,7 +73,29 @@ pub fn create_sections_from_detectors(m: &mut DGraphModel) {
         }
     }
 
-    // println!("Union find is done: {:?}", sets);
+    let mut sec_edges : HashMap<String, Vec<(PartNodeIdx,PartNodeIdx)>> = HashMap::new();
+    for edge in &m.edges {
+        use dgraph::Edge::*;
+        match *edge {
+            Linear(n1, (n2, _)) => {
+                let sec_id = sets.find(n1.to_usize());
+                if sec_id == sets.find(is_boundary_idx) { continue; }
+                let sec_name = format!("sec{}",sec_num_map[&sec_id]);
+                sec_edges.entry(sec_name).or_insert(Vec::new()).push((n1,n2));
+            }
+            Switch(_, _, n1, (n2, _), (n3, _)) => {
+                let sec_id = sets.find(n1.to_usize());
+                if sec_id == sets.find(is_boundary_idx) { continue; }
+                let sec_name = format!("sec{}",sec_num_map[&sec_id]);
+                let mut v = sec_edges.entry(sec_name).or_insert(Vec::new());
+                v.push((n1,n2));
+                v.push((n1,n3));
+            }
+            Boundary(_) => {},
+        }
+    }
+
+    sec_edges
 }
 
 

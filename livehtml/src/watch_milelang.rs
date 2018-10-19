@@ -8,7 +8,7 @@ use vis_rs;
 use rolling::input::staticinfrastructure::*;
 use std::collections::HashMap;
 
-fn infrastructure_objects(inf :&StaticInfrastructure) -> serde_json::Value {
+fn infrastructure_objects(inf :&StaticInfrastructure, sections: &HashMap<String,Vec<(String,String)>>) -> serde_json::Value {
     fn get(x: &HashMap<String, usize>, n: usize) -> Option<&str> {
         for (k, v) in x.iter() {
             if *v == n {
@@ -25,7 +25,7 @@ fn infrastructure_objects(inf :&StaticInfrastructure) -> serde_json::Value {
     let mut v = json!({});
     for (node_idx,node) in inf.nodes.iter().enumerate() {
         for obj in &node.objects {
-            println!("OBJECT {:?}", inf.objects[*obj]);
+            println!("OBJECT({}) {:?}", obj,inf.objects[*obj]);
             use rolling::input::staticinfrastructure::StaticObject;
             let mut data = json!({"node": get(&inf.node_names, node_idx).unwrap()});
             match inf.objects[*obj] {
@@ -47,19 +47,35 @@ fn infrastructure_objects(inf :&StaticInfrastructure) -> serde_json::Value {
                         SwitchPosition::Left => "left",
                         SwitchPosition::Right => "right",
                     }));
-                }
-                _ => {} , // ignore tvdsection
+                },
+                _ => { continue; },
             }
 
             v.as_object_mut().unwrap().insert(get(&inf.object_names,*obj).map(|x| x.to_string()).unwrap_or_else(|| fresh()), data);
         }
     }
+
+    // TVD section objects are not on a node.
+    for (i,obj) in inf.objects.iter().enumerate() {
+        let mut data = json!({});
+        match obj {
+            StaticObject::TVDSection => {
+                data.as_object_mut().unwrap().insert(format!("type"),json!("tvdsection"));
+                let name = get(&inf.object_names,i).unwrap();
+                let edges :Vec<_>= sections[name].iter().map(|(a,b)| format!("{}-{}",a,b)).collect();
+                data.as_object_mut().unwrap().insert(format!("edges"), json!(edges));
+                v.as_object_mut().unwrap().insert(get(&inf.object_names,i).map(|x| x.to_string()).unwrap_or_else(|| fresh()), data);
+            }
+            _ => {},
+        }
+    }
+
     v
 }
 
 fn schematic_update(s :&str) -> Result<serde_json::Value, String> {
-    let inf = milelang::convert_dgraph(s).map_err(|e| format!("{:?}",e))?;
-    let object_data = infrastructure_objects(&inf);
+    let (inf,sections) = milelang::convert_dgraph(s).map_err(|e| format!("{:?}",e))?;
+    let object_data = infrastructure_objects(&inf, &sections);
     let schematic = vis_rs::convert_dgraph(&inf)?;
     let (edge_lines,node_data) = vis_rs::convert_javascript(schematic)?;
     Ok(json!({"lines": edge_lines, "nodes": node_data, "objects": object_data}))

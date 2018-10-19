@@ -55,7 +55,7 @@ fn main() {
 
 fn run(opts :&Opts) -> Result<(), String> {
     let (doc, ns) = get_xml(opts.input_fn, opts.verbose)?;
-    let dgraph = convert(&doc,&ns)?;
+    let (dgraph,_section_edges) = convert(&doc,&ns)?;
 
 
     //println!("DGRAPH {:?}", dgraph);

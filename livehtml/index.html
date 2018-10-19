@@ -10,6 +10,11 @@ body {background-color: #fafafa;}
   stroke-width: 2.5px;
 }
 
+line.reserved {
+    stroke:red;
+  stroke-opacity: 1.0;
+  stroke-width: 4px;
+}
 line.detector {
   stroke: black;
   stroke-opacity: 1.0;
@@ -52,10 +57,10 @@ line.detector {
             if (y_extents[0] == y_extents[1]) { y_extents = [y_extents[0]-1.0, y_extents[0]+1.0]; }
 
             var y_size = y_extents[1] - y_extents[0];
-            svg.style("height", y_size*pxscale+40);
+            svg.style("height", y_size*pxscale+60);
 
-            var y = d3.scaleLinear().rangeRound([y_size*pxscale+20, 20]);
-            var x = d3.scaleLinear().rangeRound([20, y_size*pxscale+20]);
+            var y = d3.scaleLinear().rangeRound([y_size*pxscale+30, 30]);
+            var x = d3.scaleLinear().rangeRound([30, y_size*pxscale+30]);
             y.domain(y_extents);
             x.domain(y_extents);
 
@@ -66,6 +71,7 @@ line.detector {
 
             lineelems.enter().append("line")
                 .attr("class","schematicline")
+                .merge(lineelems)
                 .attr("x1", (d) => x(d[0][0]))
                 .attr("y1", (d) => y(d[0][1]))
                 .attr("x2", (d) => x(d[1][0]))
@@ -73,13 +79,6 @@ line.detector {
                 .style("stroke","orange").transition(tr).style("stroke",null);
 
             lineelems.exit().transition(tr).style("stroke","blue").remove();
-
-            lineelems.transition(tr)
-                .attr("x1", (d) => x(d[0][0]))
-                .attr("y1", (d) => y(d[0][1]))
-                .attr("x2", (d) => x(d[1][0]))
-                .attr("y2", (d) => y(d[1][1]));
-
 
             var signals = [];
             for (var nam in schematic.objects) {
@@ -126,6 +125,7 @@ line.detector {
             detectorelems.enter().append("line")
               .attr("class","detector")
               .merge(detectorelems)
+            .transition(tr)
               .attr("x1", d =>    x(schematic.nodes[d.node].point[0]) 
                           + offset*schematic.nodes[d.node].tangent[1])
               .attr("y1", d =>    y(schematic.nodes[d.node].point[1]) 
@@ -137,6 +137,34 @@ line.detector {
             ;
 
             detectorelems.exit().transition(tr).style("fill","blue").remove();
+            
+            var lines_reserved = [];
+            for (var nam in schematic.objects) {
+                if (schematic.objects[nam].type == "tvdsection") {
+                    var edges = schematic.objects[nam].edges;
+                    for (var edge in edges) {
+                        var e = schematic.lines[edges[edge]];
+                        if (e != null) {
+                            for(var line in e.lines) {
+                                lines_reserved.push(e.lines[line]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            var lineelems = grid.selectAll("line.reserved").data(lines_reserved);
+
+            lineelems.enter().append("line")
+                .attr("class","reserved")
+                .merge(lineelems)
+                .attr("x1", (d) => x(d[0][0]))
+                .attr("y1", (d) => y(d[0][1]))
+                .attr("x2", (d) => x(d[1][0]))
+                .attr("y2", (d) => y(d[1][1]))
+                .style("stroke","orange").transition(tr).style("stroke",null);
+
+            lineelems.exit().transition(tr).style("stroke","blue").remove();
         }
 
         return { update: update_schematic };

@@ -1,12 +1,10 @@
-track <_,q> (l=2000) {
-  left loop (x = 100, l = 200) {
+track <_,a> (l=2000) {
+  detector(x=50);
+  out left siding <_> (x=100, l=200) {
+detector(x=60);
+      out left siding <_> (x=100, l=100);
+detector(x=160);
   };
-  right loop (x = 500, l = 200) {
-    detector(x=150);
-  };
-signal(x=1800,dir=up);
-detector(x=1800);
-detector(x=1000);
-detector(x=650);
+  detector(x=350);
 };
 

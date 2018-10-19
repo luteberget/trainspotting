@@ -12,6 +12,7 @@ pub mod output;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path;
+use std::collections::HashMap;
 
 
 pub fn get_xml(input_fn: &path::Path, verbose: bool) -> Result<(minidom::Element, String), String> {
@@ -35,7 +36,7 @@ pub fn get_xml_string(contents :&str, verbose: bool) -> Result<(minidom::Element
     Ok((doc, ns))
 }
 
-pub fn convert(doc :&minidom::Element, ns :&str) -> Result<dgraph::DGraphModel, String> {
+pub fn convert(doc :&minidom::Element, ns :&str) -> Result<(dgraph::DGraphModel, HashMap<String,Vec<(String,String)>>), String> {
     // read branching model from xml
     let mut branching = branching::get_branching_model(&doc, &ns)?;
     // add sight to branching model
@@ -43,7 +44,14 @@ pub fn convert(doc :&minidom::Element, ns :&str) -> Result<dgraph::DGraphModel, 
     // convert to d-graph representation
     let mut dgraph = dgraph::convert(branching)?;
     // convert detector locations to enter/exit objects on part-nodes
-    sections::create_sections_from_detectors(&mut dgraph);
+    let sections = sections::create_sections_from_detectors(&mut dgraph);
+    let sections = sections.into_iter().map(|(k,v)| {
+            let v = v.into_iter().map(|(pn1,pn2)| 
+              (dgraph.nodes[pn1.node_idx()].get_part(pn1.node_part()).name.clone(),
+               dgraph.nodes[pn2.node_idx()].get_part(pn2.node_part()).name.clone())
+               ).collect();
+                (k,v)
+        }).collect();
 
-    Ok(dgraph)
+    Ok((dgraph,sections))
 }
