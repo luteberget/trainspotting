@@ -28,8 +28,8 @@ pub fn to_railml(model :Vec<Track>) -> Result<String, String> {
         buf.push_str("</trackEnd>\n");
         conv_switches(&mut buf, t.switches);
         buf.push_str("</trackTopology>\n");
-        buf.push_str(&format!("</track>\n"));
         conv_objects(&mut buf, t.objects);
+        buf.push_str(&format!("</track>\n"));
         buf.push_str("\n\n");
     }
 
@@ -59,6 +59,36 @@ fn conv_switches(buf :&mut String, sws :Vec<Switch>) {
 }
 
 fn conv_objects(buf :&mut String, objs :Vec<Object>) {
+    let signals = objs.iter().filter(|o| if let ObjectData::Signal { .. } = o.data { true } else { false }).collect::<Vec<_>>();
+    let detectors = objs.iter().filter(|o| if let ObjectData::Detector { .. } = o.data { true } else { false }).collect::<Vec<_>>();
+
+    if signals.len() > 0 || detectors.len() > 0 {
+        buf.push_str("<ocsElements>\n");
+    }
+
+    if signals.len() > 0 {
+        buf.push_str("<signals>\n");
+        for s in &signals {
+            if let ObjectData::Signal { dir } = s.data {
+                buf.push_str(&format!("<signal id=\"{}\" name=\"{}\" dir=\"{}\" pos=\"{}\" type=\"main\" />\n", s.id, s.name, dir.to_string(), s.pos ));
+            }
+        }
+        buf.push_str("</signals>\n");
+    }
+    
+    if detectors.len() > 0 {
+        buf.push_str("<trainDetectionElements>\n");
+        for s in &signals {
+            if let ObjectData::Detector { } = s.data {
+                buf.push_str(&format!("<trainDetector id=\"{}\" name=\"{}\" dir=\"both\" pos=\"{}\" type=\"main\" />\n", s.id, s.name, s.pos ));
+            }
+        }
+        buf.push_str("</trainDetectionElements>\n");
+    }
+
+    if signals.len() > 0 || detectors.len() > 0 {
+        buf.push_str("</ocsElements>\n");
+    }
 }
 
 fn conv_node(node :Node) -> String {

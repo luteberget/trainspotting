@@ -31,7 +31,6 @@ fn run(rc :Receiver<ViewUpdate>, broadcast :ws::Sender) -> Result<(),()> {
     let mut current_scenarios :BTreeMap<String,serde_json::Value> = BTreeMap::new();
 
     while let Ok(msg) = rc.recv() {
-        println!("Sending view update {:?}.", msg);
         match msg {
             ViewUpdate::Reload => {
                 broadcast.send(serde_json::to_string(&json!(

@@ -37,9 +37,9 @@ p    {color: red;}
 
         function update_schematic(data) {
             let all_lines = [];
-            for (var edge in data.value) {
-                for (var l in data.value[edge].lines) {
-                    all_lines.push(data.value[edge].lines[l]);
+            for (var edge in data.value.lines) {
+                for (var l in data.value.lines[edge].lines) {
+                    all_lines.push(data.value.lines[edge].lines[l]);
                 }
             }
             let all_points = all_lines.reduce((acc, x) => acc.concat(x), []);
@@ -79,6 +79,8 @@ p    {color: red;}
     socket.onmessage = function(event) {
 
     var data = JSON.parse(event.data);
+    console.log("RECEIVED");
+    console.log(data);
 
     if (data.key == "reload") {
         window.location.reload(true);

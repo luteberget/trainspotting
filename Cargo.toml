@@ -4,6 +4,6 @@ members = [
     "rolling",
     "railml2dgraph",
     "vis-rs",
+    "milelang",
     "livehtml",
-    "milelang"
 ]

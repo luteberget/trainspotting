@@ -1,1 +1,6 @@
-railml("examples/test.railml");
+track <_,q> (l=1000) {
+  left loop (x=100,l=800);
+  right loop (x=150,l=800);
+  signal (x=500, dir=up);
+};
+

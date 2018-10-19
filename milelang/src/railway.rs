@@ -70,6 +70,15 @@ pub struct Track {
 #[derive(Debug)]
 pub struct Object {
     pub pos :f64,
+    pub data :ObjectData,
+    pub name :String,
+    pub id :String,
+}
+
+#[derive(Debug)]
+pub enum ObjectData {
+    Signal { dir: Dir, },
+    Detector { },
 }
 
 #[derive(Debug)]
@@ -121,8 +130,34 @@ fn eval(ctx :&mut Converter, stmt :ast::Statement) -> Result<(), String> {
         "track" => track(ctx, stmt)?,
         "siding" => siding(ctx, stmt)?,
         "loop" => mkloop(ctx, stmt)?,
+        "signal" => signal(ctx, stmt)?,
+        "detector" => detector(ctx, stmt)?,
         _ => return Err(format!("Unrecognized statement {:?}", stmt)),
     }
+    Ok(())
+}
+
+fn signal(ctx :&mut Converter, stmt :ast::Statement) -> Result<(), String> {
+    let pos = require_param_float(&stmt, "x")?;
+    let dir = optional_param_enum(&stmt, "dir", 
+       &vec![ ("up", Dir::Up), ("down", Dir::Down)], Dir::Up)?;
+    let track_idx = ctx.curr.ok_or(format!("Cannot insert object outside track context."))?;
+    let id = ctx.fresh.mk(format!("sig"));
+    let name = ctx.fresh.mk(format!("Signal "));
+    ctx.tracks[track_idx].objects.push(Object {
+        id, name, pos, data: ObjectData::Signal { dir},
+    });
+    Ok(())
+}
+
+fn detector(ctx :&mut Converter, stmt :ast::Statement) -> Result<(), String> {
+    let pos = require_param_float(&stmt, "x")?;
+    let track_idx = ctx.curr.ok_or(format!("Cannot insert object outside track context."))?;
+    let id = ctx.fresh.mk(format!("det"));
+    let name = ctx.fresh.mk(format!("Det "));
+    ctx.tracks[track_idx].objects.push(Object {
+        id, name, pos, data: ObjectData::Detector { },
+    });
     Ok(())
 }
 
@@ -145,10 +180,19 @@ fn require_select_mod<T:Debug+Clone>(stmt :&ast::Statement, choice :&Vec<(&str,T
                         stmt.action, choice))
 }
 
+fn optional_param_enum<T:Debug+Clone>(stmt :&ast::Statement, name :&str, choice :&Vec<(&str,T)>, default :T) -> Result<T,String> {
+    use ast::*;
+    stmt.args.iter().find(|(k,_v)| k == name)
+        .map(|(_k,v)| if let Expr::Var(ref x) = **v { 
+              choice.iter().find(|(k,v)| k == x).ok_or(format!("Enum")).map(|(k,v)| v.clone())
+            } else { Err(format!("Enum")) } )
+        .unwrap_or(Ok(default))
+}
+
 fn mkloop(ctx: &mut Converter, mut stmt :ast::Statement) -> Result<(), String> {
     let track_idx = ctx.curr.ok_or(format!("Cannot start siding outside track context."))?;
-    let pos = require_float_param(&stmt, "x")?;
-    let length = require_float_param(&stmt, "l")?;
+    let pos = require_param_float(&stmt, "x")?;
+    let length = require_param_float(&stmt, "l")?;
     let side = require_select_mod(&stmt, &vec![ ("left", Side::Left), ("right", Side::Right)])?;
 
     let i = ctx.tracks.len();
@@ -194,10 +238,10 @@ fn mkloop(ctx: &mut Converter, mut stmt :ast::Statement) -> Result<(), String> {
 
 fn siding(ctx :&mut Converter, mut stmt :ast::Statement) -> Result<(), String> {
     let track_idx = ctx.curr.ok_or(format!("Cannot start siding outside track context."))?;
-    let pos = require_float_param(&stmt, "x")?;
+    let pos = require_param_float(&stmt, "x")?;
     let end = conv_tracknode(ctx, stmt.conns.pop()
         .ok_or(format!("Statement {} requires exactly one connection.",stmt.action))?);
-    let length = require_float_param(&stmt, "l")?;
+    let length = require_param_float(&stmt, "l")?;
     let dir  = require_select_mod(&stmt, &vec![ ("out", Dir::Up), ("in", Dir::Down)])?;
     let side = require_select_mod(&stmt, &vec![ ("left", Side::Left), ("right", Side::Right)])?;
     let i = ctx.tracks.len();
@@ -243,7 +287,7 @@ fn siding(ctx :&mut Converter, mut stmt :ast::Statement) -> Result<(), String> {
 }
 
 fn track(ctx :&mut Converter, mut stmt :ast::Statement) -> Result<(),String> {
-    let length = require_float_param(&stmt, "l")?;
+    let length = require_param_float(&stmt, "l")?;
     let end = conv_tracknode(ctx, stmt.conns.pop()
         .ok_or(format!("Statement {} requires exactly two connections.",stmt.action))?);
     let begin = conv_tracknode(ctx, stmt.conns.pop()
@@ -275,7 +319,7 @@ fn conv_tracknode(ctx :&mut Converter, c :ast::Connection) -> Node {
     }
 }
 
-fn require_float_param(stmt :&ast::Statement, name :&str) -> Result<f64, String> {
+fn require_param_float(stmt :&ast::Statement, name :&str) -> Result<f64, String> {
     use ast::*;
     stmt.args.iter().find(|(k,_v)| k == name)
         .ok_or(format!("Statement {} requires numerical parameter \"{}\".", stmt.action ,name))

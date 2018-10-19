@@ -6,21 +6,72 @@ use std::path::Path;
 use milelang;
 use vis_rs;
 use rolling::input::staticinfrastructure::*;
+use std::collections::HashMap;
+
+fn infrastructure_objects(inf :&StaticInfrastructure) -> serde_json::Value {
+    fn get(x: &HashMap<String, usize>, n: usize) -> Option<&str> {
+        for (k, v) in x.iter() {
+            if *v == n {
+                return Some(k);
+            }
+        }
+        None
+    }
+
+    let mut i = 0;
+    let mut fresh = move || { i += 1; format!("unnamed{}",i) };
+
+    let mut v = json!({});
+    for (node_idx,node) in inf.nodes.iter().enumerate() {
+        for obj in &node.objects {
+            use rolling::input::staticinfrastructure::StaticObject;
+            let mut data = json!({"node": get(&inf.node_names, node_idx).unwrap()});
+            match inf.objects[*obj] {
+                StaticObject::Signal => {
+                    data.as_object_mut().unwrap().insert(format!("type"),json!("signal"));
+                },
+                StaticObject::TVDLimit { .. } => {
+                    data.as_object_mut().unwrap().insert(format!("type"),json!("detector"));
+                },
+                StaticObject::Sight { distance, signal } => {
+                    data.as_object_mut().unwrap().insert(format!("type"),json!("sight"));
+                    data.as_object_mut().unwrap().insert(format!("distance"),json!(distance));
+                    data.as_object_mut().unwrap().insert(format!("signal"),json!(get(&inf.object_names, signal).unwrap()));
+                },
+                StaticObject::Switch { branch_side, .. } => {
+                    data.as_object_mut().unwrap().insert(format!("type"),json!("switch"));
+                    data.as_object_mut().unwrap().insert(format!("side"),
+                    json!(match branch_side {
+                        SwitchPosition::Left => "left",
+                        SwitchPosition::Right => "right",
+                    }));
+                }
+                _ => {} , // ignore tvdsection
+            }
+
+            v.as_object_mut().unwrap().insert(get(&inf.object_names,*obj).map(|x| x.to_string()).unwrap_or_else(fresh), data);
+        }
+    }
+    v
+}
 
 fn schematic_update(s :&str) -> Result<serde_json::Value, String> {
     let inf = milelang::convert_dgraph(s).map_err(|e| format!("{:?}",e))?;
+    let object_data = infrastructure_objects(&inf);
+    println!("Ob ject adata {:?}", object_data);
     println!("Parsed infrastructure: {:?}", inf);
     let schematic = vis_rs::convert_dgraph(&inf)?;
     println!("Created schematic: {:?}", schematic);
-    let json_schematic = vis_rs::convert_javascript(schematic)?;
-    Ok(json_schematic)
+    let (edge_lines,node_tangents) = vis_rs::convert_javascript(schematic)?;
+    Ok(json!({"lines": edge_lines}))
 }
 
 pub fn forever(file :&Path, tx :Sender<ViewUpdate>) {
     watch::update_file_string(file, move |s| {
-        println!("Input update.");
+        println!("Input update XYZ.");
         match schematic_update(&s) {
             Ok(json_data) => {
+                println!("WILL SEDN {:?}", json_data);
                 tx.send(ViewUpdate::Schematic { json_data }).unwrap();
             },
             Err(e) => {
