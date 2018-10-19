@@ -78,7 +78,7 @@ fn conv_objects(buf :&mut String, objs :Vec<Object>) {
     
     if detectors.len() > 0 {
         buf.push_str("<trainDetectionElements>\n");
-        for s in &signals {
+        for s in &detectors {
             if let ObjectData::Detector { } = s.data {
                 buf.push_str(&format!("<trainDetector id=\"{}\" name=\"{}\" dir=\"both\" pos=\"{}\" type=\"main\" />\n", s.id, s.name, s.pos ));
             }

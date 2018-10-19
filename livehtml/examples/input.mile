@@ -1,6 +1,12 @@
-track <_,q> (l=1000) {
-  left loop (x=100,l=800);
-  right loop (x=150,l=800);
-  signal (x=500, dir=up);
+track <_,q> (l=2000) {
+  left loop (x = 100, l = 200) {
+  };
+  right loop (x = 500, l = 200) {
+    detector(x=150);
+  };
+signal(x=1800,dir=up);
+detector(x=1800);
+detector(x=1000);
+detector(x=650);
 };
 
