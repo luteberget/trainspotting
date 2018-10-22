@@ -55,7 +55,7 @@ splitRoutes route =  [ SplitRoute (routeName route, i) entry exit l res nodes
     nodes = (routeContains (route)) ++ (catMaybes [bdry route])
 
 resolveConflicts :: [SplitRoute] -> [Solver.RoutePart]
-resolveConflicts rs = [ Solver.RoutePart name en ex (conflicts name res) nodes l
+resolveConflicts rs = [ Solver.RoutePart name en ex [fmap (\x -> (x,0)) (conflicts name res)] Nothing nodes l
                       | (SplitRoute name en ex l res nodes) <- rs ]
   where
     conflicts :: (String,Int) -> [String] -> [(String,Int)]

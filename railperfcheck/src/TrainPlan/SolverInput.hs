@@ -15,7 +15,10 @@ data RoutePart
   { routePartName      :: (String, Int)
   , routePartEntry     :: Maybe SignalRef 
   , routePartExit      :: Maybe SignalRef 
-  , routePartConflicts :: [RoutePartId] 
+  , routePartConflicts :: [[(RoutePartId,Int)]] -- Set of alternative sets of conflicting routes
+                                                -- these sets can be switched between.
+  , routePartWaitConflict :: Maybe Int  -- A conflict set which cannot be directly used.
+                                        -- (used to model overlap timeout)
   , routePartContains  :: [NodeRef]
   , routePartLength    :: Double
   } deriving (Eq, Ord, Show)

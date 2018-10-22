@@ -28,14 +28,16 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Control.Monad (join, forM)
-forM_ = flip mapM_
+import Control.Monad (join, forM, forM_)
 
 type NodeMap = Map NodeRef (Set RoutePartId)
 type Occupation = [(RoutePartId, Val (Maybe TrainName))]
+type OverlapChoice = [(RoutePartId, Val Int)]
+type OccOv = (Occupation, OverlapChoice)
 data State
   = State
   { occupation     :: Occupation
+  , overlapChoice  :: OverlapChoice
   , progressBefore :: [(Train, [(RoutePart, Lit)])]
   , bornBefore     :: [(Train, Lit)]
   , visitBefore    :: [(Train, [([NodeRef], Lit)])]
@@ -45,6 +47,10 @@ rId = routePartName
 tId = trainName
 
 succPairs x = zip x (tail x)
+
+pairs x = [ (a,b) | a <- x, b <- x, a /= b ]
+setDiff :: Ord a => [a] -> [a] -> [a]
+setDiff a b = Set.toList $ Set.difference (Set.fromList a) (Set.fromList b)
 
 nubOrd :: Ord a => [a] -> [a]
 nubOrd = Set.toList . Set.fromList
@@ -57,6 +63,11 @@ occupationValue s r = fromMaybe (error "state lookup") $
   listToMaybe [ val | (rid, val) <- s, rid == r ]
 (.!) = occupationValue
 
+conflictValue :: [(RoutePartId, Val Int)] -> RoutePartId -> Val Int
+conflictValue s r = fromMaybe (error "state lookup") $
+  listToMaybe [ val | (rid, val) <- s, rid == r ]
+(.!!) = conflictValue
+
 exactlyOne :: Solver -> [Lit] -> IO ()
 exactlyOne s xs = do
   atMostOne s xs
@@ -67,12 +78,16 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
   routeStates <- sequence [ newVal s (Nothing :  [ Just (tId t) | t <- trains ])
                           | _ <- routes ]
   let occ = [(rId r, occ) | (r,occ) <- zip routes routeStates ]
+  
+  overChoice <- sequence [ newVal s (enumOverlaps r) | r <- routes]
+  let overlap = [(rId r, ov) | (r,ov) <- zip routes overChoice ]
 
   -- Exclude conflicting routes
   sequence_ [ do
-      addClause s [ occ .! (rId route) .= Nothing,
-                    occ .! conflicting .= Nothing]
-    | route <- routes, conflicting <- routePartConflicts route ]
+      addClause s [ occ .! (rId route) .= Nothing, neg (ol .= idx),
+                    occ .! (confl_r) .= Nothing, neg (overlap .!! confl_r .= confl_ol) ]
+    | (route,(_,ol)) <- zip routes overlap, idx <- domain ol,
+      (confl_r, confl_ol) <- (routePartConflicts route) !! idx ]
 
   -- At most one alternative routes is taken
   let startPts = nubOrd (fmap routePartEntry routes)
@@ -93,6 +108,30 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
             | (r1,r2) <- succPairs routeSet ]
         | routeSet <- partialroutes ]
     | train <- trains ]
+
+  -- A conflict set might be excluded on allocation (overlap timeout)
+  forM (zip routes overlap) $ \(r,(rid,ol)) -> do
+    case routePartWaitConflict r of
+      Nothing -> return ()
+      Just idx -> do 
+        activated <- andl s [ neg (occ .! rid .= Nothing),
+          (fromMaybe true $ fmap (\st -> ((occupation st) .! rid) .= Nothing) prevState)]
+        addClause s [ neg (ol .= idx), neg activated ]
+
+  -- Conservative swinging overlap (only swing the overlap when conflict)
+  forM prevState $ \prev -> do
+      let (prevOcc, prevOv) = (occupation prev, overlapChoice prev)
+      forM_ (zip routes overlap) $ \(r,(rid, ol)) -> do
+        forM_ (pairs (enumOverlaps r)) $ \(idx1,idx2) -> do 
+            let conflictDiff = setDiff ((routePartConflicts r) !! idx1)
+                                       ((routePartConflicts r) !! idx2)
+            usingAnyConflicting <- forM conflictDiff $ \(confl_r, confl_ol) -> do
+              andl s [ neg (occ .! confl_r .= Nothing), overlap .!! confl_r .= confl_ol ]
+            addClause s ([ occ .! rid .= Nothing, -- if the route is active 
+                          prevOcc .! rid .= Nothing,
+                          neg (prevOv .!! rid .= idx1),  -- come to this overlap from another
+                          neg (overlap .!! rid .= idx2) ] ++ usingAnyConflicting)
+
   
   -- Allocate route constraints
   sequence_ [ allocateRoute s routes route train (fmap occupation prevState, occ)
@@ -104,11 +143,12 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
         | route <- routes, train <- trains ]
     | Just prevState <- [prevState] ]
 
+  let maybeOccOv s = fmap (\st -> (occupation st, overlapChoice st)) s
   let allFalseProgress = [ (t, [ (r, false) | r <- routes ] ) | t <- trains ]
   let progress = fromMaybe allFalseProgress (fmap progressBefore prevState)
   progressFuture <- sequence [ do 
       p <- sequence [ do
-          p <- allocateAhead s routes partialroutes route train (fmap occupation prevState, occ) progressBefore
+          p <- allocateAhead s routes partialroutes route train (maybeOccOv prevState, (occ,overlap)) progressBefore
           return (route, p)
         | (route, progressBefore) <- trainProgress ]
       return (train, p)
@@ -117,7 +157,7 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
   let allFalseBorn = [ (t, false) | t <- trains ]
   let born = fromMaybe allFalseBorn (fmap bornBefore prevState)
   bornFuture <- sequence [ do
-       b <- bornCondition s nodeMap routes partialroutes train (fmap occupation prevState, occ) born
+       b <- bornCondition s nodeMap routes partialroutes train (maybeOccOv prevState, (occ, overlap)) born
        return (train,b)
      | (train, born) <- born ]
 
@@ -150,7 +190,7 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
     | ((t1,v1),(t2,v2)) <- ords]
 
   --return (State occ progressFuture bornFuture visitFuture)
-  return (State occ progressFuture bornFuture visitFuture)
+  return (State occ overlap progressFuture bornFuture visitFuture)
 
 freeRoute :: Solver -> [RoutePart] -> RoutePart -> Train -> (Occupation,Occupation) -> IO ()
 freeRoute s routes route train (s1,s2) = do
@@ -183,45 +223,80 @@ allocateRoute s routes route train (s1,s2) = case routePartEntry route of
     addClause s $ catMaybes 
       ([fmap neg becomesAllocated, wasAllocated] ++ previousIsAllocated)
 
-wholeRouteConflicts :: [RoutePart] -> [[RoutePartId]] -> RoutePart -> [RoutePartId]
-wholeRouteConflicts routes partialroutes route = nubOrd $ join [ routePartConflicts r | r <- parts ]
-  where parts = fmap (\x -> head [ r | r <- routes, rId r == x ]) partIds
-        partIds = head [ whole | whole <- partialroutes, (rId route) `elem` whole ]
+-- -- wholeRouteConflicts :: [Int] -> [RoutePart] -> [[RoutePartId]] -> RoutePartId -> [(Int, [RoutePartId])]
+-- -- wholeRouteConflicts routes groups part = 
+-- --   nubOrd $ join [ routePartConflicts r | r <- fmap (findRoute routes) (findPartGroup groups part) ]
+-- -- 
 
-allocateAhead :: Solver -> [RoutePart] -> [[RoutePartId]] ->  RoutePart -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
+findPartGroup ::  [[RoutePartId]] -> RoutePartId -> [RoutePartId]
+findPartGroup groups partid = head [ group | group <- groups, partid `elem` group ]
+
+findRoute :: [RoutePart] -> RoutePartId -> RoutePart
+findRoute routes name = head [ r | r <- routes, rId r == name ]
+
+enumOverlaps :: RoutePart -> [Int]
+enumOverlaps r = take (length (routePartConflicts r)) [0..]
+
+resolveConflictWith :: Solver -> [RoutePart] -> [[RoutePartId]] -> Train -> (OccOv,OccOv) -> [RoutePart] -> IO [Lit]
+resolveConflictWith s routes partialroutes train ((s1,o1),(s2,o2)) candidates = do
+  -- Return a disjunction of possible conflict resolutions that can be 
+  -- used to resolve forced progress.
+   cand <- forM candidates $ \nextRoute -> do
+       let partGroup = findPartGroup partialroutes (rId nextRoute)
+       let partChoices = sequence [[(p,i) | i <- enumOverlaps (findRoute routes p) ] | p <- partGroup ]
+       -- Expand next partial route to its whole-route (with overlap choices)
+       forM partChoices $ \choice -> do -- Different choices of overlap
+         let externalConflicts = fmap (\(a,b) -> (a, Just b)) $ nubOrd $ join [ (routePartConflicts (findRoute routes r)) !! o | (r,o) <- choice ]
+         let conflicts = externalConflicts ++ [(rId nextRoute, Nothing)]
+         forM conflicts $ \(conflict_r,conflict_ol) -> do
+           let hadConflict = [ neg (s1 .! conflict_r .= Nothing), -- conflicting route was allocated
+                               fromMaybe true $ fmap (\ol -> (o1 .!! conflict_r .= ol)) conflict_ol]
+           let resolve = join [ [ neg (s1 .! choice_r .= Just (tId train)), -- choice becomes activated
+                                   s2 .! choice_r .= Just (tId train),
+                                   o2 .!! choice_r .= choice_ol ] -- With given overlap]
+                               | (choice_r, choice_ol) <- choice ] -- for each route/ol in the choice set 
+           wasResolved <- andl s (hadConflict ++ resolve)
+           return wasResolved
+   return (join $ join cand)
+
+allocateAhead :: Solver -> [RoutePart] -> [[RoutePartId]] ->  RoutePart -> Train -> (Maybe OccOv, OccOv) -> Lit -> IO Lit
 allocateAhead s routes partialroutes route train (prevState,state) progressBefore = case routePartExit route of
   Nothing -> return true -- Not relevant for boundary exit routes
   Just signal -> do
-    let isAllocated = state .! (rId route) .= Just (tId train)
+    let (occ,_) = state
+    let isAllocated = occ .! (rId route) .= Just (tId train)
     let nextRs = routes `startingIn` (Just signal)
-    let progressNow = [state .! (rId r) .= Just (tId train)    | r <- nextRs ]
+    let progressNow = [occ .! (rId r) .= Just (tId train)    | r <- nextRs ]
     progressFuture <- newLit s
     addClause s ([neg isAllocated, progressFuture] ++ progressNow)
 
     forM_ prevState $ \prev -> do 
-      let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
-                            neg (prev .! (rId nextRoute) .= Just (tId train)),
-                            state .! (rId nextRoute) .= Just (tId train) ]
-                        | nextRoute <- nextRs
-                        , conflicting <- ( (rId nextRoute) : (wholeRouteConflicts routes partialroutes nextRoute)) ]
-      conflictResolved <- mapM (andl s) hadConflict
+      conflictResolved <- resolveConflictWith s routes partialroutes train (prev, state) nextRs
+      --let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
+      --                      neg (prev .! (rId nextRoute) .= Just (tId train)),
+      --                      state .! (rId nextRoute) .= Just (tId train) ]
+      --                  | nextRoute <- nextRs
+      --                  , conflicting <- ( (rId nextRoute) : (wholeRouteConflicts routes partialroutes (rId nextRoute))) ]
+      --conflictResolved <- mapM (andl s) hadConflict
       addClause s ([progressBefore, progressFuture] ++ conflictResolved)
     return (neg progressFuture)
 
-bornCondition :: Solver -> NodeMap -> [RoutePart] -> [[RoutePartId]] -> Train -> (Maybe Occupation, Occupation) -> Lit -> IO Lit
+bornCondition :: Solver -> NodeMap -> [RoutePart] -> [[RoutePartId]] -> Train -> (Maybe OccOv, OccOv) -> Lit -> IO Lit
 bornCondition s nodeMap routes partialroutes train (prevState,state) bornBefore = do
    -- Is this train born in this step?
+   let (occ,_) = state
+   let prevOcc = fmap fst prevState
    let trainBirthPlaces = [ route
                           | rid <- nodesToRoutes nodeMap (head (trainVisits train))
                           , route <- routes
                           , rid == routePartName route ]
    let bornNowAlternatives = 
-         [ catMaybes [ fmap (\prev -> neg (prev .! (rId route) .= Just (tId train))) prevState,
-                       Just (state .! (rId route) .= Just (tId train)) ]
+         [ catMaybes [ fmap (\prev -> neg (prev .! (rId route) .= Just (tId train))) prevOcc,
+                       Just (occ .! (rId route) .= Just (tId train)) ]
          | route <- trainBirthPlaces ]
 
    -- Don't get born in other places
-   sequence_ [ addClause s [ neg (state .! (rId r) .= Just (tId train)) ]
+   sequence_ [ addClause s [ neg (occ .! (rId r) .= Just (tId train)) ]
              | r <- routes `startingIn` Nothing , not ((rId r) `elem` (fmap rId trainBirthPlaces)) ]
 
    bornNow <- orl s =<< mapM (andl s) bornNowAlternatives
@@ -231,17 +306,19 @@ bornCondition s nodeMap routes partialroutes train (prevState,state) bornBefore 
    forM_ prevState $ \prev -> do 
        -- If train is born, and we are not on the first step,
        -- then it must be after a conflict has been resolved.
-       resolvedAlternatives <- forM trainBirthPlaces $ \trainBirthPlace -> do
-         let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
-                               neg (prev .! (rId trainBirthPlace) .= Just (tId train)),
-                               state .! (rId trainBirthPlace) .= Just (tId train) ]
-                           | conflicting <- ((rId trainBirthPlace):
-                                            (wholeRouteConflicts routes partialroutes trainBirthPlace)) ]
-         conflictResolved <- mapM (andl s) hadConflict
+       conflictResolved <- resolveConflictWith s routes partialroutes train (prev, state) trainBirthPlaces 
+       --resolvedAlternatives <- forM trainBirthPlaces $ \trainBirthPlace -> do
+       --  let nextRs = [trainBirthPlace]
+         --let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
+         --                      neg (prev .! (rId trainBirthPlace) .= Just (tId train)),
+         --                      state .! (rId trainBirthPlace) .= Just (tId train) ]
+         --                  | conflicting <- ((rId trainBirthPlace):
+         --                                   (wholeRouteConflicts routes partialroutes (rId trainBirthPlace))) ]
+         -- conflictResolved <- mapM (andl s) hadConflict
          -- conflictResolved :: [Lit] is a list of ways that the given
          -- birth place could have had a conflict which is resolved.
-         return conflictResolved
-       addClause s ([neg bornNow] ++ (join resolvedAlternatives))
+         --return conflictResolved
+       addClause s ([neg bornNow] ++ conflictResolved)
    return (neg bornFuture)
 
 visitConstraint :: Solver -> NodeMap -> Occupation -> Train -> [NodeRef] -> Lit -> IO Lit
