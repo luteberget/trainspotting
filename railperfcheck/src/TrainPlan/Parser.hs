@@ -1,7 +1,7 @@
 module TrainPlan.Parser where
 
 import Control.Monad (void)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import Data.Void
 import Text.Megaparsec
 import qualified Text.Megaparsec as MP
@@ -206,7 +206,7 @@ modelEntry = do
   let contains = []
   return (Route name (RoutePointBoundary bdry)
                      (RoutePointSignal sig)
-                length releases contains)
+                length releases contains [] False)
 
 modelExit :: Parser Route
 modelExit = do
@@ -245,7 +245,7 @@ modelExit = do
   let contains = []
   return (Route name (RoutePointSignal sig)
                      (RoutePointBoundary bdry)
-                length releases contains)
+                length releases contains [] False)
 
 trainRoute :: Parser Route
 trainRoute = do
@@ -278,9 +278,34 @@ trainRoute = do
      symbol "contains"
      list identifier
   releaseSpecs <- many release
+  overlaps <- many overlap
+  swinging <- optional $ symbol "swinging"
+  let swingingOverlap = isJust swinging
   symbol "}"
   let allResources = (fromMaybe [] sections) ++ (fromMaybe [] ((fmap.fmap) fst swpos))
   let releases = if null releaseSpecs then [Release length allResources] else releaseSpecs
   return (Route name (RoutePointSignal entry)
                      (RoutePointSignal exit)
-                           length releases (fromMaybe [] contains))
+                           length releases (fromMaybe [] contains)
+                overlaps swingingOverlap
+                )
+
+overlap :: Parser Overlap
+overlap = do
+  symbol "overlap"
+  name <- optname
+  symbol "{"
+  sections <- optional $ do 
+    symbol "sections"
+    list identifier
+  swpos <- optional $ do
+    symbol "switches"
+    list $ do
+      swref <- identifier
+      pos <- swposParser
+      return (swref,pos)
+  timeout <- optional (symbol "timeout" >> number)
+  symbol "}"
+  let allResources = (fromMaybe [] sections) ++ (fromMaybe [] ((fmap.fmap) fst swpos))
+  return $ Overlap name allResources timeout
+
