@@ -1,6 +1,6 @@
 module TrainPlan.SolverUnique (
-  plan
-  ) where
+plan
+) where
 
 -- Train route planner, enhanced version of Solver.hs with:
 --   * incremental bound on number of transitions 
@@ -34,10 +34,12 @@ type NodeMap = Map NodeRef (Set RoutePartId)
 type Occupation = [(RoutePartId, Val (Maybe TrainName))]
 type OverlapChoice = [(RoutePartId, Val Int)]
 type OccOv = (Occupation, OverlapChoice)
+type TrailMarks = [(SignalRef, [Lit])]
 data State
   = State
   { occupation     :: Occupation
   , overlapChoice  :: OverlapChoice
+  , trailMarks     :: TrailMarks
   , progressBefore :: [(Train, [(RoutePart, Lit)])]
   , bornBefore     :: [(Train, Lit)]
   , visitBefore    :: [(Train, [([NodeRef], Lit)])]
@@ -82,6 +84,13 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
   overChoice <- sequence [ newVal s (enumOverlaps r) | r <- routes]
   let overlap = [(rId r, ov) | (r,ov) <- zip routes overChoice ]
 
+  -- Each signal each train can be trail marked
+  let signals = nubOrd $ catMaybes $ join [ [routePartEntry r, routePartExit r] | r <- routes ]
+  trail <- sequence [ do
+      trainMarks <- sequence [ newLit s | _ <- trains ]
+      return (sig, trainMarks)
+    | sig <- signals ]
+
   -- Exclude conflicting routes
   sequence_ [ do
       addClause s [ occ .! (rId route) .= Nothing, neg (ol .= idx),
@@ -109,6 +118,25 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
         | routeSet <- partialroutes ]
     | train <- trains ]
 
+  -- Trail: mark trail (false -> true) when activating
+  -- TODO first state must also be included (mark on first state when occupied)
+  let (prevOcc, prevTrail) = (fromMaybe [ (r,val Nothing) | (r,_) <- occ ]  $ fmap occupation prevState, 
+                              fromMaybe [ (s,fmap (const false) t) | (s,t) <- trail] $ fmap trailMarks prevState) in 
+    forM_ (zip prevTrail trail) $ \((sig, prevMarks),(_, currMarks)) -> do
+      forM_ (zip3 prevMarks currMarks trains) $ \(prevMark,currMark,train) -> do
+        -- foreach entry signal, foreach train
+        let reachable = [ r_x | r_x <- routes, r_y <- routes
+                              , Just sig == routePartExit r_y
+                              , routePartEntry r_x == routePartEntry r_y ]
+        forM_ reachable $ \r -> do
+          -- if route became activated, then mark must also activate
+          mark <- andl s [ neg prevMark, currMark ]
+          addClause s [ prevOcc .!  (rId r) .= Just (tId train),  -- it was already active
+                        neg (occ .! (rId r) .= Just (tId train)),-- it is not active now
+                        mark ]                             -- else, mark it
+                        
+          return ()
+
   -- A conflict set might be excluded on allocation (overlap timeout)
   forM (zip routes overlap) $ \(r,(rid,ol)) -> do
     case routePartWaitConflict r of
@@ -132,7 +160,82 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
                           neg (prevOv .!! rid .= idx1),  -- come to this overlap from another
                           neg (overlap .!! rid .= idx2) ] ++ usingAnyConflicting)
 
+  -- Clear trail markings
+  --   Not relevant for before->first state, since all markings are off before,
+  --   then sig1train1_prev is false and the implication holds.
+  forM prevState $ \prev -> do
+    let (prevOcc, prevOv, prevTrail) = (occupation prev, overlapChoice prev, trailMarks prev)
+    forM_ (zip prevTrail trail) $ \((sig1, prevMarks1),(_, currMarks1)) -> do
+      forM_ (zip3 prevMarks1 currMarks1 trains) $ \(prevMark1,currMark1,train1) -> do
+        -- For each sig1, train1, with markings prev and curr
+        --
+        -- sig1train1_prev => sig1train1_next OR (  find train2 s.t.  
+        --                                            becameAllocated(sig1,train2) 
+        --                                              AND
+        --                                            NOT (find route(sig2) s.t. 
+        --                                                   occ_next(route)=train1 AND sig2train2_prev)) 
+        --
+        forM_ (zip prevTrail trail) $ \((sig2, prevMarks2),(_, currMarks2)) -> do
+          forM_ (zip3 prevMarks2 currMarks2 trains) $ \(prevMark2, currMark2, train2) -> do
+            -- For each sig2, train2, with markings prev and curr
+            --
+            -- sig1_prev => sign1_next OR ( 
+
+            --
+            -- skip if sig1==sig2 or train1==train2
+            if (sig1 == sig2 || train1 == train2) then do return ()
+            else do
+
+                let (pSig1Train2, cSig1Train2) = head [ (p,c) 
+                                                      | ((sig,prevM), (_,currM)) <- zip prevTrail trail
+                                                      , (p, c, t) <- zip3 prevM currM trains
+                                                      , sig == sig1, (tId t) == (tId train2)]
+                let (pSig2Train1, cSig2Train1) = head [ (p,c) 
+                                                      | ((sig,prevM), (_,currM)) <- zip prevTrail trail
+                                                      , (p, c, t) <- zip3 prevM currM trains
+                                                      , sig == sig2, (tId t) == (tId train1)]
+
+                let relevantRoutes = [ r | r <- routes, routePartEntry r == Just sig2 ] 
+                altAlloc <- forM relevantRoutes $ \r -> do
+                  andl s [ neg (prevOcc .! (rId r) .= Just (tId train1))
+                         , occ .! (rId r) .= Just (tId train1) ]
+
+                active <- orl s [ prevOcc .! (rId r) .= Just (tId train2) 
+                                | r <- routes, routePartExit r == Just sig1 ]
+                clear <- andl s $ altAlloc ++ [pSig1Train2, neg prevMark2, neg active ]
+                addClause s [neg prevMark1, currMark1, clear]
   
+  -- Trail: keep trail marked when not resolving conflict
+---  forM prevState $ \prev -> do
+---    let (prevOcc, prevOv, prevTrail) = (occupation prev, overlapChoice prev, trailMarks prev)
+---    addClause s [ neg prevMarkT1, currMarkT1 ] ++ (resolved train1)
+----- actually, we don't need to check that there was actually a conflict,
+----- it is given that each allocation in not-the-first-step had a conflict in 
+----- the previous step.
+----- t1/s1 is marked if it was previously marked, except if the following:
+-----       t2/s1 is marked 
+-----   AND t1 allocates something that conflicted with t2 in si 
+-----   AND t2/si is not marked
+---    addClause s [neg (prev t1s1), t1s1] ++ [ andl s [t2s1, resolved t1 t2 si, neg t2si]]
+---
+---    -- t1 is marked if it was marked and t2 is not marked on resolution point, and not:
+---    --  t1 resolved a conflict with t2, and t2 was marked
+---    let resolved train1 = 
+---    return ()
+
+-- USING THIS IDEA:
+-- new try: could-reach_s(signal,train)
+-- allocate_s1s2(route(end),train) => !could-reach_s1(end,train), could-reach_s2(end,train)  
+--   (holds also in first step with could-reach_s1 false for all ends and trains)
+-- (could-reach_s1(sig1,train1) => could-reach_s2(sig1,train1)) 
+--   OR (allocate_s1s2(route(sig2),train1) AND      could-reach_s1(sig1,train2) 
+--                                         AND (NOT could-reach_s1(sig2,train2))
+--                                         AND (NOT active_s1(sig1, train2))) -- cannot clear sig1 if train2 is on it
+--
+-- REVISED: it might not be possible to use the could-have-reached relation in this way, because
+--          it excludes going into a loop track with a signal if the through-track does not have a signal.
+--           
+
   -- Allocate route constraints
   sequence_ [ allocateRoute s routes route train (fmap occupation prevState, occ)
             | route <- routes, train <- trains ]
@@ -190,7 +293,7 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
     | ((t1,v1),(t2,v2)) <- ords]
 
   --return (State occ progressFuture bornFuture visitFuture)
-  return (State occ overlap progressFuture bornFuture visitFuture)
+  return (State occ overlap trail progressFuture bornFuture visitFuture)
 
 freeRoute :: Solver -> [RoutePart] -> RoutePart -> Train -> (Occupation,Occupation) -> IO ()
 freeRoute s routes route train (s1,s2) = do
