@@ -1,0 +1,38 @@
+modelentry entry from b1 {
+  exit sa
+  length 500.0
+  sections [] switches [] contains []
+}
+
+route stationentry {
+  entry sa exit sb entrysection a1 length 500.0
+  sections [a1] switches [sw2 left] contains []
+}
+
+route intoloop {
+  entry sb exit sla entrysection a2 length 500.0
+  sections [a2] switches [sw1 left] contains []
+}
+
+route inloop {
+  entry sla exit slb entrysection al1 length 500.0
+  sections [al1] switches [] contains []
+}
+
+route outofloop {
+  entry slb exit sb entrysection a1 length 500.0
+  sections [a1] switches [sw2 right] contains []
+}
+
+route stationexit {
+  entry sb exit sc entrysection a2 length 500.0
+  sections [a2] switches [sw1 right] contains []
+}
+
+modelexit exit to b2 {
+  entry sc
+  entrysection a3
+  length 1000.0
+  sections [a3] switches [] contains []
+}
+

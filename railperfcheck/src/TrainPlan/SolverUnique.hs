@@ -43,6 +43,7 @@ data State
   , progressBefore :: [(Train, [(RoutePart, Lit)])]
   , bornBefore     :: [(Train, Lit)]
   , visitBefore    :: [(Train, [([NodeRef], Lit)])]
+  , hasFinished    :: [Lit] -- one literal per train
   } deriving (Eq, Ord, Show)
 
 rId = routePartName
@@ -76,7 +77,7 @@ exactlyOne s xs = do
   addClause s xs
 
 newState :: Solver -> Problem -> NodeMap -> Maybe State -> IO State
-newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
+newState s problem@(routes,partialroutes,trains,ords) nodeMap prevState = do
   routeStates <- sequence [ newVal s (Nothing :  [ Just (tId t) | t <- trains ])
                           | _ <- routes ]
   let occ = [(rId r, occ) | (r,occ) <- zip routes routeStates ]
@@ -90,6 +91,23 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
       trainMarks <- sequence [ newLit s | _ <- trains ]
       return (sig, trainMarks)
     | sig <- signals ]
+
+  -- HasFinished
+  finished <- sequence [ newLit s | _ <- trains ]
+  forM_ (zip3 [0..] trains finished) $ \(idx, train,finishedNow) -> do
+      -- Finished bool cannot be unset
+      forM prevState $ \prev -> do
+        let finishedBefore = (hasFinished prev) !! idx
+        addClause s [neg finishedBefore, finishedNow]
+
+        -- Set when exiting
+        sequence_ [ addClause s [neg ((occupation prev) .! (rId r) .= (Just (tId train))), finishedNow ]
+                  | r <- routes `endingIn` Nothing ]
+
+      -- Cannot use routes after finished
+      sequence_ [ addClause s [neg (occ .! (rId r) .= (Just (tId train))), neg finishedNow ]
+                | r <- routes ]
+    
 
   -- Exclude conflicting routes
   sequence_ [ do
@@ -131,9 +149,9 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
         forM_ reachable $ \r -> do
           -- if route became activated, then mark must also activate
           mark <- andl s [ neg prevMark, currMark ]
-          addClause s [ prevOcc .!  (rId r) .= Just (tId train),  -- it was already active
-                        neg (occ .! (rId r) .= Just (tId train)),-- it is not active now
-                        mark ]                             -- else, mark it
+          -- addClause s [ prevOcc .!  (rId r) .= Just (tId train),  -- it was already active
+          --               neg (occ .! (rId r) .= Just (tId train)),-- it is not active now
+          --               mark ]                             -- else, mark it
                         
           return ()
 
@@ -175,66 +193,21 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
         --                                            NOT (find route(sig2) s.t. 
         --                                                   occ_next(route)=train1 AND sig2train2_prev)) 
         --
-        forM_ (zip prevTrail trail) $ \((sig2, prevMarks2),(_, currMarks2)) -> do
-          forM_ (zip3 prevMarks2 currMarks2 trains) $ \(prevMark2, currMark2, train2) -> do
-            -- For each sig2, train2, with markings prev and curr
-            --
-            -- sig1_prev => sign1_next OR ( 
 
-            --
-            -- skip if sig1==sig2 or train1==train2
-            if (sig1 == sig2 || train1 == train2) then do return ()
-            else do
+        canClear <- forM (filter (/= train1) trains) $ \train2 -> do
+          -- find route that allocates sig1 to train2
+          alloc <- orl s =<< sequence [ andl s [neg (prevOcc .! (rId r) .= (Just (tId train2))), 
+                                                     occ     .! (rId r) .= (Just (tId train2))]
+                                      | r <- routes, routePartEntry r == Just sig1 ]
+          -- check that train1 is not currently allocated to any route that has train2 mark
+          standingOnTrail <- sequence [ andl s [ occ .! (rId r) .= (Just (tId train1)), trailTrain2 ]
+                                      | r <- routes, (sig, marks) <- trail
+                                      , routeAllocSignal problem r == Just sig
+                                      , (train, trailTrain2) <- zip trains marks, train == train2 ]
 
-                let (pSig1Train2, cSig1Train2) = head [ (p,c) 
-                                                      | ((sig,prevM), (_,currM)) <- zip prevTrail trail
-                                                      , (p, c, t) <- zip3 prevM currM trains
-                                                      , sig == sig1, (tId t) == (tId train2)]
-                let (pSig2Train1, cSig2Train1) = head [ (p,c) 
-                                                      | ((sig,prevM), (_,currM)) <- zip prevTrail trail
-                                                      , (p, c, t) <- zip3 prevM currM trains
-                                                      , sig == sig2, (tId t) == (tId train1)]
-
-                let relevantRoutes = [ r | r <- routes, routePartEntry r == Just sig2 ] 
-                altAlloc <- forM relevantRoutes $ \r -> do
-                  andl s [ neg (prevOcc .! (rId r) .= Just (tId train1))
-                         , occ .! (rId r) .= Just (tId train1) ]
-
-                active <- orl s [ prevOcc .! (rId r) .= Just (tId train2) 
-                                | r <- routes, routePartExit r == Just sig1 ]
-                clear <- andl s $ altAlloc ++ [pSig1Train2, neg prevMark2, neg active ]
-                addClause s [neg prevMark1, currMark1, clear]
-  
-  -- Trail: keep trail marked when not resolving conflict
----  forM prevState $ \prev -> do
----    let (prevOcc, prevOv, prevTrail) = (occupation prev, overlapChoice prev, trailMarks prev)
----    addClause s [ neg prevMarkT1, currMarkT1 ] ++ (resolved train1)
------ actually, we don't need to check that there was actually a conflict,
------ it is given that each allocation in not-the-first-step had a conflict in 
------ the previous step.
------ t1/s1 is marked if it was previously marked, except if the following:
------       t2/s1 is marked 
------   AND t1 allocates something that conflicted with t2 in si 
------   AND t2/si is not marked
----    addClause s [neg (prev t1s1), t1s1] ++ [ andl s [t2s1, resolved t1 t2 si, neg t2si]]
----
----    -- t1 is marked if it was marked and t2 is not marked on resolution point, and not:
----    --  t1 resolved a conflict with t2, and t2 was marked
----    let resolved train1 = 
----    return ()
-
--- USING THIS IDEA:
--- new try: could-reach_s(signal,train)
--- allocate_s1s2(route(end),train) => !could-reach_s1(end,train), could-reach_s2(end,train)  
---   (holds also in first step with could-reach_s1 false for all ends and trains)
--- (could-reach_s1(sig1,train1) => could-reach_s2(sig1,train1)) 
---   OR (allocate_s1s2(route(sig2),train1) AND      could-reach_s1(sig1,train2) 
---                                         AND (NOT could-reach_s1(sig2,train2))
---                                         AND (NOT active_s1(sig1, train2))) -- cannot clear sig1 if train2 is on it
---
--- REVISED: it might not be possible to use the could-have-reached relation in this way, because
---          it excludes going into a loop track with a signal if the through-track does not have a signal.
---           
+          andl s ([alloc] ++ (fmap neg standingOnTrail))
+        -- addClause s $ [neg prevMark1, currMark1] ++ canClear
+        return ()
 
   -- Allocate route constraints
   sequence_ [ allocateRoute s routes route train (fmap occupation prevState, occ)
@@ -293,7 +266,14 @@ newState s (routes,partialroutes,trains,ords) nodeMap prevState = do
     | ((t1,v1),(t2,v2)) <- ords]
 
   --return (State occ progressFuture bornFuture visitFuture)
-  return (State occ overlap trail progressFuture bornFuture visitFuture)
+  return (State occ overlap trail progressFuture bornFuture visitFuture finished)
+
+routeAllocSignal :: Problem -> RoutePart -> Maybe SignalRef
+routeAllocSignal (routes, _, _, _) route = join $ fmap (\fr -> routePartEntry (fr)) firstRoute
+  where firstRouteName = (fst (routePartName route), 0)
+        firstRoute = hd [ r | r <- routes, routePartName r == firstRouteName ]
+        hd [] = Nothing
+        hd (x:_) = Just x
 
 freeRoute :: Solver -> [RoutePart] -> RoutePart -> Train -> (Occupation,Occupation) -> IO ()
 freeRoute s routes route train (s1,s2) = do
@@ -386,9 +366,9 @@ allocateAhead s routes partialroutes route train (prevState,state) progressBefor
 
 bornCondition :: Solver -> NodeMap -> [RoutePart] -> [[RoutePartId]] -> Train -> (Maybe OccOv, OccOv) -> Lit -> IO Lit
 bornCondition s nodeMap routes partialroutes train (prevState,state) bornBefore = do
-   -- Is this train born in this step?
    let (occ,_) = state
    let prevOcc = fmap fst prevState
+   -- Is this train born in this step?
    let trainBirthPlaces = [ route
                           | rid <- nodesToRoutes nodeMap (head (trainVisits train))
                           , route <- routes
@@ -422,6 +402,12 @@ bornCondition s nodeMap routes partialroutes train (prevState,state) bornBefore 
          -- birth place could have had a conflict which is resolved.
          --return conflictResolved
        addClause s ([neg bornNow] ++ conflictResolved)
+   --
+   -- If train exists, it must have been born
+   sequence_ [ addClause s [ neg (occ .! (rId r) .= (Just (tId train))), bornNow, bornBefore]
+             | r <- routes ]
+
+
    return (neg bornFuture)
 
 visitConstraint :: Solver -> NodeMap -> Occupation -> Train -> [NodeRef] -> Lit -> IO Lit

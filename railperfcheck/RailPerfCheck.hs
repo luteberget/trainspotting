@@ -15,6 +15,7 @@ import System.IO (stderr,hPutStrLn)
 import System.Exit (exitFailure,exitSuccess)
 import System.CPUTime
 import Data.IORef
+import Data.Maybe (fromMaybe)
 
 logmsg = hPutStrLn stderr
 output = putStrLn
@@ -26,6 +27,7 @@ data RailPerfCheck
   , usageFile :: FilePath
   , planoutput :: Maybe FilePath
   , resultjsonoutput :: Maybe FilePath
+  , dontsimulate :: Bool
   } deriving (Show, Data, Typeable)
 
 optSpec = RailPerfCheck
@@ -34,6 +36,7 @@ optSpec = RailPerfCheck
   , usageFile = def &= typ "USAGEFILE" &= argPos 2
   , planoutput = def &= typFile &= help "Output dispatch of successful plan"
   , resultjsonoutput = def &= typFile &= help "Output constraint checklist in JSON format"
+  , dontsimulate = def &= help "Don't check timing constraints using simulator"
   } &= summary "railperfcheck v0.1.0"
 
 time :: IO t -> IO (Integer, t)
@@ -48,6 +51,8 @@ conv_time x = (fromIntegral x) / (10^12)
 
 main = do
   opts <- cmdArgs optSpec
+  let useSimulator = not (dontsimulate opts)
+  putStrLn $ "Simulate : " ++ (show useSimulator)
 
   Sim.withInfrastructureFile (infrastructureFile opts) $ \simInf -> do
   Sim.withRoutesFile simInf (routesFile opts) $ \simRoutes -> do
@@ -84,6 +89,7 @@ main = do
               sat_timer_sum <- newIORef 0
               des_timer_sum <- newIORef 0
               des_counter <- newIORef 0
+              plan_counter <- newIORef 0
 
               final <- Solver.plan maxminSteps maxFailedSteps solverInput $ \plan -> do
                 t <- getCPUTime
@@ -91,12 +97,17 @@ main = do
                 modifyIORef sat_timer_sum ((+) (t-lastt))
                 writeIORef sat_timer t
                 let dispatchString = Convert.dispatchPlan solverInput plan
-                -- putStrLn dispatchString
-                Sim.withDispatch dispatchString $ \dispatch -> do
-                  (sim_t, history) <- time (run dispatch)
-                  modifyIORef des_timer_sum ((+) sim_t)
-                  modifyIORef des_counter (+ 1)
-                  return (eval history)
+                putStrLn $ "Converting dispatch string" ++ (show plan)
+                putStrLn dispatchString
+                putStrLn "Converting dispatch string DONE"
+                modifyIORef plan_counter (+ 1)
+                if useSimulator then do
+                  Sim.withDispatch dispatchString $ \dispatch -> do
+                    (sim_t, history) <- time (run dispatch)
+                    modifyIORef des_timer_sum ((+) sim_t)
+                    modifyIORef des_counter (+ 1)
+                    return (eval history)
+                else return False
 
               t <- getCPUTime
               lastt <- readIORef sat_timer
@@ -105,11 +116,13 @@ main = do
               sat_time <- readIORef sat_timer_sum
               des_time <- readIORef des_timer_sum
               n_des <- readIORef des_counter
+              n_plans <- readIORef plan_counter
               putStrLn $ "Number of routes: " ++ (show (length ((\(_,p,_,_) -> p) solverInput)))
               putStrLn $ "Number of partial routes: " ++ (show (length ((\(r,_,_,_) -> r) solverInput)))
               putStrLn $ "Time SAT: " ++ (show (conv_time sat_time))
               putStrLn $ "Time DES: " ++ (show (conv_time des_time))
               putStrLn $ "Number of simulations: " ++ (show n_des)
+              putStrLn $ "Number of plans: " ++ (show n_plans)
 
               case final of
                 Just plan -> do
