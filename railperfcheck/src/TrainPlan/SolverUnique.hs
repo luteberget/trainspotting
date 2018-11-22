@@ -24,6 +24,7 @@ import SAT.Val
 import SAT.Bool
 import SAT.Equal
 import TrainPlan.SolverInput
+import qualified TrainPlan.LoopCheck as LoopCheck
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Map (Map)
@@ -464,14 +465,32 @@ plan nBefore nAfter problem@(routes,partialroutes,trains,orderings) test = withN
                                              return (r,v)
                                         | (r,x) <- occupation state ]
                              | state <- states ] 
-        --putStrLn $ showSchedule schedule
-        accept <- test schedule
-        if accept then return (Just schedule)
-        else do
-          -- Remove this solution
-          addClause s [ neg (x .= v) | (st,stv) <- zip states schedule 
-                                     , ((_,x),(_,v)) <- zip (occupation st) stv]
-          solveAndTest (Just 0) s n states
+        putStrLn $ showSchedule schedule
+
+        putStrLn "*** Checking for route activation loops"
+                
+        case LoopCheck.check routes (fmap trainName trains) schedule of
+          Just loop@(stateNumber, train, loopRoutes) ->  do
+            putStrLn $ "Found loop: " ++ (show loop)
+
+            -- remove loop
+            addClause s [ neg (x .= (Just train)) 
+                        | (r,x) <- occupation (states !! stateNumber)
+                        , r `elem` loopRoutes ]
+
+            -- and solve again with same parameters
+            solveAndTest failedSteps s n states 
+
+          Nothing -> do
+            putStrLn "*** No loops -- running user test (simulator)"
+            accept <- test schedule
+            if accept then return (Just schedule)
+            else do
+              -- Remove this solution
+              addClause s [ neg (x .= v) | (st,stv) <- zip states schedule 
+                                         , ((_,x),(_,v)) <- zip (occupation st) stv]
+              solveAndTest (Just 0) s n states
+
       else do
         putStrLn ("*** No more solutions for n=" ++ (show n))
 

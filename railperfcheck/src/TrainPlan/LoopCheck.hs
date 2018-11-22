@@ -15,8 +15,8 @@ import Control.Monad (join)
 import Debug.Trace
 
 check :: [RoutePart] -> [TrainName] -> RoutePlan -> Maybe (Int, TrainName, [RoutePartId])
-check routes trains states = listToMaybe (catMaybes (fmap ch (zip [0..] (prod trains states))))
-  where ch (n,(train,state)) = fmap (\res -> (n,train, res)) (findLoop routes train state)
+check routes trains states = listToMaybe (catMaybes (fmap ch (prod trains (zip [0..]  states))))
+  where ch (train, (n,state)) = fmap (\res -> (n,train, res)) (findLoop routes train state)
 
 prod :: [a] -> [b] -> [(a,b)]
 prod x y = do
