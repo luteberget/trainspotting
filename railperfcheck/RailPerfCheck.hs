@@ -6,9 +6,11 @@ module Main where
 import qualified TrainPlan.Simulator as Sim
 import qualified TrainPlan.Convert as Convert
 import qualified TrainPlan.SolverUnique as Solver
+import qualified TrainPlan.SolverInput as SolverInput
 import qualified TrainPlan.Parser as Parser
 import qualified TrainPlan.Timing as Timing
 import qualified TrainPlan.UsagePattern as Usage
+import qualified TrainPlan.LoopCheck as LoopCheck
 
 import System.Console.CmdArgs
 import System.IO (stderr,hPutStrLn)
@@ -92,6 +94,17 @@ main = do
               plan_counter <- newIORef 0
 
               final <- Solver.plan maxminSteps maxFailedSteps solverInput $ \plan -> do
+                
+                let partialRoutes = (\(r,_,_,_) -> r) solverInput
+                let trainNames = (\(_,_,t,_) -> fmap SolverInput.trainName t) solverInput
+                case LoopCheck.check partialRoutes trainNames plan of
+                  Just loop ->  do
+                    putStrLn $ "Found loop: " ++ (show loop)
+                    putStrLn $ "dispatch string" ++ (show plan)
+                    exitFailure
+                  Nothing -> do
+                    putStrLn "No loops -- OK"
+ 
                 t <- getCPUTime
                 lastt <- readIORef sat_timer
                 modifyIORef sat_timer_sum ((+) (t-lastt))
