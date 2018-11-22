@@ -325,14 +325,18 @@ resolveConflictWith :: Solver -> [RoutePart] -> [[RoutePartId]] -> Train -> (Occ
 resolveConflictWith s routes partialroutes train ((s1,o1),(s2,o2)) candidates = do
   -- Return a disjunction of possible conflict resolutions that can be 
   -- used to resolve forced progress.
+   putStrLn $ "resolveConflictWith"
    cand <- forM candidates $ \nextRoute -> do
        let partGroup = findPartGroup partialroutes (rId nextRoute)
        let partChoices = sequence [[(p,i) | i <- enumOverlaps (findRoute routes p) ] | p <- partGroup ]
+       putStrLn $ "    partGroup "  ++  (show (rId nextRoute))
        -- Expand next partial route to its whole-route (with overlap choices)
        forM partChoices $ \choice -> do -- Different choices of overlap
+         putStrLn $ "        choice "  ++  (show (choice))
          let externalConflicts = fmap (\(a,b) -> (a, Just b)) $ nubOrd $ join [ (routePartConflicts (findRoute routes r)) !! o | (r,o) <- choice ]
          let conflicts = externalConflicts ++ [(rId nextRoute, Nothing)]
          forM conflicts $ \(conflict_r,conflict_ol) -> do
+           putStrLn $ "            resolve alternative" ++ (show (conflict_r, conflict_ol, choice))
            let hadConflict = [ neg (s1 .! conflict_r .= Nothing), -- conflicting route was allocated
                                fromMaybe true $ fmap (\ol -> (o1 .!! conflict_r .= ol)) conflict_ol]
            let resolve = join [ [ neg (s1 .! choice_r .= Just (tId train)), -- choice becomes activated
@@ -341,6 +345,7 @@ resolveConflictWith s routes partialroutes train ((s1,o1),(s2,o2)) candidates = 
                                | (choice_r, choice_ol) <- choice ] -- for each route/ol in the choice set 
            wasResolved <- andl s (hadConflict ++ resolve)
            return wasResolved
+   putStrLn $ "#alt: " ++ (show (length (join $ join cand)))
    return (join $ join cand)
 
 allocateAhead :: Solver -> [RoutePart] -> [[RoutePartId]] ->  RoutePart -> Train -> (Maybe OccOv, OccOv) -> Lit -> IO Lit
@@ -355,6 +360,7 @@ allocateAhead s routes partialroutes route train (prevState,state) progressBefor
     addClause s ([neg isAllocated, progressFuture] ++ progressNow)
 
     forM_ prevState $ \prev -> do 
+      putStrLn $ "will resolve conflict for " ++ (show (routePartName route))
       conflictResolved <- resolveConflictWith s routes partialroutes train (prev, state) nextRs
       --let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
       --                      neg (prev .! (rId nextRoute) .= Just (tId train)),
@@ -362,7 +368,7 @@ allocateAhead s routes partialroutes route train (prevState,state) progressBefor
       --                  | nextRoute <- nextRs
       --                  , conflicting <- ( (rId nextRoute) : (wholeRouteConflicts routes partialroutes (rId nextRoute))) ]
       --conflictResolved <- mapM (andl s) hadConflict
-      addClause s ([progressBefore, progressFuture] ++ conflictResolved)
+      addClause s (progressNow ++ [neg isAllocated, progressFuture] ++ conflictResolved)
     return (neg progressFuture)
 
 bornCondition :: Solver -> NodeMap -> [RoutePart] -> [[RoutePartId]] -> Train -> (Maybe OccOv, OccOv) -> Lit -> IO Lit

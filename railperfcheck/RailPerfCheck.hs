@@ -100,9 +100,9 @@ main = do
                 modifyIORef sat_timer_sum ((+) (t-lastt))
                 writeIORef sat_timer t
                 let dispatchString = Convert.dispatchPlan solverInput plan
-                putStrLn $ "Converting dispatch string" ++ (show plan)
-                putStrLn dispatchString
-                putStrLn "Converting dispatch string DONE"
+                -- putStrLn $ "Converting dispatch string" ++ (show plan)
+                -- putStrLn dispatchString
+                -- putStrLn "Converting dispatch string DONE"
                 modifyIORef plan_counter (+ 1)
                 if useSimulator then do
                   Sim.withDispatch dispatchString $ \dispatch -> do
