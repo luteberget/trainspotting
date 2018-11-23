@@ -224,11 +224,11 @@ newState s problem@(routes,partialroutes,trains,ords) nodeMap prevState = do
   let allFalseProgress = [ (t, [ (r, false) | r <- routes ] ) | t <- trains ]
   let progress = fromMaybe allFalseProgress (fmap progressBefore prevState)
   progressFuture <- sequence [ do 
-      p <- sequence [ do
+      ps <- sequence [ do
           p <- allocateAhead s routes partialroutes route train (maybeOccOv prevState, (occ,overlap)) progressBefore
           return (route, p)
         | (route, progressBefore) <- trainProgress ]
-      return (train, p)
+      return (train, ps)
     | (train, trainProgress) <- progress ]
 
   let allFalseBorn = [ (t, false) | t <- trains ]
@@ -346,10 +346,17 @@ resolveConflictWith s routes partialroutes train ((s1,o1),(s2,o2)) candidates = 
            wasResolved <- andl s (hadConflict ++ resolve)
            return wasResolved
    putStrLn $ "#alt: " ++ (show (length (join $ join cand)))
+   -- cand :: foreach nextRoute, 
+   --           foreach overlaps(nextroute), 
+   --             foreach conflict(nextRoute,overlap) 
+   --               big-and(conflict_r was allocated, conflict_r had overlap conflict_ol, 
+   --                       choice_r was not allocated to train, choice_r became allocated to train,
+   --                       choice_r has overlap choice_ol)
+   --                        
    return (join $ join cand)
 
 allocateAhead :: Solver -> [RoutePart] -> [[RoutePartId]] ->  RoutePart -> Train -> (Maybe OccOv, OccOv) -> Lit -> IO Lit
-allocateAhead s routes partialroutes route train (prevState,state) progressBefore = case routePartExit route of
+allocateAhead s routes partialroutes route train (prevState,state) noNeedForProgress = case routePartExit route of
   Nothing -> return true -- Not relevant for boundary exit routes
   Just signal -> do
     let (occ,_) = state
@@ -362,13 +369,15 @@ allocateAhead s routes partialroutes route train (prevState,state) progressBefor
     forM_ prevState $ \prev -> do 
       putStrLn $ "will resolve conflict for " ++ (show (routePartName route))
       conflictResolved <- resolveConflictWith s routes partialroutes train (prev, state) nextRs
-      --let hadConflict = [ [ neg (prev .! conflicting .= Nothing),
-      --                      neg (prev .! (rId nextRoute) .= Just (tId train)),
-      --                      state .! (rId nextRoute) .= Just (tId train) ]
-      --                  | nextRoute <- nextRs
-      --                  , conflicting <- ( (rId nextRoute) : (wholeRouteConflicts routes partialroutes (rId nextRoute))) ]
-      --conflictResolved <- mapM (andl s) hadConflict
-      addClause s (progressNow ++ [neg isAllocated, progressFuture] ++ conflictResolved)
+-- FIXED: here was a problem: if you resolve in the future, you might resolve multiple times in the future,
+-- because resolving doesn't force the progressFuture to be false.
+--
+-- IF you don't allocate, WHEN you do it has to be a conflict resolved
+--  needForProgress AND nextRouteActivated => conflictResolved
+--
+      anyProgress <- orl s progressNow
+      addClause s ([noNeedForProgress, neg anyProgress] ++ conflictResolved)
+      addClause s ([noNeedForProgress, progressFuture] ++ conflictResolved)
     return (neg progressFuture)
 
 bornCondition :: Solver -> NodeMap -> [RoutePart] -> [[RoutePartId]] -> Train -> (Maybe OccOv, OccOv) -> Lit -> IO Lit
