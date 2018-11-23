@@ -379,9 +379,11 @@ thingOr s pre th ul ur bl br =
 
 -- each point, if it is a thing, it must be a thing from the list
 -- each thing from the list is represented exactly once
+-- the things are in the right order
 thingsGrid :: Solver -> [Thing] -> Grid -> IO ()
 thingsGrid s ths css =
-  do lss <- sequence
+  do -- each point, if it's a thing, it needs to be in the list
+     xlss <- sequence
               [ do ls <- sequence
                          [ do l <- newLit s
                               thingOr s [neg l] th ul ur bl br
@@ -389,15 +391,23 @@ thingsGrid s ths css =
                          | th <- ths
                          ]
                    addClause s (neg (thing p) : ls)
-                   return ls
+                   return (x,ls)
               | (cs1,cs2) <- css `zip` tail css
               , let ccss = cs1 `zip` cs2
-              , ((p@ul,bl),(ur,br)) <- ccss `zip` tail ccss
+              , (x,((p@ul,bl),(ur,br))) <- [1..] `zip` (ccss `zip` tail ccss)
               ]
+     -- each thing from the list exists exactly once
      sequence_
        [ do addClause s qs
             atMostOne s qs
-       | qs <- transpose lss
+       | qs <- transpose (map snd xlss)
+       ]
+     -- they appear in the same linear order
+     sequence_
+       [ addClause s (neg l : [ ls'!!(t-1) | (x',ls') <- xlss, x' <= x ])
+       | (x,ls) <- xlss
+       , (t,l)  <- [0..] `zip` ls
+       , t > 0
        ]
 
 --------------------------------------------------------------------------------
@@ -408,7 +418,7 @@ main =
     do putStrLn "--- generating grid..."
        sequence_ [ print t | t <- things ]
        putStrLn ("nc = " ++ show nc)
-       css <- newGrid s nc (16,4)
+       css <- newGrid s nc (16,5)
        putStrLn "--- generating things..."
        thingsGrid s things css
        putStrLn "--- solving..."
