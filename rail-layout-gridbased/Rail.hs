@@ -11,29 +11,29 @@ import Data.List( transpose )
 --------------------------------------------------------------------------------
 
 -- this could be changed to another number representation, if that works better
-type Number = Val Int
+type Color = Val Int
 
-trivialNumber :: Number
-trivialNumber = val 1
+trivialColor :: Color
+trivialColor = val 1
 
-newNumber :: Solver -> Int -> IO Number
-newNumber s n = newVal s [1..n]
+newColor :: Solver -> Int -> IO Color
+newColor s n = newVal s [1..n]
 
-isNumberOr :: Solver -> [Lit] -> Number -> Int -> IO ()
-isNumberOr s xs numb k = addClause s ((numb .= k) : xs)
+isColorOr :: Solver -> [Lit] -> Color -> Int -> IO ()
+isColorOr s xs numb k = addClause s ((numb .= k) : xs)
 
 {-
 -- Term works much worse
-type Number = Term
+type Color = Term
 
-trivialNumber :: Number
-trivialNumber = fromList []
+trivialColor :: Color
+trivialColor = fromList []
 
-newNumber :: Solver -> Int -> IO Number
-newNumber s n = newTerm s (fromIntegral (n-1))
+newColor :: Solver -> Int -> IO Color
+newColor s n = newTerm s (fromIntegral (n-1))
 
-isNumberOr :: Solver -> [Lit] -> Number -> Int -> IO ()
-isNumberOr s xs numb k = equalOr s xs numb (number (fromIntegral (k-1)))
+isColorOr :: Solver -> [Lit] -> Color -> Int -> IO ()
+isColorOr s xs numb k = equalOr s xs numb (number (fromIntegral (k-1)))
 -}
 
 --------------------------------------------------------------------------------
@@ -49,8 +49,8 @@ data Cell
   , down    :: Lit -- \
   , bot     :: Lit -- _
 
-  , ccol    :: Number -- color of \ or /
-  , bcol    :: Number -- color of _
+  , ccol    :: Color -- color of \ or /
+  , bcol    :: Color -- color of _
   
   -- the point down-right
   , connect :: Lit -- is it connecting two edges?
@@ -69,8 +69,8 @@ newCell s nc =
      y <- newLit s
      z <- newLit s
      addClause s [neg x, neg y]
-     c1 <- newNumber s nc
-     c2 <- newNumber s nc
+     c1 <- newColor s nc
+     c2 <- newColor s nc
      
      cn <- newLit s
      th <- newLit s
@@ -88,7 +88,7 @@ newCell s nc =
 newTopCell :: Solver -> Int -> IO Cell
 newTopCell s nc =
   do z <- newLit s
-     c2 <- newNumber s nc
+     c2 <- newColor s nc
      
      cn <- newLit s
      th <- newLit s
@@ -98,20 +98,20 @@ newTopCell s nc =
      nw <- newLit s
      ed <- newLit s
      addClause s [neg th, sR, mL, nw, ed]
-     return (Cell false false z trivialNumber c2 cn th false sR mL false nw ed)
+     return (Cell false false z trivialColor c2 cn th false sR mL false nw ed)
 
 newLeftCell :: Solver -> IO Cell
 newLeftCell s =
   do th <- newLit s
      nw <- newLit s
      addClause s [neg th, nw]
-     return (Cell false false false trivialNumber trivialNumber
+     return (Cell false false false trivialColor trivialColor
                   false th false false false false nw false)
 
 -- used for bottom cells and right cells
 emptyCell :: Cell
 emptyCell =
-  Cell false false false trivialNumber trivialNumber
+  Cell false false false trivialColor trivialColor
        false false false false false false false false
 
 --------------------------------------------------------------------------------
@@ -144,7 +144,7 @@ cells4 s nc ul ur bl br =
      addClause s [neg (connect p), neg upR, neg strtR]
 
      -- connect makes sure that the edges have the same color
-     col <- newNumber s nc
+     col <- newColor s nc
      equalOr s [neg (connect p), neg downL] col cdownL
      equalOr s [neg (connect p), neg strtL] col cstrtL
      equalOr s [neg (connect p), neg upL]   col cupL
@@ -265,43 +265,6 @@ outputs (End x)         = []
 colors :: Thing -> [Int]
 colors t = inputs t ++ outputs t
 
-example0 =
-  [ New 1
-  , SwitchL 1 1 2
-  , MergeR 1 2 1 
-  , End 1
-  ]
-
-example1 =
-  [ New 1
-  , SwitchL 1 2 3
-  , SwitchR 2 1 2
-  , SwitchR 3 3 4
-  , MergeL 1 2 2
-  , MergeR 2 3 3
-  , MergeL 3 4 3
-  , End 3
-  ]
-
-exampleBjornar =
-  [ New 1
-  , New 2
-  , SwitchL 2 3 4
-  , SwitchR 1 1 2
-  , SwitchR 2 2 5
-  , MergeL 5 3 3
-  , New 7
-  , SwitchR 1 1 5
-  , MergeL 2 3 3
-  , SwitchL 3 3 6
-  , MergeR 5 7 2
-  , MergeL 2 3 2
-  , End 2
-  , MergeL 6 4 2
-  , MergeL 1 2 1
-  , End 1
-  ]
-
 -- giving each edge a unique name (=color)
 -- later, we can reuse colors when we're sure they won't mix
 -- but only after adding ordering constraints
@@ -344,47 +307,47 @@ thingOr s pre th ul ur bl br =
   case th of
     New i ->
       do addClause s (new p : pre)
-         isNumberOr s pre cstrtR i
+         isColorOr s pre cstrtR i
 
     End i ->
       do addClause s (end p : pre)
-         isNumberOr s pre cstrtL i
+         isColorOr s pre cstrtL i
 
     SwitchL i j k ->
       do addClause s (switchL p : pre)
-         isNumberOr s (neg strtL : pre) cstrtL i
-         isNumberOr s (neg strtL : pre) cupR   j
-         isNumberOr s (neg strtL : pre) cstrtR k
-         isNumberOr s (neg downL : pre) cdownL i
-         isNumberOr s (neg downL : pre) cstrtR j
-         isNumberOr s (neg downL : pre) cdownR k
+         isColorOr s (neg strtL : pre) cstrtL i
+         isColorOr s (neg strtL : pre) cupR   j
+         isColorOr s (neg strtL : pre) cstrtR k
+         isColorOr s (neg downL : pre) cdownL i
+         isColorOr s (neg downL : pre) cstrtR j
+         isColorOr s (neg downL : pre) cdownR k
 
     SwitchR i j k ->
       do addClause s (switchR p : pre)
-         isNumberOr s (neg strtL : pre) cstrtL i
-         isNumberOr s (neg strtL : pre) cstrtR j
-         isNumberOr s (neg strtL : pre) cdownR k
-         isNumberOr s (neg upL   : pre) cupL   i
-         isNumberOr s (neg upL   : pre) cupR   j
-         isNumberOr s (neg upL   : pre) cstrtR k
+         isColorOr s (neg strtL : pre) cstrtL i
+         isColorOr s (neg strtL : pre) cstrtR j
+         isColorOr s (neg strtL : pre) cdownR k
+         isColorOr s (neg upL   : pre) cupL   i
+         isColorOr s (neg upL   : pre) cupR   j
+         isColorOr s (neg upL   : pre) cstrtR k
 
     MergeL i j k ->
       do addClause s (mergeL p : pre)
-         isNumberOr s (neg strtR : pre) cstrtR k
-         isNumberOr s (neg strtR : pre) cstrtL i
-         isNumberOr s (neg strtR : pre) cupL   j
-         isNumberOr s (neg downR : pre) cdownR k
-         isNumberOr s (neg downR : pre) cdownL i
-         isNumberOr s (neg downR : pre) cstrtL j
+         isColorOr s (neg strtR : pre) cstrtR k
+         isColorOr s (neg strtR : pre) cstrtL i
+         isColorOr s (neg strtR : pre) cupL   j
+         isColorOr s (neg downR : pre) cdownR k
+         isColorOr s (neg downR : pre) cdownL i
+         isColorOr s (neg downR : pre) cstrtL j
 
     MergeR i j k ->
       do addClause s (mergeR p : pre)
-         isNumberOr s (neg strtR : pre) cstrtR k
-         isNumberOr s (neg strtR : pre) cdownL i
-         isNumberOr s (neg strtR : pre) cstrtL j
-         isNumberOr s (neg upR   : pre) cupR   k
-         isNumberOr s (neg upR   : pre) cstrtL i
-         isNumberOr s (neg upR   : pre) cupL   j
+         isColorOr s (neg strtR : pre) cstrtR k
+         isColorOr s (neg strtR : pre) cdownL i
+         isColorOr s (neg strtR : pre) cstrtL j
+         isColorOr s (neg upR   : pre) cupR   k
+         isColorOr s (neg upR   : pre) cstrtL i
+         isColorOr s (neg upR   : pre) cupL   j
  where
   p     = ul
   
@@ -437,12 +400,108 @@ thingsGrid s ths css =
 
 --------------------------------------------------------------------------------
 
+type Example = ((Int,Int),[Thing])
+
+example0 =
+  ( (6,2)
+  , [ New 1
+    , SwitchL 1 1 2
+    , MergeR 1 2 1 
+    , End 1
+    ]
+  )
+
+example1 =
+  ( (9,4)
+  , [ New 1
+    , SwitchL 1 2 3
+    , SwitchR 2 1 2
+    , SwitchR 3 3 4
+    , MergeL 1 2 2
+    , MergeR 2 3 3
+    , MergeL 3 4 3
+    , End 3
+    ]
+  )
+
+exampleBjornar =
+  ( (14,5)
+  , [ New 1
+    , New 2
+    , SwitchL 2 3 4
+    , SwitchR 1 1 2
+    , SwitchR 2 2 5
+    , MergeL 5 3 3
+    , New 7
+    , SwitchR 1 1 5
+    , MergeL 2 3 3
+    , SwitchL 3 3 6
+    , MergeR 5 7 2
+    , MergeL 2 3 2
+    , End 2
+    , MergeL 6 4 2
+    , MergeL 1 2 1
+    , End 1
+    ]
+  )
+
+exampleBjornar2 =
+  ( (27,5)
+  , init things ++ tail things
+  )
+ where
+  (_,things) = exampleBjornar
+
+exampleBjornar2par =
+  ( (14,10)
+  , take k things2 `inter` drop k things2
+  )
+ where
+  (_,things) = exampleBjornar
+  things2    = rename (things ++ things)
+  k          = length things
+
+exampleBjornar3 =
+  ( (27,10)
+  , things' `inter` drop k things2
+  )
+ where
+  (_,things') = exampleBjornar
+  (_,things)  = exampleBjornar2
+  things2     = rename (things ++ things)
+  k           = length things
+
+exampleBjornar4 =
+  ( (27,10)
+  , take k things2 `inter` drop k things2
+  )
+ where
+  (_,things) = exampleBjornar2
+  things2    = rename (things ++ things)
+  k          = length things
+
+(x:xs) `inter` ys = x : (ys `inter` xs)
+[]     `inter` ys = ys
+
+--------------------------------------------------------------------------------
+
 main :: IO ()
 main =
+  do --layout example0
+     --layout example1
+     --layout exampleBjornar
+     layout exampleBjornar2
+     --layout exampleBjornar2par
+     --layout exampleBjornar3
+     --layout exampleBjornar4
+
+layout :: Example -> IO ()
+layout example =
   withNewSolver $ \s ->
     do putStrLn "--- generating grid..."
-       putStrLn ("nc = " ++ show nc)
-       css <- newGrid s nc (27,5)
+       putStrLn ("(x,y) = " ++ show (x,y))
+       putStrLn ("nc    = " ++ show nc)
+       css <- newGrid s nc (x,y)
        putStrLn "--- generating things..."
        sequence_ [ print t | t <- things ]
        thingsGrid s things css
@@ -475,11 +534,9 @@ main =
         else
          do putStrLn "NO"
  where
-  nc = maximum [ c | th <- things, c <- colors th ]
-
-  --things = rename exampleBjornar
-  --things = rename (exampleBjornar ++ exampleBjornar)
-  things = rename $ init exampleBjornar ++ tail exampleBjornar
+  ((x,y),things0) = example
+  things          = rename things0
+  nc              = maximum [ c | th <- things, c <- colors th ]
 
 displayGrid :: Solver -> Grid -> IO Int
 displayGrid s css =
