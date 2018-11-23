@@ -13,11 +13,28 @@ import Data.List( transpose )
 -- this could be changed to another number representation, if that works better
 type Number = Val Int
 
+trivialNumber :: Number
+trivialNumber = val 1
+
 newNumber :: Solver -> Int -> IO Number
 newNumber s n = newVal s [1..n]
 
 isNumberOr :: Solver -> [Lit] -> Number -> Int -> IO ()
 isNumberOr s xs numb k = addClause s ((numb .= k) : xs)
+
+{-
+-- Term works much worse
+type Number = Term
+
+trivialNumber :: Number
+trivialNumber = fromList []
+
+newNumber :: Solver -> Int -> IO Number
+newNumber s n = newTerm s (fromIntegral (n-1))
+
+isNumberOr :: Solver -> [Lit] -> Number -> Int -> IO ()
+isNumberOr s xs numb k = equalOr s xs numb (number (fromIntegral (k-1)))
+-}
 
 --------------------------------------------------------------------------------
 
@@ -81,20 +98,20 @@ newTopCell s nc =
      nw <- newLit s
      ed <- newLit s
      addClause s [neg th, sR, mL, nw, ed]
-     return (Cell false false z (val 1) c2 cn th false sR mL false nw ed)
+     return (Cell false false z trivialNumber c2 cn th false sR mL false nw ed)
 
 newLeftCell :: Solver -> IO Cell
 newLeftCell s =
   do th <- newLit s
      nw <- newLit s
      addClause s [neg th, nw]
-     return (Cell false false false (val 1) (val 1)
+     return (Cell false false false trivialNumber trivialNumber
                   false th false false false false nw false)
 
 -- used for bottom cells and right cells
 emptyCell :: Cell
 emptyCell =
-  Cell false false false (val 1) (val 1)
+  Cell false false false trivialNumber trivialNumber
        false false false false false false false false
 
 --------------------------------------------------------------------------------
@@ -300,8 +317,16 @@ rename ths = go 1 [] ths
                 ++ [ (x,y) | (x,y) <- tab, x `notElem` inputs th ]
                  ) ths
    where
-    n    = length (outputs th)
-    outs = take n [i,i+1 ..]
+    n = length (outputs th)
+
+    outs
+      | reuseOldNames = take n (filter (\i -> i `elem` map (tab!) (inputs th)
+                                           || i `notElem` map snd tab) [1..])
+      | otherwise     = take n [i,i+1 ..]
+
+    -- reusing names (to reduce the number of different colors) seems like
+    -- a good idea but makes the problem A LOT harder!
+    reuseOldNames = False -- True
 
   ren (New _)         (i:_)     = New i
   ren (End _)         (i:_)     = End i
@@ -416,10 +441,10 @@ main :: IO ()
 main =
   withNewSolver $ \s ->
     do putStrLn "--- generating grid..."
-       sequence_ [ print t | t <- things ]
        putStrLn ("nc = " ++ show nc)
-       css <- newGrid s nc (16,5)
+       css <- newGrid s nc (27,5)
        putStrLn "--- generating things..."
+       sequence_ [ print t | t <- things ]
        thingsGrid s things css
        putStrLn "--- solving..."
        b <- solve s []
@@ -452,9 +477,9 @@ main =
  where
   nc = maximum [ c | th <- things, c <- colors th ]
 
-  things = rename exampleBjornar
+  --things = rename exampleBjornar
   --things = rename (exampleBjornar ++ exampleBjornar)
-  --things = rename $ init exampleBjornar ++ tail exampleBjornar
+  things = rename $ init exampleBjornar ++ tail exampleBjornar
 
 displayGrid :: Solver -> Grid -> IO Int
 displayGrid s css =
