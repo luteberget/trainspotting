@@ -77,6 +77,10 @@ exactlyOne s xs = do
   atMostOne s xs
   addClause s xs
 
+partialRoutesClosure :: ElementaryRoutes -> [RoutePartId] -> [RoutePartId]
+partialRoutesClosure partialroutes rs = Set.toList $ Set.unions [ Set.fromList (clos r) | r <- rs ]
+  where clos = findPartGroup partialroutes
+
 newState :: Solver -> Problem -> NodeMap -> Maybe State -> IO State
 newState s problem@(routes,partialroutes,trains,ords) nodeMap prevState = do
   routeStates <- sequence [ newVal s (Nothing :  [ Just (tId t) | t <- trains ])
@@ -94,6 +98,8 @@ newState s problem@(routes,partialroutes,trains,ords) nodeMap prevState = do
     | sig <- signals ]
 
   -- HasFinished
+  -- TODO: these constraints should really not be needed, it was temprorarily added when working with 
+  -- in-step loop eliminiation
   finished <- sequence [ newLit s | _ <- trains ]
   forM_ (zip3 [0..] trains finished) $ \(idx, train,finishedNow) -> do
       -- Finished bool cannot be unset
@@ -143,16 +149,32 @@ newState s problem@(routes,partialroutes,trains,ords) nodeMap prevState = do
     forM_ (zip prevTrail trail) $ \((sig, prevMarks),(_, currMarks)) -> do
       forM_ (zip3 prevMarks currMarks trains) $ \(prevMark,currMark,train) -> do
         -- foreach entry signal, foreach train
-        let reachable = [ r_b | r_a <- routes `endingIn` (Just sig)
-                              , r_b <- routes `startingIn` (routePartEntry r_a)]
-        forM_ reachable $ \r -> do
-          -- if route became activated, then mark must also activate
-          mark <- andl s [ neg prevMark, currMark ]
-          addClause s [ prevOcc .!  (rId r) .= Just (tId train),  -- it was already active
-                        neg (occ .! (rId r) .= Just (tId train)),-- it is not active now
-                        mark ]                             -- else, mark it
-                        
-          return ()
+        let reachDirectly   = [ r | r <- routes `endingIn` (Just sig)]
+        let reachIndirectly = [ r_b | r_a <- routes `endingIn` (Just sig)
+                              , r_b <- routes `startingIn` (routePartEntry r_a), not (r_b `elem` reachDirectly)]
+
+        mustMark <- andl s [ neg prevMark, currMark ]
+        let isMarked = currMark
+
+        -- directly reachable => must mark (anew)
+        sequence_ [ addClause s [ prevOcc .!  (rId r) .= Just (tId train),  -- it was already active
+                                  neg (occ .! (rId r) .= Just (tId train)),-- it is not active now
+                                  mustMark ]                             -- else, mark it
+                  | r <- reachDirectly ]
+        --
+        -- in directly reachable => must be marked, but no requirement that it was previously unmarked.
+        sequence_ [ addClause s [ prevOcc .!  (rId r) .= Just (tId train),  -- it was already active
+                                  neg (occ .! (rId r) .= Just (tId train)),-- it is not active now
+                                  isMarked ]                             -- else, mark it
+                  | r <- reachIndirectly ]
+
+        -- -- forM_ reachable $ \r -> do
+        -- --   -- if route became activated, then mark must also activate
+        -- --   addClause s [ prevOcc .!  (rId r) .= Just (tId train),  -- it was already active
+        -- --                 neg (occ .! (rId r) .= Just (tId train)),-- it is not active now
+        -- --                 mark ]                             -- else, mark it
+        -- --                 
+        -- --   return ()
 
   -- A conflict set might be excluded on allocation (overlap timeout)
   forM (zip routes overlap) $ \(r,(rid,ol)) -> do
@@ -178,6 +200,7 @@ newState s problem@(routes,partialroutes,trains,ords) nodeMap prevState = do
                           neg (overlap .!! rid .= idx2) ] ++ usingAnyConflicting)
 
 
+  let prsClos rs = partialRoutesClosure partialroutes [routePartName r | r <- rs]
 
 
   -- Clear trail markings
@@ -216,7 +239,33 @@ newState s problem@(routes,partialroutes,trains,ords) nodeMap prevState = do
                                       , (otherTrain, trailTrain2) <- zip trains marks
                                       , otherTrain == train2 ]
 
-          andl s ([alloc] ++ (fmap neg standingOnTrail))
+-- we don't want "unnecessary steps" in the plan. Let's try the following definition:
+-- Consider a single train: if it at any point (between specified visits) 
+--   reaches a route which it could have reached before, that is unnecessary.
+-- Consider n trains without unnecessary steps, adding another train
+-- ...
+
+
+          --standingOnTrail <- ...
+
+          putStrLn $ "train1 " ++ (trainName train1) ++ "  train2 " ++ (trainName train2)
+          putStrLn $ "signalInUse start : " ++ (show sig1) ++ " -- " ++ (show (prsClos (routes `startingIn` (Just sig1))))
+          putStrLn $ "signalInUse end : " ++ (show sig1) ++ " -- " ++ (show (prsClos (routes `endingIn` (Just sig1))))
+          let notSignalInUseEntry = [ neg (occ .! r .= (Just (tId train1)) )
+                         | r <- prsClos ((routes `startingIn` (Just sig1)) ) ]
+          let notSignalInUseExit = [ neg (occ .! r .= (Just (tId train1))) 
+                         | r <- prsClos ((routes `endingIn` (Just sig1)) ) ]
+          
+
+--
+-- TRAIN 1 has marked SIG1
+-- TRAIN 2 is touching SIG1
+-- check that SIG1 is 
+--   - not currently in use by train1, and 
+--   - not currently marked by train2
+--
+          a <- andl s ([alloc] ++ notSignalInUseEntry ++ notSignalInUseExit)
+          return a
  
         --
         -- if there is only one train, canClear will be empty, so we can never clear trails.
