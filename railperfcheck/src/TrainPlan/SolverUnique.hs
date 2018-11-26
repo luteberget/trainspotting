@@ -44,7 +44,6 @@ data State
   , progressBefore :: [(Train, [(RoutePart, Lit)])]
   , bornBefore     :: [(Train, Lit)]
   , visitBefore    :: [(Train, [([NodeRef], Lit)])]
-  , hasFinished    :: [Lit] -- one literal per train
   } deriving (Eq, Ord, Show)
 
 rId = routePartName
@@ -96,25 +95,6 @@ newState s problem@(routes,partialroutes,trains,ords) nodeMap prevState = do
       trainMarks <- sequence [ newLit s | _ <- trains ]
       return (sig, trainMarks)
     | sig <- signals ]
-
-  -- HasFinished
-  -- TODO: these constraints should really not be needed, it was temprorarily added when working with 
-  -- in-step loop eliminiation
-  finished <- sequence [ newLit s | _ <- trains ]
-  forM_ (zip3 [0..] trains finished) $ \(idx, train,finishedNow) -> do
-      -- Finished bool cannot be unset
-      forM prevState $ \prev -> do
-        let finishedBefore = (hasFinished prev) !! idx
-        addClause s [neg finishedBefore, finishedNow]
-
-        -- Set when exiting
-        sequence_ [ addClause s [neg ((occupation prev) .! (rId r) .= (Just (tId train))), finishedNow ]
-                  | r <- routes `endingIn` Nothing ]
-
-      -- Cannot use routes after finished
-      sequence_ [ addClause s [neg (occ .! (rId r) .= (Just (tId train))), neg finishedNow ]
-                | r <- routes ]
-    
 
   -- Exclude conflicting routes
   sequence_ [ do
@@ -335,7 +315,7 @@ newState s problem@(routes,partialroutes,trains,ords) nodeMap prevState = do
     | ((t1,v1),(t2,v2)) <- ords]
 
   --return (State occ progressFuture bornFuture visitFuture)
-  return (State occ overlap trail progressFuture bornFuture visitFuture finished)
+  return (State occ overlap trail progressFuture bornFuture visitFuture)
 
 routeAllocSignal :: Problem -> RoutePart -> Maybe SignalRef
 routeAllocSignal (routes, _, _, _) route = join $ fmap (\fr -> routePartEntry (fr)) firstRoute
