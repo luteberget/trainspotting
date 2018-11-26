@@ -397,6 +397,13 @@ thingsGrid s ths css =
        , (t,l)  <- [0..] `zip` ls
        , t > 0
        ]
+     -- they appear in the same linear order, towards the right
+     sequence_
+       [ addClause s (neg l : [ ls'!!(t+1) | (x',ls') <- xlss, x' >= x ])
+       | (x,ls) <- xlss
+       , (t,l)  <- [0..] `zip` ls
+       , t < length ls - 1
+       ]
 
 --------------------------------------------------------------------------------
 
@@ -421,6 +428,35 @@ example1 =
     , MergeR 2 3 3
     , MergeL 3 4 3
     , End 3
+    ]
+  )
+
+example110 =
+  ( (16,9)
+  , [ New 1
+    , New 2
+    , New 3
+    , New 4
+    , New 5
+    , New 6
+    , New 7
+    , New 8
+    , New 9
+    , MergeL 9 8 9
+    , MergeL 7 6 7
+    , MergeR 7 5 7
+    , MergeL 9 7 9
+    , MergeL 9 4 9
+    , MergeL 3 2 3
+    , MergeR 3 1 3
+    , SwitchL 3 2 3
+    , MergeL 9 2 2
+    , SwitchL 2 2 5
+    , SwitchR 2 4 2
+    , End 4
+    , End 2
+    , MergeR 5 3 1
+    , End 1
     ]
   )
 
@@ -489,8 +525,9 @@ main :: IO ()
 main =
   do --layout example0
      --layout example1
+     layout example110
      --layout exampleBjornar
-     layout exampleBjornar2
+     --layout exampleBjornar2
      --layout exampleBjornar2par
      --layout exampleBjornar3
      --layout exampleBjornar4
