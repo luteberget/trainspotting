@@ -2,6 +2,7 @@ module Main where
 
 import SAT
 import SAT.Unary
+import SAT.Binary
 import SAT.Term
 import SAT.Order
 import SAT.Equal
@@ -132,7 +133,7 @@ example5 = SolverInput n e lt
 
 main = withNewSolver $ \s -> do
   let p = example5
-  layout s (sNodes p) (sEdges p) 10
+  layout s (sNodes p) (sEdges p) (sEdgeLT p) 50
  
 
 
@@ -287,18 +288,20 @@ portShapeFactor :: PortShape -> Int
 portShapeFactor (PortShape x _ _) | x == false = -1
 portShapeFactor _ = 1
 
-layout :: Solver -> [Node] -> [Edge] -> [(EdgeRef,EdgeRef)] -> Integer -> IO ()
+layout :: Solver -> [Node] -> [Edge] -> [(EdgeRef,EdgeRef)] -> Int -> IO ()
 layout s nodes edges edgeLt yBound = do
 
   -- REPRESENTATION
   node_delta_xs <- sequence [ newUnary s 2 | _ <- zip nodes (tail nodes) ]
-  node_ys <- sequence [ newTerm s yBound | _ <- nodes ]
-  edge_ys <- sequence [ newTerm s yBound | _ <- edges ]
+  --edge_delta_ys <- sequence [ do dy1 <- newUnary s 5; dy2 <- newUnary s 5; return (dy1,dy2) ]
+  node_ys <- sequence [ newBinary s 8 | _ <- nodes ]
+  edge_ys <- sequence [ newBinary s 8 | _ <- edges ]
   edge_short <- sequence [ do up <- newLit s ; down <- newLit s ; return (up,down) 
                          | _ <- edges ]
   slanted <- sequence [ if isSwitch x then newLit s else return false | x <- nodes ]
 
   -- CONSTRAINTS
+  equalOr s [] (node_ys !! 0) (SAT.Binary.number 128)
 
   -- edges push nodes apart: sum(delta_x_a .. delta_x_b) >= 1
   forM_ edges $ \((n1,p1),(n2,p2)) -> do
@@ -307,6 +310,7 @@ layout s nodes edges edgeLt yBound = do
   -- edge ordering
   forM_ edgeLt $ \(a,b) -> do
     let ((aShortUp,aShortDown),(bShortUp,bShortDown)) = (edge_short !! a, edge_short !! b)
+    -- with delta Ys, these would also be a single clause...
     lessThanEqual s (edge_ys !! a) (edge_ys !! b)
     lessThanOr s [ aShortUp, bShortDown ] (edge_ys !! a) (edge_ys !! b)
     -- if short down from begin, then edge has same value as node_begin
@@ -358,27 +362,32 @@ layout s nodes edges edgeLt yBound = do
     addClause s [shortDown, shortUp, (dx .>= 2)]
 
     -- Alternative for Unary representation:
-    --let absdy1 = if portShapeFactor eBegin > 0 then [invert (node_ys!!n1), edge_ys!!ei ]
-    --             else [ node_ys!!n1 , invert (edge_ys!!ei) ]
-    --let absdy2 = if -1*(portShapeFactor eEnd) > 0 then [ invert (node_ys!!n2), edge_ys!!ei ]
-    --             else [ node_ys!!n2, invert (edge_ys!!ei) ]
+    let absdy1 = if portShapeFactor eBegin > 0 then [SAT.Binary.invert (node_ys!!n1), edge_ys!!ei ]
+                 else [ node_ys!!n1 , SAT.Binary.invert (edge_ys!!ei) ]
+    let absdy2 = if -1*(portShapeFactor eEnd) > 0 then [ SAT.Binary.invert (node_ys!!n2), edge_ys!!ei ]
+                 else [ node_ys!!n2, SAT.Binary.invert (edge_ys!!ei) ]
 
-    putStrLn $ show (ei, portShapeFactor eBegin, portShapeFactor eEnd)
-    let absdy1 = if portShapeFactor eBegin > 0 then ( (edge_ys!!ei) .-. (node_ys!!n1))
-                 else ( (node_ys!!n1) .-. (edge_ys!!ei) )
-    let absdy2 = if -1*(portShapeFactor eEnd) > 0 then (  (edge_ys!!ei) .-. (node_ys!!n2) )
-                 else ( (node_ys!!n2) .-.  (edge_ys!!ei) )
+    return (absdy1 ++ absdy2)
 
-    return (absdy1 .+. absdy2)
+    --putStrLn $ show (ei, portShapeFactor eBegin, portShapeFactor eEnd)
+    --let absdy1 = if portShapeFactor eBegin > 0 then ( (edge_ys!!ei) .-. (node_ys!!n1))
+    --             else ( (node_ys!!n1) .-. (edge_ys!!ei) )
+    --let absdy2 = if -1*(portShapeFactor eEnd) > 0 then (  (edge_ys!!ei) .-. (node_ys!!n2) )
+    --             else ( (node_ys!!n2) .-.  (edge_ys!!ei) )
 
-  let big_dy = (foldl (.+.) (SAT.Term.number 0) abs_dy)
+    --return (absdy1 .+. absdy2)
+
+  --let big_dy = (foldl (.+.) (SAT.Term.number 0) abs_dy)
+  --putStrLn (show abs_dy)
+  --x <- count s $ concat (fmap SAT.Unary.toList (concat abs_dy))
+  x <- SAT.Binary.addList s $ concat abs_dy
   putStrLn =<< stats s
   putStrLn =<< fmap show (solve s [])
 
   let print = do node_x <- fmap (scanl (+) 0) $ sequence [ SAT.Unary.modelValue s x 
                                                          | x <- node_delta_xs ]
-                 node_y <- sequence [ SAT.Term.modelValue s x | x <- node_ys ]
-                 edge_y <- sequence [ SAT.Term.modelValue s x | x <- edge_ys ]
+                 node_y <- sequence [ SAT.Binary.modelValue s x | x <- node_ys ]
+                 edge_y <- sequence [ SAT.Binary.modelValue s x | x <- edge_ys ]
                  short <- sequence [ do a <- SAT.modelValue s x; b <- SAT.modelValue s y; return (a,b) | (x,y) <- edge_short ]
                  slants <- sequence [ SAT.modelValue s x | x <- slanted ]
                  putStrLn $ (show (zip node_x node_y))
@@ -386,7 +395,7 @@ layout s nodes edges edgeLt yBound = do
                  putStrLn $ (show short)
                  putStrLn $ (show (zip slanted slants))
 
-  big_dy_val <- minimizeTerm s big_dy
+  big_dy_val <- minimizeBinary s x
   putStrLn $ "big dy val " ++ (show big_dy_val)
   print
 
@@ -395,6 +404,24 @@ stats s = do
   vars <- numVars s
   clauses <- numClauses s
   return ("SAT instance with " ++ (show vars) ++ " vars and " ++ (show clauses) ++ " clauses.")
+
+minimizeBinary :: Solver -> Binary -> IO (Maybe Int)
+minimizeBinary s x = do 
+  putStrLn =<< stats s
+  ok <- solve s []
+  if ok then do
+    let opt minTry minReached | minReached > minTry =
+         do let try = ((minReached+minTry) `div` 2)
+            putStrLn $ "opt " ++ (show minTry) ++ " "  ++ (show minReached) ++ " " ++ (show try)
+            constraint <- isLessThanEqual s x (SAT.Binary.number try)
+            putStrLn =<< stats s
+            ok <- solve s [constraint]
+            if ok then (SAT.Binary.modelValue s x >>= \reached -> opt minTry reached)
+            else opt (try+1) minReached
+        opt v _ = return (Just v)
+    max <- SAT.Binary.modelValue s x
+    opt 0 max
+  else return Nothing
 
 minimizeTerm :: Solver -> Term -> IO (Maybe Integer)
 minimizeTerm s x = do 
