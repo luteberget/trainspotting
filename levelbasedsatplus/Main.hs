@@ -132,13 +132,13 @@ portShapeFactor :: PortShape -> Int
 portShapeFactor (PortShape x _ _) | x == false = -1
 portShapeFactor _ = 1
 
-layout :: Solver -> [Node] -> [Edge] -> [(EdgeRef,EdgeRef)] -> Int -> IO ()
+layout :: Solver -> [Node] -> [Edge] -> [(EdgeRef,EdgeRef)] -> Integer -> IO ()
 layout s nodes edges edgeLt yBound = do
 
   -- REPRESENTATION
   node_delta_xs <- sequence [ newUnary s 2 | _ <- zip nodes (tail nodes) ]
-  node_ys <- sequence [ newUnary s yBound | _ <- nodes ]
-  edge_ys <- sequence [ newUnary s yBound | _ <- edges ]
+  node_ys <- sequence [ newTerm s yBound | _ <- nodes ]
+  edge_ys <- sequence [ newTerm s yBound | _ <- edges ]
   edge_short <- sequence [ do up <- newLit s ; down <- newLit s ; return (up,down) 
                          | _ <- edges ]
   slanted <- sequence [ if isSwitch x then newLit s else return false | x <- nodes ]
@@ -154,7 +154,6 @@ layout s nodes edges edgeLt yBound = do
     let ((aShortUp,aShortDown),(bShortUp,bShortDown)) = (edge_short !! a, edge_short !! b)
     lessThanEqual s (edge_ys !! a) (edge_ys !! b)
     lessThanOr s [ aShortUp, bShortDown ] (edge_ys !! a) (edge_ys !! b)
-
     -- if short down from begin, then edge has same value as node_begin
     -- if short up   to end    , then edge has same value as node_end
 
@@ -203,38 +202,28 @@ layout s nodes edges edgeLt yBound = do
     -- also, !is_short => x+2 <= x2 
     addClause s [shortDown, shortUp, (dx .>= 2)]
 
-    let absdy1 = if portShapeFactor eBegin > 0 then [invert (node_ys!!n1), edge_ys!!ei ]
-                 else [ node_ys!!n1 , invert (edge_ys!!ei) ]
-    let absdy2 = if -1*(portShapeFactor eEnd) > 0 then [ invert (node_ys!!n2), edge_ys!!ei ]
-                 else [ node_ys!!n2, invert (edge_ys!!ei) ]
+    -- Alternative for Unary representation:
+    --let absdy1 = if portShapeFactor eBegin > 0 then [invert (node_ys!!n1), edge_ys!!ei ]
+    --             else [ node_ys!!n1 , invert (edge_ys!!ei) ]
+    --let absdy2 = if -1*(portShapeFactor eEnd) > 0 then [ invert (node_ys!!n2), edge_ys!!ei ]
+    --             else [ node_ys!!n2, invert (edge_ys!!ei) ]
 
-    --putStrLn $ show (ei, portShapeFactor eBegin, portShapeFactor eEnd)
-    --let absdy1 = if portShapeFactor eBegin > 0 then ( (edge_ys!!ei) .-. (node_ys!!n1))
-    --             else ( (node_ys!!n1) .-. (edge_ys!!ei) )
-    --let absdy2 = if -1*(portShapeFactor eEnd) > 0 then (  (edge_ys!!ei) .-. (node_ys!!n2) )
-    --             else ( (node_ys!!n2) .-.  (edge_ys!!ei) )
+    putStrLn $ show (ei, portShapeFactor eBegin, portShapeFactor eEnd)
+    let absdy1 = if portShapeFactor eBegin > 0 then ( (edge_ys!!ei) .-. (node_ys!!n1))
+                 else ( (node_ys!!n1) .-. (edge_ys!!ei) )
+    let absdy2 = if -1*(portShapeFactor eEnd) > 0 then (  (edge_ys!!ei) .-. (node_ys!!n2) )
+                 else ( (node_ys!!n2) .-.  (edge_ys!!ei) )
 
-    return (absdy1 ++ absdy2)
+    return (absdy1 .+. absdy2)
 
-  --putStrLn "folding"
-  --let big_dy = (foldl (.+.) (SAT.Term.number 0) abs_dy)
-  --putStrLn "folding done"
-  -- putStrLn (show big_dy)
-  putStrLn =<< stats s
-  big_nx <- addList s node_delta_xs
-  -- putStrLn $ "big dy " ++ (show big_dy)
-  -- putStrLn $ "big nx " ++ (show big_nx)
-  big_dy <- addList s (concat abs_dy)
-
+  let big_dy = (foldl (.+.) (SAT.Term.number 0) abs_dy)
   putStrLn =<< stats s
   putStrLn =<< fmap show (solve s [])
-  --putStrLn $ "big_dy min=" ++ (show $ SAT.Term.minValue big_dy) ++ 
-  --                 " max=" ++ (show $ SAT.Term.maxValue big_dy)
 
   let print = do node_x <- fmap (scanl (+) 0) $ sequence [ SAT.Unary.modelValue s x 
                                                          | x <- node_delta_xs ]
-                 node_y <- sequence [ SAT.Unary.modelValue s x | x <- node_ys ]
-                 edge_y <- sequence [ SAT.Unary.modelValue s x | x <- edge_ys ]
+                 node_y <- sequence [ SAT.Term.modelValue s x | x <- node_ys ]
+                 edge_y <- sequence [ SAT.Term.modelValue s x | x <- edge_ys ]
                  short <- sequence [ do a <- SAT.modelValue s x; b <- SAT.modelValue s y; return (a,b) | (x,y) <- edge_short ]
                  slants <- sequence [ SAT.modelValue s x | x <- slanted ]
                  putStrLn $ (show (zip node_x node_y))
@@ -242,26 +231,9 @@ layout s nodes edges edgeLt yBound = do
                  putStrLn $ (show short)
                  putStrLn $ (show (zip slanted slants))
 
-  --big_dy_val <- minimizeTerm s big_dy
-  --putStrLn $ "big dy val " ++ (show big_dy_val)
-  --print
-
-  ok1 <- solveMinimize s [] big_dy
-  if ok1 then do
-    dy <- SAT.Unary.modelValue s big_dy
-    putStrLn $ "dy = " ++ (show dy)
-    addClause s [big_dy .<= dy]
-    print
-    ok2 <- solveMinimize s [] big_nx
-    if ok2 then do 
-      dy <- SAT.Unary.modelValue s big_dy
-      putStrLn $ "dy = " ++ (show dy)
-      nx <- SAT.Unary.modelValue s big_nx
-      putStrLn $ "nx = " ++ (show nx)
-      addClause s [big_nx .<= nx]
-      print
-    else putStrLn "opt nx failed"
-  else putStrLn "opt dy failed"
+  big_dy_val <- minimizeTerm s big_dy
+  putStrLn $ "big dy val " ++ (show big_dy_val)
+  print
 
 stats :: Solver -> IO String
 stats s = do
