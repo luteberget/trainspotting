@@ -2,6 +2,7 @@ module Main where
 
 import SAT
 import SAT.Unary
+import SAT.Term
 import SAT.Order
 import SAT.Equal
 import SAT.Optimize
@@ -11,18 +12,22 @@ import Control.Monad (forM, forM_)
 -- INPUT REPRESENTATION
 --
 data Side = SLeft | SRight
+  deriving (Show)
 data Dir = Up | Down
+  deriving (Show)
 data Port = PLeft | PRight | PTrunk | PBegin | PEnd
+  deriving (Show)
 
 type EdgeRef = Int
 type NodeRef = Int
 
 type PortRef = (NodeRef, Port)
 type Edge = (PortRef, PortRef)
-data Node = BeginNode | EndNode | SwitchNode Side Dir (EdgeRef,EdgeRef) EdgeRef
+data Node = BeginNode | EndNode | SwitchNode Side Dir
+  deriving (Show)
 
 isSwitch :: Node -> Bool
-isSwitch (SwitchNode _ _ _ _) = True
+isSwitch (SwitchNode _ _) = True
 isSwitch _ = False
 
 data SolverInput = SolverInput 
@@ -37,15 +42,40 @@ example1 = SolverInput n e lt
         lt = []
 
 example2 = SolverInput n e lt
-  where  n = [BeginNode, SwitchNode SLeft Up (0,0) 0, EndNode, EndNode ]
+  where  n = [BeginNode, SwitchNode SLeft Up, EndNode, EndNode ]
          e = [((0, PBegin),(1,PTrunk)),
               ((1, PLeft),(2,PEnd)),
               ((1, PRight),(3,PEnd))]
-         lt = [(1,2)]
+         lt = [(2,1)]
+
+example3 = SolverInput n e lt
+  where  n = [BeginNode, BeginNode, SwitchNode SLeft Up, 
+              SwitchNode SLeft Down,
+              EndNode, EndNode ]
+         e = [((0,PBegin),(2,PTrunk)), -- 0  1--4
+              ((1,PBegin),(3,PRight)), -- 1   2
+              ((2,PLeft),(3,PLeft)),   -- 2  0--3
+              ((2,PRight),(4,PEnd)),   -- 3
+              ((3,PTrunk),(5,PEnd))]   -- 4
+         lt = [(0, 2), (2, 1), (0, 1), (3,2),(3,4),(2,4)]
+
+example4 = SolverInput n e lt
+  where  n = [BeginNode, SwitchNode SLeft Up, SwitchNode SLeft Up, SwitchNode SRight Down, 
+                SwitchNode SRight Down, EndNode]
+         e = [((0,PBegin),(1,PTrunk)), -- 0
+              ((1,PRight),(2,PTrunk)), -- 1
+              ((2,PRight),(3,PLeft)), -- 2
+              ((3,PTrunk),(4,PLeft)), -- 3
+              ((4,PTrunk),(5,PEnd)), -- 4
+              ((1,PLeft),(4,PRight)), -- 5
+              ((2,PLeft),(3,PRight))] -- 6
+             
+         lt = [(1,5),(2,5),(3,5),(2,6),(5,6)]
+
 
 main = withNewSolver $ \s -> do
-  let p = example2
-  layout s (sNodes p) (sEdges p) (sEdgeLT p) 5
+  let p = example4
+  layout s (sNodes p) (sEdges p) (sEdgeLT p) 100
  
 
 --
@@ -54,40 +84,40 @@ main = withNewSolver $ \s -> do
 
 data EdgeSide = Begin | End
 data PortShape = PortShape {
-  goUp :: Lit, -- direction north-east on dwg. when port is on east-side of node, corr. west.
+  goUp :: Lit, 
   goStraight :: Lit,
   goDown :: Lit
 } deriving (Show, Ord, Eq)
 
 -- this function is the worst
 mkPortShape :: EdgeSide -> Node -> Port -> Lit -> PortShape
-mkPortShape Begin BeginNode                    PBegin _ = PortShape false true false
-mkPortShape End   EndNode                      PEnd   _ = PortShape false true false
-mkPortShape Begin (SwitchNode SLeft  Up _ _)   PLeft  s = PortShape (neg s) s false
-mkPortShape Begin (SwitchNode SLeft  Up _ _)   PRight s = PortShape false (neg s) s 
-mkPortShape Begin (SwitchNode SRight Up _ _)   PLeft  s = PortShape s (neg s) false
-mkPortShape Begin (SwitchNode SRight Up _ _)   PRight s = PortShape false s (neg s)
-mkPortShape Begin (SwitchNode SLeft  Down _ _) PTrunk s = PortShape false (neg s) s
-mkPortShape Begin (SwitchNode SRight Down _ _) PTrunk s = PortShape s (neg s) false
-mkPortShape End   (SwitchNode SLeft  Down _ _) PLeft  s = PortShape (neg s) s false
-mkPortShape End   (SwitchNode SLeft  Down _ _) PRight s = PortShape false (neg s) s
-mkPortShape End   (SwitchNode SRight Down _ _) PLeft  s = PortShape s (neg s) false
-mkPortShape End   (SwitchNode SRight Down _ _) PRight s = PortShape false s (neg s)
-mkPortShape End   (SwitchNode SLeft  Up   _ _) PTrunk s = PortShape false (neg s) s
-mkPortShape End   (SwitchNode SRight Up   _ _) PTrunk s = PortShape s (neg s) false
-mkPortShape _ _ _ _ = error "invalid edge shape"
+mkPortShape Begin BeginNode                PBegin _ = PortShape false true false
+mkPortShape End   EndNode                  PEnd   _ = PortShape false true false
+mkPortShape Begin (SwitchNode SLeft  Up)   PLeft  s = PortShape (neg s) s false
+mkPortShape Begin (SwitchNode SLeft  Up)   PRight s = PortShape false (neg s) s 
+mkPortShape Begin (SwitchNode SRight Up)   PLeft  s = PortShape s (neg s) false
+mkPortShape Begin (SwitchNode SRight Up)   PRight s = PortShape false s (neg s)
+mkPortShape Begin (SwitchNode SLeft  Down) PTrunk s = PortShape false (neg s) s
+mkPortShape Begin (SwitchNode SRight Down) PTrunk s = PortShape s (neg s) false
+mkPortShape End   (SwitchNode SLeft  Down) PLeft  s = PortShape (neg s) s false
+mkPortShape End   (SwitchNode SLeft  Down) PRight s = PortShape false (neg s) s
+mkPortShape End   (SwitchNode SRight Down) PLeft  s = PortShape s (neg s) false
+mkPortShape End   (SwitchNode SRight Down) PRight s = PortShape false s (neg s)
+mkPortShape End   (SwitchNode SLeft  Up)   PTrunk s = PortShape false (neg s) s
+mkPortShape End   (SwitchNode SRight Up)   PTrunk s = PortShape s (neg s) false
+mkPortShape _ n p _ = error ("invalid edge shape " ++ (show n) ++ " " ++ (show p))
 
 portShapeFactor :: PortShape -> Int
 portShapeFactor (PortShape x _ _) | x == false = -1
 portShapeFactor _ = 1
 
-layout :: Solver -> [Node] -> [Edge] -> [(EdgeRef,EdgeRef)] -> Int -> IO ()
-layout s nodes edges edge_lt yBound = do
+layout :: Solver -> [Node] -> [Edge] -> [(EdgeRef,EdgeRef)] -> Integer -> IO ()
+layout s nodes edges edgeLt yBound = do
 
   -- REPRESENTATION
   node_delta_xs <- sequence [ newUnary s 2 | _ <- zip nodes (tail nodes) ]
-  node_ys <- sequence [ newUnary s yBound | _ <- nodes ]
-  edge_ys <- sequence [ newUnary s yBound | _ <- edges ]
+  node_ys <- sequence [ newTerm s yBound | _ <- nodes ]
+  edge_ys <- sequence [ newTerm s yBound | _ <- edges ]
   edge_short <- sequence [ do up <- newLit s ; down <- newLit s ; return (up,down) 
                          | _ <- edges ]
   slanted <- sequence [ if isSwitch x then return false else newLit s | x <- nodes ]
@@ -99,11 +129,11 @@ layout s nodes edges edge_lt yBound = do
     addClause s [ (node_delta_xs !! i) .>= 1 | i <- [(n1) .. (n2-1)] ]
 
   -- edge ordering
-  forM_ edge_lt $ \(a,b) -> do
+  forM_ edgeLt $ \(a,b) -> do
     let ((aShortUp,aShortDown),(bShortUp,bShortDown)) = (edge_short !! a, edge_short !! b)
     lessThanEqual s (edge_ys !! a) (edge_ys !! b)
-    lessThanOr s [neg aShortDown] (edge_ys !! a) (edge_ys !! b)
-    lessThanOr s [neg bShortUp  ] (edge_ys !! a) (edge_ys !! b)
+    lessThanOr s [ aShortDown] (edge_ys !! a) (edge_ys !! b)
+    lessThanOr s [ bShortUp  ] (edge_ys !! a) (edge_ys !! b)
 
   -- big bad edge iterator
   abs_dy <- forM (zip [0..] edges) $ \(ei, ((n1,p1),(n2,p2))) -> do
@@ -150,72 +180,61 @@ layout s nodes edges edge_lt yBound = do
     -- also, !is_short => x+2 <= x2 
     addClause s [shortDown, shortUp, (dx .>= 2)]
 
-    let absdy1 = if portShapeFactor eBegin > 0 then [invert (node_ys!!n1), edge_ys!!ei ]
-                 else [ node_ys!!n1 , invert (edge_ys!!ei) ]
-    let absdy2 = if portShapeFactor eEnd > 0 then [ invert (node_ys!!n2), edge_ys!!ei ]
-                 else [ node_ys!!n2, invert (edge_ys!!ei) ]
-    return (absdy1 ++ absdy2)
+    --let absdy1 = if portShapeFactor eBegin > 0 then [invert (node_ys!!n1), edge_ys!!ei ]
+    --             else [ node_ys!!n1 , invert (edge_ys!!ei) ]
+    --let absdy2 = if portShapeFactor eEnd > 0 then [ invert (node_ys!!n2), edge_ys!!ei ]
+    --             else [ node_ys!!n2, invert (edge_ys!!ei) ]
 
-  big_dy <- addList s (concat abs_dy)
-  big_nx <- addList s node_delta_xs
-  putStrLn $ "big dy " ++ (show big_dy)
-  putStrLn $ "big nx " ++ (show big_nx)
+    putStrLn $ show (ei, portShapeFactor eBegin, portShapeFactor eEnd)
+    let absdy1 = if portShapeFactor eBegin > 0 then ( (edge_ys!!ei) .-. (node_ys!!n1))
+                 else ( (node_ys!!n1) .-. (edge_ys!!ei) )
+    let absdy2 = if -1*(portShapeFactor eEnd) > 0 then (  (edge_ys!!ei) .-. (node_ys!!n2) )
+                 else ( (node_ys!!n2) .-.  (edge_ys!!ei) )
+
+    return (absdy1 .+. absdy2)
+
+  putStrLn "folding"
+  let big_dy = (foldl (.+.) (SAT.Term.number 0) abs_dy)
+  putStrLn "folding done"
+  -- putStrLn (show big_dy)
+  -- big_nx <- addList s node_delta_xs
+  -- putStrLn $ "big dy " ++ (show big_dy)
+  -- putStrLn $ "big nx " ++ (show big_nx)
 
   putStrLn =<< stats s
+  putStrLn =<< fmap show (solve s [])
+  putStrLn $ "big_dy min=" ++ (show $ SAT.Term.minValue big_dy) ++ 
+                   " max=" ++ (show $ SAT.Term.maxValue big_dy)
 
   let print = do node_x <- fmap (scanl (+) 0) $ sequence [ SAT.Unary.modelValue s x 
-                                                        | x <- node_delta_xs ]
-                 node_y <- sequence [ SAT.Unary.modelValue s x | x <- node_ys ]
-                 edge_y <- sequence [ SAT.Unary.modelValue s x | x <- edge_ys ]
+                                                         | x <- node_delta_xs ]
+                 node_y <- sequence [ SAT.Term.modelValue s x | x <- node_ys ]
+                 edge_y <- sequence [ SAT.Term.modelValue s x | x <- edge_ys ]
+                 short <- sequence [ do a <- SAT.modelValue s x; b <- SAT.modelValue s y; return (a,b) | (x,y) <- edge_short ]
                  putStrLn $ (show (zip node_x node_y))
                  putStrLn $ (show edge_y)
+                 putStrLn $ (show short)
 
-  ok1 <- solveMinimize s [] big_dy
-  if ok1 then do
-    dy <- SAT.Unary.modelValue s big_dy
-    putStrLn $ "dy = " ++ (show dy)
-    addClause s [big_dy .<= dy]
-    print
-    ok2 <- solveMinimize s [] big_nx
-    if ok2 then do 
-      nx <- SAT.Unary.modelValue s big_nx
-      putStrLn $ "nx = " ++ (show nx)
-      addClause s [big_nx .<= nx]
-      print
-    else putStrLn "opt nx failed"
-  else putStrLn "opt dy failed"
+  big_dy_val <- minimizeTerm s big_dy
+  putStrLn $ "big dy val " ++ (show big_dy_val)
+  print
 
-  --ok1 <- solveMinimize s [] big_ey
-  --if ok1 then do 
-  --  ey <- SAT.Unary.modelValue s big_ey
-  --  putStrLn $ "ey = " ++ (show ey)
-  --  addClause s [big_ey .<= ey]
-  --  ok2 <- solveMinimize s [] big_ny
-  --  if ok2 then do
-  --    ny <- SAT.Unary.modelValue s big_ny
-  --    putStrLn $ "ny = " ++ (show ny)
-  --    addClause s [big_ny .<= ny]
-  --    ok3 <- solveMinimize s [] big_nx
-  --    if ok3 then do 
-  --      nx <- SAT.Unary.modelValue s big_nx
-  --      putStrLn $ "nx = " ++ (show nx)
-  --    else putStrLn "failed"
-  --  else putStrLn "failed"
-  --else putStrLn "failed"
-     
-        
-
-  --ok <- solve s []
-  --if ok then do
-  --  putStrLn "solved"
-  --  node_x <- fmap (scanl (+) 0) $ sequence [ SAT.Unary.modelValue s x | x <- node_delta_xs ]
-  --  node_y <- sequence [ SAT.Unary.modelValue s x | x <- node_ys ]
-  --  edge_y <- sequence [ SAT.Unary.modelValue s x | x <- edge_ys ]
-  --  putStrLn $ (show (zip node_x node_y))
-  --  putStrLn $ (show edge_y)
-  --else do
-  --  putStrLn "failed"
-
+  ----ok1 <- solveMinimize s [] big_dy
+  ----if ok1 then do
+  ----  dy <- SAT.Unary.modelValue s big_dy
+  ----  putStrLn $ "dy = " ++ (show dy)
+  ----  addClause s [big_dy .<= dy]
+  ----  print
+  ----  ok2 <- solveMinimize s [] big_nx
+  ----  if ok2 then do 
+  ----    dy <- SAT.Unary.modelValue s big_dy
+  ----    putStrLn $ "dy = " ++ (show dy)
+  ----    nx <- SAT.Unary.modelValue s big_nx
+  ----    putStrLn $ "nx = " ++ (show nx)
+  ----    addClause s [big_nx .<= nx]
+  ----    print
+  ----  else putStrLn "opt nx failed"
+  ----else putStrLn "opt dy failed"
 
 stats :: Solver -> IO String
 stats s = do
@@ -223,5 +242,20 @@ stats s = do
   clauses <- numClauses s
   return ("SAT instance with " ++ (show vars) ++ " vars and " ++ (show clauses) ++ " clauses.")
 
-
-
+minimizeTerm :: Solver -> Term -> IO (Maybe Integer)
+minimizeTerm s x = do 
+  putStrLn =<< stats s
+  ok <- solve s []
+  if ok then do
+    let opt minTry minReached | minReached > minTry =
+         do let try = ((minReached+minTry) `div` 2)
+            putStrLn $ "opt " ++ (show minTry) ++ " "  ++ (show minReached) ++ " " ++ (show try)
+            constraint <- isLessThanEqual s x (SAT.Term.number try)
+            putStrLn =<< stats s
+            ok <- solve s [constraint]
+            if ok then (SAT.Term.modelValue s x >>= \reached -> opt minTry reached)
+            else opt (try+1) minReached
+        opt v _ = return (Just v)
+    max <- SAT.Term.modelValue s x
+    opt (SAT.Term.minValue x) max
+  else return Nothing
