@@ -348,8 +348,8 @@ main :: IO ()
 main =
   do --layout example0
      --layout example1
-     layout example110
-     --layout exampleBjornar
+     --layout example110
+     layout exampleBjornar
      --layout exampleBjornar2
      --layout exampleBjornar2par
      --layout exampleBjornar3
