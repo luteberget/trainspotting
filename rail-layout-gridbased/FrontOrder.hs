@@ -286,7 +286,7 @@ thing s h fr0 th =
 things :: Solver -> Int -> [Thing] -> IO ([(Lit,Front)],[Unary])
 things s h ths = go [] ths
  where
-  k = 3
+  k = 4
   
   go fr [] =
     do return ([],[])
@@ -329,9 +329,10 @@ main = withNewSolver $ \s ->
      if b then
        do putStrLn "+++ SOLUTION"
           displaySolution s h frs
+          h <- minimizeAndCommitHeight s h frs
           minimizeAndCommitWidth s h frs us
           minimizeAndCommitDiags s h frs
-          minimizeAndCommitHeight s h frs
+          return ()
       else
        do putStrLn "*** NO SOLUTION"
  where
@@ -412,7 +413,7 @@ minimizeAndCommitWidth s h frs us =
      n <- U.modelValue s cnt
      addClause s [cnt .<= n]
 
-minimizeAndCommitHeight :: Solver -> Int -> [(Lit,Front)] -> IO ()
+minimizeAndCommitHeight :: Solver -> Int -> [(Lit,Front)] -> IO Int
 minimizeAndCommitHeight s h frs =
   do putStrLn "+++ minimizing height..."
      a <- newLit s
@@ -435,6 +436,7 @@ minimizeAndCommitHeight s h frs =
        | (_,fr) <- frs
        , p <- fr
        ]
+     return h'
      
 displaySolution :: Solver -> Int -> [(Lit,Front)] -> IO ()
 displaySolution s h frs =
@@ -683,7 +685,7 @@ exampleSteenwijk =
 
 exampleWeert :: Example
 exampleWeert =
-  ( 15
+  ( 13
   , [ New 0 1
     , New 0 2
     , SwitchL 2 3 4
