@@ -323,7 +323,7 @@ assert True  = return ()
 main :: IO ()
 main = withNewSolver $ \s ->
   do putStrLn "+++ generating problem..."
-     (frs,us) <- things s h ths
+     (frs,us) <- things s h (check ths)
      putStrLn "+++ solving..."
      b <- solve s []
      if b then
@@ -335,7 +335,7 @@ main = withNewSolver $ \s ->
       else
        do putStrLn "*** NO SOLUTION"
  where
-  (h,ths) = exampleCross
+  (h,ths) = exampleWeert
 
 {-
 minimizeAndCommitDiags :: Solver -> Int -> [(Lit,Front)] -> IO ()
@@ -523,6 +523,44 @@ data Thing
   | End Int
  deriving ( Eq, Ord, Show )
 
+inputs, outputs :: Thing -> [Int]
+inputs (New i j)       = [i]
+inputs (SwitchL i j k) = [i]
+inputs (SwitchR i j k) = [i]
+inputs (MergeL i j k)  = [i,j]
+inputs (MergeR i j k)  = [i,j]
+inputs (Cross i j k l) = [i,j]
+inputs (End i)         = [i]
+
+outputs (New i j)       = [i,j]
+outputs (SwitchL i j k) = [j,k]
+outputs (SwitchR i j k) = [j,k]
+outputs (MergeL i j k)  = [k]
+outputs (MergeR i j k)  = [k]
+outputs (Cross i j k l) = [k,l]
+outputs (End i)         = []
+
+check :: [Thing] -> [Thing]
+check ths | go [] ths = ths
+ where
+  go ps []
+    | null ps   = True
+    | otherwise = error ("check: things left over: " ++ show ps)
+
+  go ps (New 0 j : ths) =
+    go (ps++[j]) ths
+
+  go ps (th:ths) = go (rep th (inputs th) (outputs th) ps) ths
+  
+  rep th is js [] =
+    error ("check: cannot find " ++ show is ++ " for " ++ show th)
+  
+  rep th is js ps@(p:ps')
+    | take n ps == is = js ++ drop n ps
+    | otherwise       = p : rep th is js ps'
+   where
+    n = length is
+
 --------------------------------------------------------------------------------
 
 type Example = (Int,[Thing]) -- (height guess, things)
@@ -640,6 +678,73 @@ exampleSteenwijk =
     , MergeL 15 16 18
     , MergeR 18 17 19
     , End 19 
+    ]
+  )
+
+exampleWeert :: Example
+exampleWeert =
+  ( 15
+  , [ New 0 1
+    , New 0 2
+    , SwitchL 2 3 4
+    , MergeL 1 3 5
+    
+    , New 0 10
+    , SwitchL 4 7 9
+    , SwitchR 5 6 8
+    , Cross 8 7 7 8
+    , MergeL 6 7 12
+    , MergeR 8 9 11
+    
+    , SwitchR 11 15 13
+    , Cross 13 10 16 14 -- should this be a cross?
+    , SwitchL 14 17 18
+    , SwitchL 18 19 20
+    
+    , SwitchR 17 21 22
+    , SwitchR 22 23 24
+    , SwitchR 16 36 37
+    , SwitchR 23 26 25
+    
+    , SwitchR 15 32 35
+    , SwitchR 37 38 39
+    , SwitchR 12 29 30
+    , SwitchL 32 31 37
+    , MergeR 35 36 34
+
+    , SwitchR 30 41 40
+    , MergeR 40 31 62
+    , SwitchL 21 27 28
+    , End 19
+    , End 20
+    
+    , End 26
+    , End 27
+    , End 28
+    , End 25
+    , End 24
+    
+    , MergeL 38 39 46
+    , SwitchL 37 43 45
+    , MergeL 62 43 44
+    , MergeR 34 46 47
+
+    , SwitchR 47 49 48
+    , MergeL 29 41 42
+    , SwitchR 42 51 52
+    , MergeL 45 49 50
+    , End 48
+    
+    , MergeR 44 50 56
+    , SwitchL 56 54 55
+    , Cross 52 54 54 52
+    , MergeR 52 55 57
+    , MergeL 51 54 53
+    
+    , SwitchR 53 60 59
+    , MergeR 59 57 61
+    , End 60
+    , End 61
     ]
   )
 
