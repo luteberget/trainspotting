@@ -146,6 +146,28 @@ exampleBjornar =
     ]
   )
 
+exampleSteenwijk :: Example
+exampleSteenwijk =
+  ( (15,5)
+  , [ New 0
+    , SwitchL 0 1 2
+    , SwitchR 1 3 4
+    , MergeR 4 2 5
+    , SwitchR 5 6 7
+    , SwitchL 3 8 9
+    , New 10
+    , SwitchL 8 11 12
+    , MergeL 10 11 13
+    , End 13
+    , MergeL 6 7 14
+    , MergeR 12 9 15
+    , SwitchL 14 16 17
+    , MergeL 15 16 18
+    , MergeR 18 17 19
+    , End 19 
+    ]
+  )
+
 exampleBjornar2 :: Example
 exampleBjornar2 =
   ( (27,5)
