@@ -2,7 +2,7 @@ module Main where
 
 import SAT as S
 import SAT.Val as V
-import SAT.Term
+import SAT.Term as T
 import SAT.Equal
 import SAT.Order
 import SAT.Bool
@@ -275,24 +275,96 @@ assert True  = return ()
 
 main :: IO ()
 main = withNewSolver $ \s ->
-  do (frs,us) <- things s h (rename ths)
+  do putStrLn "+++ generating problem..."
+     (frs,us) <- things s h (rename ths)
+     putStrLn "+++ solving..."
      b <- solve s []
      if b then
        do putStrLn "+++ SOLUTION"
-          displaySolutionList s h frs
           displaySolution s h frs
-          putStrLn "+++ MINIMIZING"
-          cnt <- U.addList s us
-          solveOptimize s [] cnt $ \_ ->
-            do displaySolution s h frs
-               return True
-          displaySolution s h frs
+          minimizeAndCommitWidth s h frs us
+          minimizeAndCommitDiags s h frs us
       else
        do putStrLn "*** NO SOLUTION"
  where
   --((_,h),ths) = ((10,3),[New 0, New 1, End 1, End 0])
   --((_,h),ths) = ((10,1),[New 0, SwitchL 0 1 2, MergeR 1 2 3, End 3])
-  ((_,h),ths) = exampleBjornar
+  ((_,h'),ths) = example110
+  h = h'-1
+
+{-
+minimizeAndCommitDiags :: Solver -> Int -> [(Lit,Front)] -> [Unary] -> IO ()
+minimizeAndCommitDiags s h frs us =
+  do putStrLn "+++ minimizing diags..."
+     as <- sequence
+           [ do a <- newLit s
+                addClause s [a, neg adv, from p .= Straight]
+                return a
+           | (adv,fr) <- frs
+           , p <- fr
+           ]
+     ds <- sequence
+           [ do a <- S.modelValue s adv
+                d <- V.modelValue s (from p)
+                return (a && d /= Straight)
+           | (adv,fr) <- frs
+           , p <- fr
+           ]
+     let n = length (filter id ds)
+     cnt <- U.countUpTo s n as
+     solveOptimize s [] cnt $ \_ ->
+       do --displaySolution s h frs
+          return True
+     displaySolution s h frs
+     n <- U.modelValue s cnt
+     addClause s [cnt .<= n]
+-}
+
+minimizeAndCommitDiags :: Solver -> Int -> [(Lit,Front)] -> [Unary] -> IO ()
+minimizeAndCommitDiags s h frs us =
+  do putStrLn "+++ minimizing diags..."
+     as <- sequence
+           [ do a <- newLit s
+                addClause s [a, neg adv, from p .= Straight]
+                return a
+           | (adv,fr) <- frs
+           , p <- fr
+           ]
+     ds <- sequence
+           [ do a <- S.modelValue s adv
+                d <- V.modelValue s (from p)
+                return (a && d /= Straight)
+           | (adv,fr) <- frs
+           , p <- fr
+           ]
+     let n = fromIntegral (length (filter id ds))
+         q = fromList [(1,a)|a<-as]
+     cnt <- newTerm s n
+     lessThanEqual s q cnt
+     a <- newLit s
+     let loop n =
+           do lessThanOr s [neg a] cnt (T.number (fromIntegral n))
+              b <- solve s [a]
+              if b then
+                do displaySolution s h frs
+                   n <- T.modelValue s q
+                   loop n
+               else
+                do return ()
+      in loop n
+     n <- T.modelValue s cnt
+     lessThanEqual s cnt (T.number n)
+
+minimizeAndCommitWidth :: Solver -> Int -> [(Lit,Front)] -> [Unary] -> IO ()
+minimizeAndCommitWidth s h frs us =
+  do putStrLn "+++ minimizing width..."
+     cnt <- U.addList s us
+     solveOptimize s [] cnt $ \_ ->
+       do --displaySolution s h frs
+          return True
+     displaySolution s h frs
+     n <- U.modelValue s cnt
+     addClause s [cnt .<= n]
 
 displaySolution :: Solver -> Int -> [(Lit,Front)] -> IO ()
 displaySolution s h frs =
