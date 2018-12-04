@@ -242,6 +242,45 @@ thing s h fr0 th =
       p1 = head [ p | p <- fr0, col p == i ]
       p2 = head [ p | p <- fr0, col p == j ]
 
+    Cross i j k l ->
+      do -- precondition
+         addClause s [neg (ahead p1)]
+         addClause s [neg (ahead p2)]
+         equal s (y p1) (y p2)
+         addClause s [neg (from p1 .= Straight), neg (from p2 .= Straight)]
+         addClause s [neg (from p1 .= FromBelow)]
+         addClause s [neg (from p2 .= FromAbove)]
+         sequence_
+           [ notEqualOr s [ahead q] (y p1) (y q)
+           | q <- fr0
+           , col q /= i
+           , col q /= j
+           ]
+         -- postcondition
+         q1 <- newPoint s h k
+         q2 <- newPoint s h l
+         addClause s [ahead q1]
+         addClause s [ahead q2]
+         addClause s [neg (from q1 .= Straight), neg (from q2 .= Straight)]
+         -- slanted/or not
+         addClause s [neg (from p1 .= FromAbove), from q2 .= FromAbove]
+         addClause s [neg (from p1 .= Straight),  from q2 .= Straight]
+         addClause s [neg (from p2 .= FromBelow), from q1 .= FromBelow]
+         addClause s [neg (from p2 .= Straight),  from q1 .= Straight]
+
+         equalOr s [neg (from q1 .= Straight)]  (y q1) (y p1)
+         equalOr s [neg (from q2 .= Straight)]  (y q2) (y p1)
+         equalOr s [neg (from q1 .= FromBelow)] (y q1) (U.succ (y p1))
+         equalOr s [neg (from q2 .= FromAbove)] (U.succ (y q2)) (y p1)
+         equalOr s [neg (from q1 .= Straight)] (y q1) (y p1)
+         
+         return [ g | f <- fr0, g <- if col f == i then [q1]
+                                     else if col f == j then [q2]
+                                     else [f] ]
+     where
+      p1 = head [ p | p <- fr0, col p == i ]
+      p2 = head [ p | p <- fr0, col p == j ]
+
 --------------------------------------------------------------------------------
 
 things :: Solver -> Int -> [Thing] -> IO ([(Lit,Front)],[Unary])
@@ -296,10 +335,7 @@ main = withNewSolver $ \s ->
       else
        do putStrLn "*** NO SOLUTION"
  where
-  (h1,ths1) = example110
-  (h2,ths2) = exampleBjornar
-  ths = ths1 ++ ths2
-  h   = h1 `max` h2
+  (h,ths) = exampleCross
 
 {-
 minimizeAndCommitDiags :: Solver -> Int -> [(Lit,Front)] -> IO ()
@@ -482,6 +518,7 @@ data Thing
   | SwitchR Int Int Int
   | MergeL Int Int Int
   | MergeR Int Int Int
+  | Cross Int Int Int Int
   | New Int Int
   | End Int
  deriving ( Eq, Ord, Show )
@@ -511,6 +548,24 @@ example1 =
     , MergeR 2 3 3
     , MergeL 3 4 3
     , End 3
+    ]
+  )
+
+exampleCross :: Example
+exampleCross =
+  ( 7
+  , [ New 0 1
+    , New 1 2
+    , New 2 3
+    , New 3 4
+    , New 3 12
+    , End 12
+    , Cross 2 1 5 6
+    , Cross 4 3 7 8
+    , MergeL 8 5 9
+    , MergeR 7 9 10
+    , MergeL 10 6 11
+    , End 11
     ]
   )
 
