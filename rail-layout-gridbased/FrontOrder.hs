@@ -286,7 +286,7 @@ thing s h fr0 th =
 things :: Solver -> Int -> [Thing] -> IO ([(Lit,Front)],[Unary])
 things s h ths = go [] ths
  where
-  k = 4
+  k = 3
   
   go fr [] =
     do return ([],[])
@@ -330,8 +330,8 @@ main = withNewSolver $ \s ->
        do putStrLn "+++ SOLUTION"
           displaySolutionCompact s h frs
           h <- minimizeAndCommitHeight s h frs
-          minimizeAndCommitWidth s h frs us
           minimizeAndCommitKinks s h frs
+          minimizeAndCommitWidth s h frs us
           return ()
       else
        do putStrLn "*** NO SOLUTION"
