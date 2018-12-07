@@ -328,10 +328,10 @@ main = withNewSolver $ \s ->
      b <- solve s []
      if b then
        do putStrLn "+++ SOLUTION"
-          displaySolution s h frs
+          displaySolutionCompact s h frs
           h <- minimizeAndCommitHeight s h frs
           minimizeAndCommitWidth s h frs us
-          minimizeAndCommitDiags s h frs
+          minimizeAndCommitKinks s h frs
           return ()
       else
        do putStrLn "*** NO SOLUTION"
@@ -366,6 +366,51 @@ minimizeAndCommitDiags s h frs =
      addClause s [cnt .<= n]
 -}
 
+minimizeAndCommitKinks :: Solver -> Int -> [(Lit,Front)] -> IO ()
+minimizeAndCommitKinks s h frs =
+  do putStrLn "+++ minimizing kinks..."
+     ks <- concat `fmap` sequence
+           [ do str <- newLit s
+                kinks str ps
+           | c <- cs
+           , let ps = [ (adv,p) | (adv,fr) <- frs, p <- fr, col p == c ]
+           , let kinks str [] =
+                   do return []
+                 
+                 kinks str ((adv,p):ps) =
+                   do str' <- newLit s
+                      k    <- newLit s
+                      
+                      equalOr   s [neg adv] (from p .= Straight) str'
+                      addClause s [adv, neg k]
+                      equalOr   s [k]       str                  str'
+                      
+                      ks <- kinks str' ps
+                      return (k:ks)
+           ]
+     solve s []
+     bs <- sequence [ S.modelValue s k | k <- ks ]
+     let n = fromIntegral (length (filter id bs))
+         q = fromList [(1,k)|k<-ks]
+     cnt <- newTerm s n
+     lessThanEqual s q cnt
+     a <- newLit s
+     let loop n =
+           do lessThanOr s [neg a] cnt (T.number (fromIntegral n))
+              b <- solve s [a]
+              if b then
+                do displaySolutionCompact s h frs
+                   n <- T.modelValue s q
+                   loop n
+               else
+                do return ()
+      in loop n
+     addClause s [neg a]
+     n <- T.modelValue s cnt
+     lessThanEqual s cnt (T.number n)
+ where
+  cs = nub [ col p | (_,fr) <- frs, p <- fr ]
+
 minimizeAndCommitDiags :: Solver -> Int -> [(Lit,Front)] -> IO ()
 minimizeAndCommitDiags s h frs =
   do putStrLn "+++ minimizing diags..."
@@ -392,7 +437,7 @@ minimizeAndCommitDiags s h frs =
            do lessThanOr s [neg a] cnt (T.number (fromIntegral n))
               b <- solve s [a]
               if b then
-                do displaySolution s h frs
+                do displaySolutionCompact s h frs
                    n <- T.modelValue s q
                    loop n
                else
@@ -407,9 +452,9 @@ minimizeAndCommitWidth s h frs us =
   do putStrLn "+++ minimizing width..."
      cnt <- U.addList s us
      solveOptimize s [] cnt $ \_ ->
-       do --displaySolution s h frs
+       do --displaySolutionCompact s h frs
           return True
-     displaySolution s h frs
+     displaySolutionCompact s h frs
      n <- U.modelValue s cnt
      addClause s [cnt .<= n]
 
@@ -425,7 +470,7 @@ minimizeAndCommitHeight s h frs =
                 ]
               b <- solve s [a]
               if b then
-                do displaySolution s (h-1) frs
+                do displaySolutionCompact s (h-1) frs
                    loop (h-1)
                else
                 do return h
@@ -483,6 +528,37 @@ displaySolution s h frs =
                              if '_'  `elem` cs then "_" else " ") ++
                             (if '\\' `elem` cs then "\\" else
                              if '_'  `elem` cs then "_" else ".")
+         | (adv,ps) <- frs
+         ]
+       putStrLn ""
+  | i <- [h,h-1..0]
+  ]
+
+displaySolutionCompact :: Solver -> Int -> [(Lit,Front)] -> IO ()
+displaySolutionCompact s h frs =
+  putStrLn "--- solution" >>
+  sequence_
+  [ do sequence_
+         [ do b <- S.modelValue s adv
+              when b $
+                do css <- sequence
+                          [ do j <- U.modelValue s (y p)
+                               d <- V.modelValue s (from p)
+                               return $ [ '\\' | j == i, d == FromAbove ]
+                                     ++ [ '_'  | j == i, d == Straight ]
+                                     ++ [ '/'  | j == i+1, d == FromBelow ]
+                          | p <- ps
+                          ]
+                   let cs = nub (concat css)
+                   putStr $
+                     (if '_' `elem` cs then "\027[4m" else "") ++
+                     (case ('/'  `elem` cs, '\\' `elem` cs) of
+                       (True, True)  -> "><"
+                       (True, False) -> "◞◜"
+                       (False,True)  -> "◝◟"
+                       _             -> " ⸱"
+                     ) ++
+                     (if '_' `elem` cs then "\027[24m" else "")
          | (adv,ps) <- frs
          ]
        putStrLn ""
