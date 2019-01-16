@@ -380,9 +380,12 @@ layout s nodes edges edgeLt yBound = do
   --let big_dy = (foldl (.+.) (SAT.Term.number 0) abs_dy)
   --putStrLn (show abs_dy)
   --x <- count s $ concat (fmap SAT.Unary.toList (concat abs_dy))
-  x <- SAT.Binary.addList s $ concat abs_dy
+  --x <- SAT.Binary.addList s $ concat abs_dy
+  putStrLn =<< stats s
+  sumx <- SAT.Unary.addList s node_delta_xs
   putStrLn =<< stats s
   putStrLn =<< fmap show (solve s [])
+
 
   let print = do node_x <- fmap (scanl (+) 0) $ sequence [ SAT.Unary.modelValue s x 
                                                          | x <- node_delta_xs ]
@@ -395,8 +398,10 @@ layout s nodes edges edgeLt yBound = do
                  putStrLn $ (show short)
                  putStrLn $ (show (zip slanted slants))
 
-  big_dy_val <- minimizeBinary s x
-  putStrLn $ "big dy val " ++ (show big_dy_val)
+  ----big_dy_val <- minimizeBinary s x
+  ----putStrLn $ "big dy val " ++ (show big_dy_val)
+  print
+  solveMinimize s [] sumx
   print
 
 stats :: Solver -> IO String

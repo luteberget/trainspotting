@@ -1,3 +1,4 @@
+extern crate regex;
 extern crate rolling;
 extern crate railml2dgraph;
 #[macro_use] extern crate lalrpop_util;
@@ -13,14 +14,22 @@ use std::collections::HashMap;
 pub use export::to_railml;
 
 pub fn convert_railway(s :&str) -> Result<Vec<railway::Track>, String> {
-    let stmts = grammar::MilelangParser::new().parse(s).map_err(|e| format!("{:?}", e))?;
+    let regex = regex::Regex::new(r"//.*").unwrap();
+    println!("BEFORE {:?}", s);
+    let without_comments = regex.replace_all(s, ""); 
+    println!("AFTER {:?}", without_comments);
+    let stmts = grammar::MilelangParser::new().parse(&without_comments).map_err(|e| format!("{:?}", e))?;
     println!("Parsed: {:?}", stmts);
     let c = railway::convert(stmts)?;
     Ok(c)
 }
 
 pub fn convert_dgraph(s :&str) -> Result<(StaticInfrastructure, HashMap<String,Vec<(String,String)>>), String> {
-    let stmts = grammar::MilelangParser::new().parse(s).map_err(|e| format!("{:?}", e))?;
+    let regex = regex::Regex::new(r"//.*").unwrap();
+    println!("BEFORE {:?}", s);
+    let without_comments = regex.replace_all(s, ""); 
+    println!("AFTER {:?}", without_comments);
+    let stmts = grammar::MilelangParser::new().parse(&without_comments).map_err(|e| format!("{:?}", e))?;
     println!("Parsed {:?}", stmts);
     let branchingmodel = railway::convert(stmts)?;
     let railml = to_railml(branchingmodel).map_err(|e| format!("{:?}", e))?;

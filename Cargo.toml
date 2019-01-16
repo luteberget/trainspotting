@@ -6,4 +6,5 @@ members = [
     "vis-rs",
     "milelang",
     "livehtml",
+    "diffsolver",
 ]

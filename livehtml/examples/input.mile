@@ -1,10 +1,10 @@
-track <_,a> (l=2000) {
-  detector(x=50);
-  out left siding <_> (x=100, l=200) {
-detector(x=60);
-      out left siding <_> (x=100, l=100);
-detector(x=160);
+// top main track
+track <_,_> (l=2000) {
+  out right siding <!> (x=300,l=700) {
+    
   };
-  detector(x=350);
+  out right siding <!> (x=100,l=1900) {
+    out left siding <!> (x=310,l=1000) {};
+  };
 };
 
