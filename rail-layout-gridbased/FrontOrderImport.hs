@@ -10,7 +10,10 @@ import SAT.Unary as U
 import SAT.Optimize
 import Control.Monad( when )
 import Data.List( nub )
-import Data.Maybe (fromMaybe, listToMaybe)
+import Data.Maybe (fromMaybe, listToMaybe, catMaybes)
+import Data.IORef
+import Control.Monad (forM, forM_)
+import System.Environment (getArgs)
 
 import Input hiding (Dir)
 import Parser
@@ -326,23 +329,47 @@ assert True  = return ()
 
 --------------------------------------------------------------------------------
 
-solveIt :: Example -> IO ()
-solveIt example = withNewSolver $ \s ->
-  do putStrLn "+++ generating problem..."
+
+main :: IO ()
+main = do
+  args <- getArgs
+  if (length args) /= 3 then do 
+      putStrLn "Usage: $0 <criteria> <max_height> <file>, where"
+      putStrLn "  <critieria> ranks optimization criteria w=width, h=height, b=bends, for example: bwh"
+      putStrLn "  <max_height> is the maximum height of the drawing"
+      putStrLn "  <file> is a file path to a vis-rs graph format file"
+  else do 
+      args <- getArgs
+      let criteria = args !! 0
+      let max_h = read (args !! 1) :: Int
+      let filename = args !! 2
+      input <- fromFile max_h filename
+      solveIt criteria input
+
+solveIt :: String -> Example -> IO ()
+solveIt criteria example = withNewSolver $ \s ->
+  do --putStrLn "+++ generating problem..."
      (frs,us) <- things s h (check ths)
-     putStrLn "+++ solving..."
+     --putStrLn "+++ solving..."
      b <- solve s []
      if b then
-       do putStrLn "+++ SOLUTION"
-          displaySolutionCompact s h frs
-          minimizeAndCommitWidth s h frs us
-          h <- minimizeAndCommitHeight s h frs
-          minimizeAndCommitKinks s h frs
+       do --putStrLn "+++ SOLUTION"
+          --displaySolutionCompact s h frs
+          opt s h frs us criteria
           return ()
       else
        do putStrLn "*** NO SOLUTION"
  where
   (h,ths) = example
+  opt s h frs us ('d':criteria) = do minimizeAndCommitDiags s h frs 
+                                     opt s h frs us criteria
+  opt s h frs us ('w':criteria) = do minimizeAndCommitWidth s h frs us 
+                                     opt s h frs us criteria
+  opt s h frs us ('h':criteria) = do h <- minimizeAndCommitHeight s h frs
+                                     opt s h frs us criteria
+  opt s h frs us ('b':criteria) = do minimizeAndCommitKinks s h frs
+                                     opt s h frs us criteria
+  opt s h frs us [] = displayTikzSolution s h frs 
 
 {-
 minimizeAndCommitDiags :: Solver -> Int -> [(Lit,Front)] -> IO ()
@@ -374,7 +401,7 @@ minimizeAndCommitDiags s h frs =
 
 minimizeAndCommitKinks :: Solver -> Int -> [(Lit,Front)] -> IO ()
 minimizeAndCommitKinks s h frs =
-  do putStrLn "+++ minimizing kinks..."
+  do --putStrLn "+++ minimizing kinks..."
      ks <- concat `fmap` sequence
            [ do str <- newLit s
                 kinks str ps
@@ -405,7 +432,7 @@ minimizeAndCommitKinks s h frs =
            do lessThanOr s [neg a] cnt (T.number (fromIntegral n))
               b <- solve s [a]
               if b then
-                do displaySolutionCompact s h frs
+                do --displaySolutionCompact s h frs
                    n <- T.modelValue s q
                    loop n
                else
@@ -419,7 +446,7 @@ minimizeAndCommitKinks s h frs =
 
 minimizeAndCommitDiags :: Solver -> Int -> [(Lit,Front)] -> IO ()
 minimizeAndCommitDiags s h frs =
-  do putStrLn "+++ minimizing diags..."
+  do --putStrLn "+++ minimizing diags..."
      as <- sequence
            [ do a <- newLit s
                 addClause s [a, neg adv, from p .= Straight]
@@ -443,7 +470,7 @@ minimizeAndCommitDiags s h frs =
            do lessThanOr s [neg a] cnt (T.number (fromIntegral n))
               b <- solve s [a]
               if b then
-                do displaySolutionCompact s h frs
+                do --displaySolutionCompact s h frs
                    n <- T.modelValue s q
                    loop n
                else
@@ -455,18 +482,18 @@ minimizeAndCommitDiags s h frs =
 
 minimizeAndCommitWidth :: Solver -> Int -> [(Lit,Front)] -> [Unary] -> IO ()
 minimizeAndCommitWidth s h frs us =
-  do putStrLn "+++ minimizing width..."
+  do --putStrLn "+++ minimizing width..."
      cnt <- U.addList s us
      solveOptimize s [] cnt $ \_ ->
        do --displaySolutionCompact s h frs
           return True
-     displaySolutionCompact s h frs
+     --displaySolutionCompact s h frs
      n <- U.modelValue s cnt
      addClause s [cnt .<= n]
 
 minimizeAndCommitHeight :: Solver -> Int -> [(Lit,Front)] -> IO Int
 minimizeAndCommitHeight s h frs =
-  do putStrLn "+++ minimizing height..."
+  do --putStrLn "+++ minimizing height..."
      a <- newLit s
      let loop h =
            do sequence_
@@ -476,7 +503,7 @@ minimizeAndCommitHeight s h frs =
                 ]
               b <- solve s [a]
               if b then
-                do displaySolutionCompact s (h-1) frs
+                do --displaySolutionCompact s (h-1) frs
                    loop (h-1)
                else
                 do return h
@@ -878,3 +905,36 @@ exampleWeert =
 succPairs :: [a] -> [(a,a)]
 succPairs [] = []
 succPairs xs = xs `zip` (tail xs)
+
+
+
+
+displayTikzSolution :: Solver -> Int -> [(Lit, Front)] -> IO ()
+displayTikzSolution s h frs = do
+  x <- newIORef 0
+  es <- forM frs $ \(adv,ps) -> do
+    b <- S.modelValue s adv
+    x <- if b then do
+                modifyIORef x (+1)
+                z <- forM ps $ \p -> do
+                  xval <- readIORef x
+                  j <- U.modelValue s (y p)
+                  d <- V.modelValue s (from p)
+                  let dp = case d of
+                             FromBelow -> ((xval-1, j-1), (xval,j))
+                             Straight  -> ((xval-1, j  ), (xval,j))
+                             FromAbove -> ((xval-1, j+1), (xval,j))
+                  return (col p,dp)
+                return (Just z)
+          else return Nothing
+    return x
+
+  let cols = concat (catMaybes es)
+  -- could reconstruct each edge's sequence of line segments, but
+  -- just dumping the line segments for now
+  forM_ cols $ \(_i,(p1,p2)) -> do
+    let c (x,y) = "(" ++ (show x) ++ "," ++ (show y) ++ ")"
+    putStrLn $ "\\draw[track] " ++ (c p1) ++ " -- " ++ (c p2) ++ ";"
+  --putStrLn (show cols)
+  return ()
+
