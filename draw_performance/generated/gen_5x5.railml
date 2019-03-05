@@ -1,0 +1,705 @@
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<railml version="2.2" xmlns="http://www.railml.org/schemas/2013" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.railml.org/schemas/2013 http://schemas.railml.org/2013/railML-2.2/railML.xsd">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+        <dc:source>Example model generator (rolling)</dc:source>
+        <dc:date></dc:date>
+    </metadata>
+    <infrastructure>
+      <tracks>
+
+<track name="track0">
+    <trackTopology>
+        <trackBegin>
+            <openEnd id="in"/>
+        </trackBegin>
+        <trackEnd pos="350">
+            <connection id="conn0-a" ref="conn0-b"/>
+        </trackEnd>
+        <connections>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig0" name="sig0" pos="100" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det0" name="det0" pos="50" dir="both"/>
+            <trainDetector id="det1" name="det1" pos="100" dir="both"/>
+            <trainDetector id="det2" name="det2" pos="340" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track1">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn8-b" ref="conn8-a"/>
+        </trackBegin>
+        <trackEnd pos="550">
+            <connection id="conn9-b" ref="conn9-a"/>
+        </trackEnd>
+        <connections>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig1" name="sig1" pos="430" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det3" name="det3" pos="45" dir="both"/>
+            <trainDetector id="det4" name="det4" pos="430" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track2">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn6-b" ref="conn6-a"/>
+        </trackBegin>
+        <trackEnd pos="650">
+            <connection id="conn7-b" ref="conn7-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw0" pos="50">
+                <connection id="conn8-a" ref="conn8-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw1" pos="600">
+                <connection id="conn9-a" ref="conn9-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig2" name="sig2" pos="530" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det5" name="det5" pos="45" dir="both"/>
+            <trainDetector id="det6" name="det6" pos="530" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track3">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn4-b" ref="conn4-a"/>
+        </trackBegin>
+        <trackEnd pos="750">
+            <connection id="conn5-b" ref="conn5-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw2" pos="50">
+                <connection id="conn6-a" ref="conn6-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw3" pos="700">
+                <connection id="conn7-a" ref="conn7-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig3" name="sig3" pos="630" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det7" name="det7" pos="45" dir="both"/>
+            <trainDetector id="det8" name="det8" pos="630" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track4">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn2-b" ref="conn2-a"/>
+        </trackBegin>
+        <trackEnd pos="850">
+            <connection id="conn3-b" ref="conn3-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw4" pos="50">
+                <connection id="conn4-a" ref="conn4-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw5" pos="800">
+                <connection id="conn5-a" ref="conn5-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig4" name="sig4" pos="730" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det9" name="det9" pos="45" dir="both"/>
+            <trainDetector id="det10" name="det10" pos="730" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track5">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn0-b" ref="conn0-a"/>
+        </trackBegin>
+        <trackEnd pos="950">
+            <connection id="conn1-a" ref="conn1-b"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw6" pos="50">
+                <connection id="conn2-a" ref="conn2-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw7" pos="900">
+                <connection id="conn3-a" ref="conn3-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig5" name="sig5" pos="830" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det11" name="det11" pos="45" dir="both"/>
+            <trainDetector id="det12" name="det12" pos="830" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track6">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn17-b" ref="conn17-a"/>
+        </trackBegin>
+        <trackEnd pos="550">
+            <connection id="conn18-b" ref="conn18-a"/>
+        </trackEnd>
+        <connections>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig6" name="sig6" pos="430" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det13" name="det13" pos="45" dir="both"/>
+            <trainDetector id="det14" name="det14" pos="430" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track7">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn15-b" ref="conn15-a"/>
+        </trackBegin>
+        <trackEnd pos="650">
+            <connection id="conn16-b" ref="conn16-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw8" pos="50">
+                <connection id="conn17-a" ref="conn17-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw9" pos="600">
+                <connection id="conn18-a" ref="conn18-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig7" name="sig7" pos="530" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det15" name="det15" pos="45" dir="both"/>
+            <trainDetector id="det16" name="det16" pos="530" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track8">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn13-b" ref="conn13-a"/>
+        </trackBegin>
+        <trackEnd pos="750">
+            <connection id="conn14-b" ref="conn14-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw10" pos="50">
+                <connection id="conn15-a" ref="conn15-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw11" pos="700">
+                <connection id="conn16-a" ref="conn16-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig8" name="sig8" pos="630" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det17" name="det17" pos="45" dir="both"/>
+            <trainDetector id="det18" name="det18" pos="630" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track9">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn11-b" ref="conn11-a"/>
+        </trackBegin>
+        <trackEnd pos="850">
+            <connection id="conn12-b" ref="conn12-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw12" pos="50">
+                <connection id="conn13-a" ref="conn13-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw13" pos="800">
+                <connection id="conn14-a" ref="conn14-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig9" name="sig9" pos="730" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det19" name="det19" pos="45" dir="both"/>
+            <trainDetector id="det20" name="det20" pos="730" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track10">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn1-b" ref="conn1-a"/>
+        </trackBegin>
+        <trackEnd pos="950">
+            <connection id="conn10-a" ref="conn10-b"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw14" pos="50">
+                <connection id="conn11-a" ref="conn11-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw15" pos="900">
+                <connection id="conn12-a" ref="conn12-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig10" name="sig10" pos="830" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det21" name="det21" pos="45" dir="both"/>
+            <trainDetector id="det22" name="det22" pos="830" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track11">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn26-b" ref="conn26-a"/>
+        </trackBegin>
+        <trackEnd pos="550">
+            <connection id="conn27-b" ref="conn27-a"/>
+        </trackEnd>
+        <connections>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig11" name="sig11" pos="430" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det23" name="det23" pos="45" dir="both"/>
+            <trainDetector id="det24" name="det24" pos="430" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track12">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn24-b" ref="conn24-a"/>
+        </trackBegin>
+        <trackEnd pos="650">
+            <connection id="conn25-b" ref="conn25-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw16" pos="50">
+                <connection id="conn26-a" ref="conn26-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw17" pos="600">
+                <connection id="conn27-a" ref="conn27-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig12" name="sig12" pos="530" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det25" name="det25" pos="45" dir="both"/>
+            <trainDetector id="det26" name="det26" pos="530" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track13">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn22-b" ref="conn22-a"/>
+        </trackBegin>
+        <trackEnd pos="750">
+            <connection id="conn23-b" ref="conn23-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw18" pos="50">
+                <connection id="conn24-a" ref="conn24-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw19" pos="700">
+                <connection id="conn25-a" ref="conn25-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig13" name="sig13" pos="630" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det27" name="det27" pos="45" dir="both"/>
+            <trainDetector id="det28" name="det28" pos="630" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track14">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn20-b" ref="conn20-a"/>
+        </trackBegin>
+        <trackEnd pos="850">
+            <connection id="conn21-b" ref="conn21-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw20" pos="50">
+                <connection id="conn22-a" ref="conn22-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw21" pos="800">
+                <connection id="conn23-a" ref="conn23-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig14" name="sig14" pos="730" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det29" name="det29" pos="45" dir="both"/>
+            <trainDetector id="det30" name="det30" pos="730" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track15">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn10-b" ref="conn10-a"/>
+        </trackBegin>
+        <trackEnd pos="950">
+            <connection id="conn19-a" ref="conn19-b"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw22" pos="50">
+                <connection id="conn20-a" ref="conn20-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw23" pos="900">
+                <connection id="conn21-a" ref="conn21-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig15" name="sig15" pos="830" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det31" name="det31" pos="45" dir="both"/>
+            <trainDetector id="det32" name="det32" pos="830" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track16">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn35-b" ref="conn35-a"/>
+        </trackBegin>
+        <trackEnd pos="550">
+            <connection id="conn36-b" ref="conn36-a"/>
+        </trackEnd>
+        <connections>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig16" name="sig16" pos="430" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det33" name="det33" pos="45" dir="both"/>
+            <trainDetector id="det34" name="det34" pos="430" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track17">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn33-b" ref="conn33-a"/>
+        </trackBegin>
+        <trackEnd pos="650">
+            <connection id="conn34-b" ref="conn34-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw24" pos="50">
+                <connection id="conn35-a" ref="conn35-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw25" pos="600">
+                <connection id="conn36-a" ref="conn36-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig17" name="sig17" pos="530" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det35" name="det35" pos="45" dir="both"/>
+            <trainDetector id="det36" name="det36" pos="530" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track18">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn31-b" ref="conn31-a"/>
+        </trackBegin>
+        <trackEnd pos="750">
+            <connection id="conn32-b" ref="conn32-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw26" pos="50">
+                <connection id="conn33-a" ref="conn33-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw27" pos="700">
+                <connection id="conn34-a" ref="conn34-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig18" name="sig18" pos="630" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det37" name="det37" pos="45" dir="both"/>
+            <trainDetector id="det38" name="det38" pos="630" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track19">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn29-b" ref="conn29-a"/>
+        </trackBegin>
+        <trackEnd pos="850">
+            <connection id="conn30-b" ref="conn30-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw28" pos="50">
+                <connection id="conn31-a" ref="conn31-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw29" pos="800">
+                <connection id="conn32-a" ref="conn32-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig19" name="sig19" pos="730" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det39" name="det39" pos="45" dir="both"/>
+            <trainDetector id="det40" name="det40" pos="730" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track20">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn19-b" ref="conn19-a"/>
+        </trackBegin>
+        <trackEnd pos="950">
+            <connection id="conn28-a" ref="conn28-b"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw30" pos="50">
+                <connection id="conn29-a" ref="conn29-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw31" pos="900">
+                <connection id="conn30-a" ref="conn30-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig20" name="sig20" pos="830" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det41" name="det41" pos="45" dir="both"/>
+            <trainDetector id="det42" name="det42" pos="830" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track21">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn44-b" ref="conn44-a"/>
+        </trackBegin>
+        <trackEnd pos="550">
+            <connection id="conn45-b" ref="conn45-a"/>
+        </trackEnd>
+        <connections>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig21" name="sig21" pos="430" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det43" name="det43" pos="45" dir="both"/>
+            <trainDetector id="det44" name="det44" pos="430" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track22">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn42-b" ref="conn42-a"/>
+        </trackBegin>
+        <trackEnd pos="650">
+            <connection id="conn43-b" ref="conn43-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw32" pos="50">
+                <connection id="conn44-a" ref="conn44-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw33" pos="600">
+                <connection id="conn45-a" ref="conn45-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig22" name="sig22" pos="530" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det45" name="det45" pos="45" dir="both"/>
+            <trainDetector id="det46" name="det46" pos="530" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track23">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn40-b" ref="conn40-a"/>
+        </trackBegin>
+        <trackEnd pos="750">
+            <connection id="conn41-b" ref="conn41-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw34" pos="50">
+                <connection id="conn42-a" ref="conn42-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw35" pos="700">
+                <connection id="conn43-a" ref="conn43-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig23" name="sig23" pos="630" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det47" name="det47" pos="45" dir="both"/>
+            <trainDetector id="det48" name="det48" pos="630" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track24">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn38-b" ref="conn38-a"/>
+        </trackBegin>
+        <trackEnd pos="850">
+            <connection id="conn39-b" ref="conn39-a"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw36" pos="50">
+                <connection id="conn40-a" ref="conn40-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw37" pos="800">
+                <connection id="conn41-a" ref="conn41-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig24" name="sig24" pos="730" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det49" name="det49" pos="45" dir="both"/>
+            <trainDetector id="det50" name="det50" pos="730" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track25">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn28-b" ref="conn28-a"/>
+        </trackBegin>
+        <trackEnd pos="950">
+            <connection id="conn37-a" ref="conn37-b"/>
+        </trackEnd>
+        <connections>
+            <switch id="sw38" pos="50">
+                <connection id="conn38-a" ref="conn38-b" course="left" orientation="outgoing"/>
+            </switch>
+            <switch id="sw39" pos="900">
+                <connection id="conn39-a" ref="conn39-b" course="right" orientation="incoming"/>
+            </switch>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig25" name="sig25" pos="830" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det51" name="det51" pos="45" dir="both"/>
+            <trainDetector id="det52" name="det52" pos="830" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+<track name="track26">
+    <trackTopology>
+        <trackBegin>
+            <connection id="conn37-b" ref="conn37-a"/>
+        </trackBegin>
+        <trackEnd pos="500">
+            <openEnd id="out"/>
+        </trackEnd>
+        <connections>
+        </connections>
+    </trackTopology>
+    <ocsElements>
+        <signals>
+            <signal id="sig26" name="sig26" pos="400" type="main" dir="up"/>
+        </signals>
+        <trainDetectionElements>
+            <trainDetector id="det53" name="det53" pos="50" dir="both"/>
+            <trainDetector id="det54" name="det54" pos="400" dir="both"/>
+            <trainDetector id="det55" name="det55" pos="450" dir="both"/>
+        </trainDetectionElements>
+    </ocsElements>
+</track>
+
+        </tracks>
+    </infrastructure>
+</railml>
+
