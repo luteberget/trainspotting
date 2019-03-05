@@ -402,24 +402,26 @@ pub fn solve_difftheory(mut input :SolverInput) -> Result<(SolverOutput, Vec<(Ed
 
 
 
-    let mut s_edges = Vec::new();
-    for ((pr1,pr2,y),e) in tracks.edge_levels.iter().zip(input.edges.iter()) {
-        let (_n,x1,y1) = &tracks.node_coords[pr1.node];
-        let (_n,x2,y2) = &tracks.node_coords[pr2.node];
-        s_edges.push((e.clone(), conv_line((*x1,*y1),*y,(*x2,*y2))));
-	}
+    //let mut s_edges = Vec::new();
+    //for ((pr1,pr2,y),e) in tracks.edge_levels.iter().zip(input.edges.iter()) {
+    //    let (_n,x1,y1) = &tracks.node_coords[pr1.node];
+    //    let (_n,x2,y2) = &tracks.node_coords[pr2.node];
+    //    s_edges.push((e.clone(), conv_line((*x1,*y1),*y,(*x2,*y2))));
+	//}
 
-    let s_nodes = tracks.node_coords.clone().into_iter()
-        .zip(input.nodes.clone().into_iter())
-        .map(|((_,x,y),n)| (n,(x,y))).collect::<Vec<_>>();
+    //let s_nodes = tracks.node_coords.clone().into_iter()
+    //    .zip(input.nodes.clone().into_iter())
+    //    .map(|((_,x,y),n)| (n,(x,y))).collect::<Vec<_>>();
 
 
-    let symbols = place_symbols(&s_nodes, &s_edges, &input.symbols)
-        .map_err(|_| "Place_symbols error".to_string())?;
+    //let symbols = place_symbols(&s_nodes, &s_edges, &input.symbols)
+    //    .map_err(|_| "Place_symbols error".to_string())?;
 
     //let symbols = symbols.into_iter().zip(input.symbols.iter().cloned())
     //    .map(|((x,s),(p,t))| (s,x)).collect();
     //
+
+    let symbols = Vec::new();
     
     println!("SYMBOLS {:#?}", symbols);
 
