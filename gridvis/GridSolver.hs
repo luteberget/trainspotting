@@ -238,8 +238,17 @@ withProblem nodes (w,h) f = withNewSolver $ \s -> do
       --             | Just (val, line) <- nexts]
   f s (Problem nodeVals horizLines downLines upLines)
 
+stats :: Solver -> IO String
+stats s = do
+  vars <- numVars s
+  clauses <- numClauses s
+  return ("SAT instance with " ++ (show vars) ++ " vars and " ++ (show clauses) ++ " clauses.")
+
+
 getSolution :: Solver -> Problem -> (Int, Int) -> IO (Maybe [Graphics])
 getSolution s p (w,h) = do 
+  --log "SAT instance statistics after final"
+  --log =<< stats s
   let allnodes x = case x of
         Node x -> [x]
         Linear (x,y) -> [x,y]
@@ -296,6 +305,8 @@ draw nodes (w,h) log = do
   log $ "Preparing problem (" ++ (show w) ++ "," ++ (show h) ++ ")"
   withProblem nodes (w,h) $ \s p -> do
     log $ "Solving problem (" ++ (show w) ++ "," ++ (show h) ++ ")"
+    log "SAT instance intermediate stage"
+    log =<< stats s
     b <- solve s []
     if b then do
       getSolution s p (w,h)
@@ -316,6 +327,8 @@ minimizeSolution nodes (w,h) log = do
     log $ "Solving optimization"
     b1 <- Optimize.solveOptimize s [] numSlants $ \(a,b) -> do
         log $ "Slant range (" ++ (show a) ++ "--" ++ (show b) ++ ")"
+        log "SAT instance intermediate stage"
+        log =<< stats s
         return True
 
     slantValue <- Unary.modelValue s numSlants
@@ -324,9 +337,14 @@ minimizeSolution nodes (w,h) log = do
     numHoriz  <- Unary.addList s horiz
     b2 <- Optimize.solveOptimize s [] (Unary.invert numHoriz) $ \(a,b) -> do
         log $ "Horiz range (" ++ (show a) ++ "--" ++ (show b) ++ ")"
+        log "SAT instance intermediate stage"
+        log =<< stats s
         return True
 
-    getSolution s p (w,h)
+    sol <- getSolution s p (w,h)
+    log "SAT instance final stage"
+    log =<< stats s
+    return sol
     
 
 -- toJson

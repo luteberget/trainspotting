@@ -998,6 +998,9 @@ pub fn solve_diff(input :SolverInput, edges_lt :Vec<EdgePair>) -> Result<TrackOu
         output
     };
     s.report_time();
+
+    println!("SAT instance vars {} clauses {}", s.sat.num_vars(), s.sat.num_clauses());
+
     Ok(output)
 }
 

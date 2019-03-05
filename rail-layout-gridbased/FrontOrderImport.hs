@@ -351,25 +351,42 @@ solveIt criteria example = withNewSolver $ \s ->
   do --putStrLn "+++ generating problem..."
      (frs,us) <- things s h (check ths)
      --putStrLn "+++ solving..."
+     putStrLn "SAT instance first size"
+     putStrLn =<< stats s
      b <- solve s []
      if b then
        do --putStrLn "+++ SOLUTION"
           --displaySolutionCompact s h frs
           opt s h frs us criteria
+          putStrLn "SAT instance final size"
+          putStrLn =<< stats s
           return ()
       else
        do putStrLn "*** NO SOLUTION"
  where
   (h,ths) = example
+  midstats s = do 
+                 putStrLn "SAT instance intermediate size"
+                 putStrLn =<< stats s
   opt s h frs us ('d':criteria) = do minimizeAndCommitDiags s h frs 
+                                     midstats s
                                      opt s h frs us criteria
   opt s h frs us ('w':criteria) = do minimizeAndCommitWidth s h frs us 
+                                     midstats s
                                      opt s h frs us criteria
   opt s h frs us ('h':criteria) = do h <- minimizeAndCommitHeight s h frs
+                                     midstats s
                                      opt s h frs us criteria
   opt s h frs us ('b':criteria) = do minimizeAndCommitKinks s h frs
+                                     midstats s
                                      opt s h frs us criteria
   opt s h frs us [] = displayTikzSolution s h frs 
+
+stats :: Solver -> IO String
+stats s = do
+  vars <- numVars s
+  clauses <- numClauses s
+  return ("SAT instance with " ++ (show vars) ++ " vars and " ++ (show clauses) ++ " clauses.")
 
 {-
 minimizeAndCommitDiags :: Solver -> Int -> [(Lit,Front)] -> IO ()
