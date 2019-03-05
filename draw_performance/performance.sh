@@ -28,9 +28,9 @@ for i in models/*railml generated/*railml; do
 	t2=$(date +%s.%N)
 	tlevelout=$(echo "$t2 - $t1" | bc -l)
 
-	# measure linprog
+	## measure linprog
 	t1=$(date +%s.%N)
-	#./timeout.sh -t 300 ../levelbasedsatplus/linprog/linprog convert/in/$filename.in > convert/linout/$filename.tikz
+	./timeout.sh -t 300 ../levelbasedsatplus/linprog/linprog convert/in/$filename.in > convert/linout/$filename.tikz
 	t2=$(date +%s.%N)
 	tlinprog=$(echo "$t2 - $t1" | bc -l)
 
