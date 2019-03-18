@@ -1,10 +1,5 @@
 use smallvec::SmallVec;
 
-pub type Dist = f64;
-
-pub type NodeId = usize;
-pub type ObjectId = usize;
-
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::fmt::Debug;
@@ -12,16 +7,27 @@ use std::fmt::Debug;
 pub type NameMap<Ref> = HashMap<Ref, usize>;
 
 #[derive(Debug)]
+pub struct InfNames<Ref : Hash + Eq + Debug> {
+    pub node_names: NameMap<Ref>,
+    pub object_names: NameMap<Ref>,
+}
+
+
+
+// 
+// STATIC INFRASTRUCTURE
+//
+pub type Dist = f64;
+
+pub type NodeId = usize;
+pub type ObjectId = usize;
+
+#[derive(Debug)]
 pub struct StaticInfrastructure {
     pub nodes: Vec<Node>,
     pub objects: Vec<StaticObject>,
 }
 
-#[derive(Debug)]
-pub struct InfNames<Ref : Hash + Eq + Debug> {
-    pub node_names: NameMap<Ref>,
-    pub object_names: NameMap<Ref>,
-}
 
 #[derive(Debug)]
 pub struct Node {
@@ -60,6 +66,11 @@ pub enum SwitchPosition {
     Right,
 }
 
+
+//
+// ROUTES
+//
+
 pub type Routes<Ref> = HashMap<Ref, Route>;
 
 #[derive(Debug,Clone)]
@@ -89,6 +100,7 @@ pub struct RouteResources {
 #[derive(Debug,Clone)]
 pub struct Release {
     pub trigger: ObjectId,
+    pub length: f64,
     pub resources: SmallVec<[ObjectId; 4]>,
 }
 

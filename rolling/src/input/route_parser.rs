@@ -17,7 +17,9 @@ pub fn default_release(route :&mut Route) {
             resources.extend(&route.resources.sections);
             resources.extend(route.resources.switch_positions.iter().map(|&(a,_)| a));
             route.resources.releases.push(Release { 
-                trigger: *trigger, resources: resources.into() });
+                trigger: *trigger, 
+                length: route.length,
+                resources: resources.into() });
             //println!("DEFAULT RELEASE: {:?}", route);
         },
         None => println!("Warning: route has no sections."),
@@ -119,7 +121,7 @@ pub fn parse_resources(i :&mut usize, t: &[Token], objnames :&Map, nodenames: &M
     while matches(i, t, Token::Identifier("release".to_string())) {
         must_match(i, t, Token::BraceOpen)?;
         symbol(i, t, "length")?;
-        let _length = number(i,t)?;
+        let length = number(i,t)?;
         symbol(i, t, "trigger")?;
         let trigger = lookup(objnames, &identifier(i, t)?)?;
         symbol(i, t, "resources")?;
@@ -127,6 +129,7 @@ pub fn parse_resources(i :&mut usize, t: &[Token], objnames :&Map, nodenames: &M
         must_match(i, t, Token::BraceClose)?;
         releases.push(Release {
             trigger: trigger,
+            length: length,
             resources: resources.into(),
         });
     }
