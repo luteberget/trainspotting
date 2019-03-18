@@ -126,7 +126,17 @@ fn convert_model(model  :&DGraphModel) -> HashMap<PartNodeIdx, DirEdge> {
 }
 
 pub fn find_routes(model: &DGraphModel) -> Vec<Route> {
+    convert_routes(model).0
+}
+
+#[derive(Debug)]
+pub enum ConvertRouteIssue {
+    NoBoundaries,
+}
+
+pub fn convert_routes(model: &DGraphModel) -> (Vec<Route>,Vec<ConvertRouteIssue>) {
     let mut routes = Vec::new();
+    let mut issues = Vec::new();
     let dir_edges = convert_model(&model);
     let boundary_nodes = model.edges.iter().filter_map(|x| if let Edge::Boundary(n) = *x {
         Some(n)
@@ -134,9 +144,11 @@ pub fn find_routes(model: &DGraphModel) -> Vec<Route> {
         None
     });
 
+
     let mut entry_visited = HashSet::new();
     for boundary in boundary_nodes {
         println!("Boundary start {:?}", boundary);
+
         let mut entry_stack = Vec::new();
         entry_stack.push(RouteEntry {
             node: boundary.opposite(),
@@ -284,6 +296,8 @@ pub fn find_routes(model: &DGraphModel) -> Vec<Route> {
         }
     }
 
-    routes
+    if !(entry_visited.len() > 0) { issues.push(ConvertRouteIssue::NoBoundaries); }
+
+    (routes,issues)
 }
 

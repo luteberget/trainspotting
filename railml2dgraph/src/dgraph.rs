@@ -8,6 +8,12 @@ pub struct DGraphModel {
     pub edges: Vec<Edge>,
 }
 
+impl Default for DGraphModel {
+    fn default() -> Self {
+        DGraphModel { nodes: Vec::new(), edges: Vec::new() }
+    }
+}
+
 pub type Link = (PartNodeIdx, f64);
 
 #[derive(Debug,Clone)]
@@ -98,7 +104,7 @@ impl PartNodeIdx {
 }
 
 
-fn empty_node(name :&str) -> DGraphNode {
+pub fn empty_node(name :&str) -> DGraphNode {
     DGraphNode {
         name: None,
         a: PartNode {
@@ -114,7 +120,7 @@ fn empty_node(name :&str) -> DGraphNode {
 }
 
 
-fn new_node(ns :&mut Vec<DGraphNode>) -> (PartNodeIdx, PartNodeIdx) {
+pub fn new_node(ns :&mut Vec<DGraphNode>) -> (PartNodeIdx, PartNodeIdx) {
     let i = ns.len();
     let name = format!("n{}",i);
     ns.push(empty_node(&name));
