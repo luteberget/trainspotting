@@ -1,10 +1,8 @@
 extern crate rolling;
 extern crate failure;
-use rolling::*;
-
-#[macro_use]
 extern crate structopt;
 
+use rolling::*;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -63,7 +61,7 @@ struct Opt {
 fn run(opt :&Opt) -> AppResult<()> {
     // 
     // Infrastructure
-    let infrastructure = get_infrastructure(&opt.infrastructure)?;
+    let (infrastructure,names) = get_infrastructure(&opt.infrastructure)?;
     if opt.verbose >= 2 {
         println!("Infrastructure:");
         println!("  Nodes:");
@@ -78,7 +76,7 @@ fn run(opt :&Opt) -> AppResult<()> {
 
     if opt.graphical.is_none() {
         // Routes
-        let routes = get_routes(&opt.routes, &infrastructure)?;
+        let routes = get_routes(&opt.routes, &names)?;
         if opt.verbose >= 2 {
             println!("Routes:");
             for x in &routes { println!("  - {:?}", x); }
@@ -112,7 +110,7 @@ fn run(opt :&Opt) -> AppResult<()> {
             use std::io::BufWriter;
             let mut file = File::create(json)?;
             let mut writer = BufWriter::new(&file);
-            rolling::output::json::json_history(&infrastructure, &history, &mut writer)?;
+            rolling::output::json::json_history(&infrastructure, &names, &history, &mut writer)?;
         }
 
         if let Some(ref javascript) = opt.javascript {
@@ -120,7 +118,7 @@ fn run(opt :&Opt) -> AppResult<()> {
             use std::io::BufWriter;
             let mut file = File::create(javascript)?;
             let mut writer = BufWriter::new(&file);
-            rolling::output::json::javascript_history(&infrastructure, &history, &mut writer)?;
+            rolling::output::json::javascript_history(&infrastructure, &names, &history, &mut writer)?;
         }
         
         if let Some(ref visits) = opt.visits {
@@ -128,7 +126,7 @@ fn run(opt :&Opt) -> AppResult<()> {
             use std::io::BufWriter;
             let mut file = File::create(visits)?;
             let mut writer = BufWriter::new(&file);
-            let string = rolling::output::history::visits(&infrastructure, &history)?;
+            let string = rolling::output::history::visits(&names, &history)?;
             use std::io::Write;
             write!(writer,"{}",string)?;
         }
@@ -137,7 +135,7 @@ fn run(opt :&Opt) -> AppResult<()> {
     if let Some(ref graphical) = opt.graphical {
         use std::fs::File;
         use std::io::BufWriter;
-        let string = rolling::output::graphical::graphical(&infrastructure)?;
+        let string = rolling::output::graphical::graphical(&infrastructure, &names)?;
         use std::io::Write;
         let mut file = File::create(graphical)?;
         let mut writer = BufWriter::new(&file);
@@ -153,7 +151,7 @@ pub fn main() {
     match run(&opt) {
         Ok(()) => {},
         Err(e) => {
-            println!("Error:\n{}", e.cause());
+            println!("Error:\n{}", e.as_fail());
             std::process::exit(1);
         },
     }

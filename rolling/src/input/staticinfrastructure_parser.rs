@@ -1,7 +1,7 @@
 use smallvec::SmallVec;
 
 use super::staticinfrastructure;
-use super::staticinfrastructure::{Dist, SwitchPosition};
+use super::staticinfrastructure::{Dist, SwitchPosition, InfNames};
 
 use super::parser_utils::*;
 
@@ -352,11 +352,13 @@ fn get_or_create_node(mnodes: &mut Vec<staticinfrastructure::Node>,
 }
 
 pub fn model_from_ast(stmts: &[Statement])
-                      -> Result<staticinfrastructure::StaticInfrastructure, ModelError> {
+                      -> Result<(staticinfrastructure::StaticInfrastructure,staticinfrastructure::InfNames<String>), ModelError> {
     use super::staticinfrastructure::{StaticInfrastructure, Edges};
     let mut model = StaticInfrastructure {
         nodes: Vec::new(),
         objects: Vec::new(),
+    };
+    let mut names = InfNames {
         node_names: HashMap::new(),
         object_names: HashMap::new(),
     };
@@ -365,31 +367,31 @@ pub fn model_from_ast(stmts: &[Statement])
         use self::Statement::*;
         match *s {
             Boundary(ref name) => {
-                let node_idx = get_or_create_node(&mut model.nodes, &mut model.node_names, name);
+                let node_idx = get_or_create_node(&mut model.nodes, &mut names.node_names, name);
                 model.nodes[node_idx].edges = Edges::ModelBoundary;
             }
             Linear(ref name1, ref name2, dist) => {
-                let n1 = get_or_create_node(&mut model.nodes, &mut model.node_names, name1);
-                let n2 = get_or_create_node(&mut model.nodes, &mut model.node_names, name2);
+                let n1 = get_or_create_node(&mut model.nodes, &mut names.node_names, name1);
+                let n2 = get_or_create_node(&mut model.nodes, &mut names.node_names, name2);
                 model.nodes[n1].edges = Edges::Single(n2, dist);
                 model.nodes[n2].edges = Edges::Single(n1, dist);
             }
             Switch(ref name, ref side, ref node, ref legs) => {
-                let node_idx = get_or_create_node(&mut model.nodes, &mut model.node_names, node);
+                let node_idx = get_or_create_node(&mut model.nodes, &mut names.node_names, node);
                 if legs.len() != 2 {
                     return Err(ModelError::SwitchLegs(name.clone()));
                 }
                 let (ref l1name, l1dist) = legs[0];
-                let l1idx = get_or_create_node(&mut model.nodes, &mut model.node_names, l1name);
+                let l1idx = get_or_create_node(&mut model.nodes, &mut names.node_names, l1name);
                 let (ref l2name, l2dist) = legs[1];
-                let l2idx = get_or_create_node(&mut model.nodes, &mut model.node_names, l2name);
+                let l2idx = get_or_create_node(&mut model.nodes, &mut names.node_names, l2name);
                 let switch = staticinfrastructure::StaticObject::Switch {
                     left_link: (l1idx, l1dist),
                     right_link: (l2idx, l2dist),
                     branch_side: *side,
                 };
                 let sw_idx =
-                    insert_object(&mut model.objects, &mut model.object_names, switch, name);
+                    insert_object(&mut model.objects, &mut names.object_names, switch, name);
                 //println!("PARSED switch {:?}", model.objects[sw_idx]);
                 model.nodes[node_idx].edges = Edges::Switchable(sw_idx);
                 model.nodes[l1idx].edges = Edges::Single(node_idx, l1dist);
@@ -398,8 +400,8 @@ pub fn model_from_ast(stmts: &[Statement])
             DoubleNode(ref n1, ref n2) => {
                 // Create cross references
                 //
-                let n1_idx = get_or_create_node(&mut model.nodes, &mut model.node_names, &n1.name);
-                let n2_idx = get_or_create_node(&mut model.nodes, &mut model.node_names, &n2.name);
+                let n1_idx = get_or_create_node(&mut model.nodes, &mut names.node_names, &n1.name);
+                let n2_idx = get_or_create_node(&mut model.nodes, &mut names.node_names, &n2.name);
 
                 model.nodes[n1_idx].other_node = n2_idx;
                 model.nodes[n2_idx].other_node = n1_idx;
@@ -410,7 +412,7 @@ pub fn model_from_ast(stmts: &[Statement])
                         match *obj {
                             Object::Sight(ref name, d) => {
                                 let signal = {
-                                    let names = &mut model.object_names;
+                                    let names = &mut names.object_names;
                                     let objs = &mut model.objects;
                                     *names.entry(name.to_string()).or_insert_with(|| {
                                         let idx = objs.len();
@@ -432,7 +434,7 @@ pub fn model_from_ast(stmts: &[Statement])
                             }
                             Object::Signal(ref name) => {
                                 let idx = insert_object(&mut model.objects,
-                                                        &mut model.object_names,
+                                                        &mut names.object_names,
                                                         staticinfrastructure::StaticObject::Signal,
                                                         name);
                                 let m: &mut staticinfrastructure::Node = &mut model.nodes[node];
@@ -441,7 +443,7 @@ pub fn model_from_ast(stmts: &[Statement])
                             Object::Exit(ref name) => {
                                 // Create TVD if necessary
                                 let tvd = {
-                                    let names = &mut model.object_names;
+                                    let names = &mut names.object_names;
                                     let objs = &mut model.objects;
                                     *names.entry(name.to_string()).or_insert_with(|| {
                                         let idx = objs.len();
@@ -462,7 +464,7 @@ pub fn model_from_ast(stmts: &[Statement])
                             Object::Enter(ref name) => {
                                 // Create TVD if necessary
                                 let tvd = {
-                                    let names = &mut model.object_names;
+                                    let names = &mut names.object_names;
                                     let objs = &mut model.objects;
                                     *names.entry(name.to_string()).or_insert_with(|| {
                                         let idx = objs.len();
@@ -489,5 +491,5 @@ pub fn model_from_ast(stmts: &[Statement])
             }
         }
     }
-    Ok(model)
+    Ok((model,names))
 }

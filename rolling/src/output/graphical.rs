@@ -4,7 +4,7 @@ use failure::Error;
 // use railway::dynamics::DriverAction;
 
 use std::collections::HashMap;
-use input::staticinfrastructure::{StaticInfrastructure, SwitchPosition, Edges, StaticObject};
+use input::staticinfrastructure::{StaticInfrastructure, SwitchPosition, Edges, StaticObject, InfNames};
 fn get(x :&HashMap<String,usize>, n :usize) -> &str {
     for (k,v) in x.iter() {
         if *v == n { return k; }
@@ -40,7 +40,7 @@ pub enum GSNode {
 }
 
 
-pub fn graphical(inf :&StaticInfrastructure) -> Result<String,Error> {
+pub fn graphical(inf :&StaticInfrastructure, names :&InfNames<String>) -> Result<String,Error> {
     let boundaries = inf.nodes.iter().enumerate().filter_map(|(i,ref n)| { if let Edges::ModelBoundary = n.edges { return Some(i); } else { return None; }} ).collect::<Vec<_>>();
     let boundary = *boundaries.iter().nth(0).ok_or(GraphicalError::NoModelBoundary)?;
     println!("Selected boundary {:?}", boundary);
@@ -164,7 +164,7 @@ pub fn graphical(inf :&StaticInfrastructure) -> Result<String,Error> {
     };
 
 
-    let g = |i| get(&inf.node_names, i);
+    let g = |i| get(&names.node_names, i);
     let edges2 = edges.iter().map(|&(ref e,ref level)| {
         let e2 = e.iter().zip(e.iter().skip(1)).map(|(a,b)| (g(*a).clone(),g(*b).clone(), dists[&(*a,*b)])).collect::<Vec<_>>();
         (e2,level)
@@ -221,7 +221,7 @@ pub fn graphical(inf :&StaticInfrastructure) -> Result<String,Error> {
         }
     }
 
-    let g = |i| get(&inf.node_names, i).to_string();
+    let g = |i| get(&names.node_names, i).to_string();
     let snodes = nodes.into_iter().map(|(i,n)| match n {
         GNode::Linear(_,_) => panic!("Unexpected linear"),
         GNode::StartNode(x) => (g(i), GSNode::StartNode(g(x))),

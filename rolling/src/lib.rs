@@ -15,10 +15,15 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::cell::RefCell;
 use output::history::InfrastructureLogEvent;
+use std::hash::Hash;
+use std::fmt::Debug;
 
-pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticInfrastructure,
-                     routes: &HashMap<String,input::staticinfrastructure::Route>,
-                     dispatch: &input::dispatch::Dispatch, timestep :Option<f64>) -> output::history::History {
+pub fn evaluate_plan<RouteRef : Hash + Eq + Debug >
+                    (staticinfrastructure: &input::staticinfrastructure::StaticInfrastructure,
+                     //names: &input::staticinfrastructure::InfNames<InfRef>,
+                     routes: &HashMap<RouteRef,input::staticinfrastructure::Route>,
+                     dispatch: &input::dispatch::Dispatch<RouteRef>, 
+                     timestep :Option<f64>) -> output::history::History {
 
 
     let mut train_logs = Vec::new();
@@ -53,7 +58,7 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
                         railway::route::ActivateRoute::new(route.clone())));
                     events.push(proc_);
                 },
-                _ => panic!("Unknown route \"{}\"", route_name),
+                _ => panic!("Unknown route \"{:?}\"", route_name),
             },
             Train(ref name, ref params, ref route_name) =>  {
                 let (activated, node_idx, auth_dist) = match routes.get(route_name) {
@@ -67,7 +72,7 @@ pub fn evaluate_plan(staticinfrastructure: &input::staticinfrastructure::StaticI
                             _ => panic!("Not an boundary entry route"),
                         }
                     },
-                    _ => panic!("Unkoown route \"{}\"", route_name),
+                    _ => panic!("Unknown route \"{:?}\"", route_name),
                 };
 
                 events.push(activated);
@@ -115,12 +120,12 @@ pub fn read_file(f :&Path) -> AppResult<String> {
 
 use input::staticinfrastructure;
 use input::dispatch;
-pub fn get_infrastructure(s :&Path) -> AppResult<staticinfrastructure::StaticInfrastructure> {
+pub fn get_infrastructure(s :&Path) -> AppResult<(staticinfrastructure::StaticInfrastructure, staticinfrastructure::InfNames<String>)> {
     let contents = read_file(s)?;
     get_infrastructure_string(&contents)
 }
 
-pub fn get_infrastructure_string(s :&str) -> AppResult<staticinfrastructure::StaticInfrastructure> {
+pub fn get_infrastructure_string(s :&str) -> AppResult<(staticinfrastructure::StaticInfrastructure, staticinfrastructure::InfNames<String>)> {
     use input::staticinfrastructure_parser::{lexer, parse, model_from_ast};
   let lex = lexer(&mut s.chars())?;
   let stmts = parse(&lex)?;
@@ -128,8 +133,8 @@ pub fn get_infrastructure_string(s :&str) -> AppResult<staticinfrastructure::Sta
   Ok(model)
 }
 
-pub fn get_routes(s :&Path, inf :&staticinfrastructure::StaticInfrastructure) 
-    -> AppResult<staticinfrastructure::Routes> {
+pub fn get_routes(s :&Path, inf :&staticinfrastructure::InfNames<String>) 
+    -> AppResult<staticinfrastructure::Routes<String>> {
     use input::route_parser::{parse, lexer};
     let contents = read_file(s)?;
     let lex = lexer(&mut contents.chars())?;
@@ -137,7 +142,7 @@ pub fn get_routes(s :&Path, inf :&staticinfrastructure::StaticInfrastructure)
     Ok(rs)
 }
 
-pub fn get_dispatch(s :&Path) -> AppResult<dispatch::Dispatch> {
+pub fn get_dispatch(s :&Path) -> AppResult<dispatch::Dispatch<String>> {
     let contents = read_file(s)?;
     let d = dispatch::parse_dispatch(&contents)?;
     Ok(d)

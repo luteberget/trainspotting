@@ -6,14 +6,21 @@ pub type NodeId = usize;
 pub type ObjectId = usize;
 
 use std::collections::HashMap;
-pub type NameMap = HashMap<String, usize>;
+use std::hash::Hash;
+use std::fmt::Debug;
+
+pub type NameMap<Ref> = HashMap<Ref, usize>;
 
 #[derive(Debug)]
 pub struct StaticInfrastructure {
     pub nodes: Vec<Node>,
     pub objects: Vec<StaticObject>,
-    pub node_names: NameMap,
-    pub object_names: NameMap,
+}
+
+#[derive(Debug)]
+pub struct InfNames<Ref : Hash + Eq + Debug> {
+    pub node_names: NameMap<Ref>,
+    pub object_names: NameMap<Ref>,
 }
 
 #[derive(Debug)]
@@ -53,7 +60,7 @@ pub enum SwitchPosition {
     Right,
 }
 
-pub type Routes = HashMap<String, Route>;
+pub type Routes<Ref> = HashMap<Ref, Route>;
 
 #[derive(Debug,Clone)]
 pub enum RouteEntryExit {

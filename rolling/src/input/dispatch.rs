@@ -1,18 +1,18 @@
 use railway::dynamics::TrainParams;
 use regex::Regex;
 
-type Name = String;
+type TrainName = String;
 
 #[derive(Debug)]
-pub struct Dispatch {
-    pub actions: Vec<DispatchAction>,
+pub struct Dispatch<RouteRef> {
+    pub actions: Vec<DispatchAction<RouteRef>>,
 }
 
 #[derive(Debug)]
-pub enum DispatchAction {
+pub enum DispatchAction<RouteRef> {
     Wait(Option<f64>),
-    Route(Name),
-    Train(Name, TrainParams, Name), // train name, train params, entry route name
+    Route(RouteRef),
+    Train(TrainName, TrainParams, RouteRef), // train name, train params, entry route name
 }
 
 
@@ -32,7 +32,7 @@ pub enum ParseError {
 /// * route rb1
 /// * train t1 (b1 -> 200.0) l=200.0 a=1.0 b=0.5 v=10.0
 ///
-pub fn parse_dispatch(input: &str) -> Result<Dispatch, ParseError> {
+pub fn parse_dispatch(input: &str) -> Result<Dispatch<String>, ParseError> {
     let mut actions = Vec::new();
     let wait_time_re = Regex::new(r"^\s*wait\s*([\d\.]+)\s*$")
         .map_err(|e| ParseError::RegexError(format!("{:?}",e)))?;

@@ -30,7 +30,7 @@ pub fn default_release(route :&mut Route) {
 //
 
 
-pub fn parse(t: &[Token], inf: &StaticInfrastructure) -> Result<Routes, ParseError> {
+pub fn parse(t: &[Token], inf: &InfNames<String>) -> Result<Routes<String>, ParseError> {
     let mut i = 0;
     let mut routes = HashMap::new();
     while t[i] != Token::EOF {

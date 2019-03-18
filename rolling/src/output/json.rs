@@ -3,7 +3,7 @@ use super::history;
 use railway::dynamics::DriverAction;
 
 use std::collections::HashMap;
-use input::staticinfrastructure::{StaticInfrastructure, SwitchPosition};
+use input::staticinfrastructure::{StaticInfrastructure, SwitchPosition, InfNames};
 fn get(x: &HashMap<String, usize>, n: usize) -> &str {
     for (k, v) in x.iter() {
         if *v == n {
@@ -16,16 +16,18 @@ fn get(x: &HashMap<String, usize>, n: usize) -> &str {
 use std::io;
 
 pub fn javascript_history<W: io::Write>(inf: &StaticInfrastructure,
+                                        names :&InfNames<String>,
                                         history: &history::History,
                                         f: &mut W)
                                         -> Result<(), Error> {
     write!(f, "var data = ")?;
-    json_history(inf, history, f)?;
+    json_history(inf, names, history, f)?;
     write!(f, ";")?;
     Ok(())
 }
 
 pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
+                                  names :&InfNames<String>,
                                   history: &history::History,
                                   f: &mut W)
                                   -> Result<(), Error> {
@@ -45,8 +47,8 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
     let mut first = true;
     for (node_idx,node) in inf.nodes.iter().enumerate() {
         if first { first = false; } else { write!(f, ", ")?; }
-        write!(f, "\"{}\": {{ \"other_node\": \"{}\" }}", get(&inf.node_names, node_idx), 
-               get(&inf.node_names, node.other_node))?;
+        write!(f, "\"{}\": {{ \"other_node\": \"{}\" }}", get(&names.node_names, node_idx), 
+               get(&names.node_names, node.other_node))?;
     }
     write!(f, "}},")?;
 
@@ -59,7 +61,7 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
                 StaticObject::Signal => {
                     if first { first = false; } else { write!(f, ", ")?; }
                     write!(f, " \"{}\": {{ \"type\":\"signal\", \"node\": \"{}\" }} ",
-                           get(&inf.object_names, *obj), get(&inf.node_names, node_idx))?;
+                           get(&names.object_names, *obj), get(&names.node_names, node_idx))?;
                 },
                 _ => {},
             }
@@ -83,7 +85,7 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
                 w(f,
                   t,
                   "signal",
-                  get(&inf.object_names, n),
+                  get(&names.object_names, n),
                   if x.is_some() { "green" } else { "red" });
             }
             Route(n, x) => {
@@ -109,7 +111,7 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
                 w(f,
                   t,
                   "reserved",
-                  get(&inf.object_names, n),
+                  get(&names.object_names, n),
                   if x { "true" } else { "false" });
             }
             Occupied(n, x) => {
@@ -121,7 +123,7 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
                 w(f,
                   t,
                   "occupied",
-                  get(&inf.object_names, n),
+                  get(&names.object_names, n),
                   if x { "true" } else { "false" });
             }
             Position(n, pos) => {
@@ -133,7 +135,7 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
                 w(f,
                   t,
                   "position",
-                  get(&inf.object_names, n),
+                  get(&names.object_names, n),
                   if let SwitchPosition::Left = pos {
                       "left"
                   } else {
@@ -179,9 +181,9 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
                             .map(|&((n1, n2), (a, b))| {
                                 format!("{{\"n1\": \"{}\", \"n2\": {}, \"start\": {}, \
                                          \"end\": {}}}",
-                                        get(&inf.node_names, n1),
+                                        get(&names.node_names, n1),
                                         match n2 {
-                                            Some(n2) => format!("\"{}\"", get(&inf.node_names, n2)),
+                                            Some(n2) => format!("\"{}\"", get(&names.node_names, n2)),
                                             None => format!("null"),
                                         },
                                         a,
@@ -226,9 +228,9 @@ pub fn json_history<W: io::Write>(inf: &StaticInfrastructure,
                         .map(|&((n1, n2), (a, b))| {
                             format!("{{\"n1\": \"{}\", \"n2\": {}, \"start\": {}, \"end\": \
                                      {}}}",
-                                    get(&inf.node_names, n1),
+                                    get(&names.node_names, n1),
                                     match n2 {
-                                        Some(n2) => format!("\"{}\"", get(&inf.node_names, n2)),
+                                        Some(n2) => format!("\"{}\"", get(&names.node_names, n2)),
                                         None => format!("null"),
                                     },
                                     a,

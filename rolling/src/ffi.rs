@@ -10,7 +10,7 @@ use std::os::raw::c_char;
 
 #[no_mangle]
 pub unsafe extern fn parse_infrastructure_file(filename :*const c_char) 
-    -> *mut StaticInfrastructure {
+    -> *mut (StaticInfrastructure,InfNames<String>) {
     let filename =  CStr::from_ptr(filename).to_str().unwrap();
     println!("rolling ffi: loading {}",filename);
     match get_infrastructure(Path::new(filename)) {
@@ -24,11 +24,11 @@ pub unsafe extern fn parse_infrastructure_file(filename :*const c_char)
 
 
 #[no_mangle]
-pub unsafe extern fn parse_routes_file(inf :*mut StaticInfrastructure, 
+pub unsafe extern fn parse_routes_file(inf :*mut (StaticInfrastructure, InfNames<String>), 
                                        filename :*const c_char) 
-    -> *mut Routes {
+    -> *mut Routes<String> {
     let filename =  CStr::from_ptr(filename).to_str().unwrap();
-    match get_routes(Path::new(filename), &*inf) {
+    match get_routes(Path::new(filename), &((*inf).1)) {
         Ok(routes) => Box::into_raw(Box::new(routes)),
         Err(e) => {
             println!("Error parsing routes: {:?}", e);
@@ -38,7 +38,7 @@ pub unsafe extern fn parse_routes_file(inf :*mut StaticInfrastructure,
 }
 
 #[no_mangle]
-pub unsafe extern fn parse_dispatch(input :*const c_char) -> *mut dispatch::Dispatch {
+pub unsafe extern fn parse_dispatch(input :*const c_char) -> *mut dispatch::Dispatch<String> {
     let input = CStr::from_ptr(input).to_str().unwrap();
     match dispatch::parse_dispatch(input) {
         Ok(dispatch) => Box::into_raw(Box::new(dispatch)),
@@ -50,11 +50,11 @@ pub unsafe extern fn parse_dispatch(input :*const c_char) -> *mut dispatch::Disp
 }
 
 #[no_mangle]
-pub unsafe extern fn eval_simplified(inf :*mut StaticInfrastructure,
-                                    routes: *mut Routes,
-                             dis :*mut dispatch::Dispatch) -> *mut c_char {
-    let result = evaluate_plan(&*inf,&*routes,&*dis, None);
-    let result = output::history::visits(&*inf, &result);
+pub unsafe extern fn eval_simplified(inf :*mut (StaticInfrastructure, InfNames<String>),
+                                    routes: *mut Routes<String>,
+                             dis :*mut dispatch::Dispatch<String>) -> *mut c_char {
+    let result = evaluate_plan(&((*inf).0),&*routes,&*dis, None);
+    let result = output::history::visits(&((*inf).1), &result);
 
     match result {
         Ok(string) => {
@@ -81,13 +81,13 @@ pub unsafe extern fn free_infrastructure(x :*mut StaticInfrastructure) {
 }
 
 #[no_mangle]
-pub unsafe extern fn free_routes(x :*mut Routes) {
+pub unsafe extern fn free_routes(x :*mut Routes<String>) {
     println!("freeing routes");
     Box::from_raw(x);
 }
 
 #[no_mangle]
-pub unsafe extern fn free_dispatch(x :*mut dispatch::Dispatch) {
+pub unsafe extern fn free_dispatch(x :*mut dispatch::Dispatch<String>) {
     println!("freeing dispatch");
     Box::from_raw(x);
 }

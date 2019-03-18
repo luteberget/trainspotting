@@ -1,4 +1,4 @@
-use input::staticinfrastructure::{StaticInfrastructure, SwitchPosition};
+use input::staticinfrastructure::{SwitchPosition, InfNames};
 use railway::dynamics::{DriverAction, DistanceVelocity, TrainParams};
 use failure;
 
@@ -34,7 +34,7 @@ pub enum TrainLogEvent {
 
 /// Print one train node visits per line on the following format:
 /// `trainname time nodename`.
-pub fn visits(inf :&StaticInfrastructure, h: &History) -> Result<String,failure::Error> {
+pub fn visits(inf :&InfNames<String>, h: &History) -> Result<String,failure::Error> {
     use std::fmt::Write;
     let mut s = String::new();
     for &(ref train_name, ref _params, ref events) in &h.trains {
