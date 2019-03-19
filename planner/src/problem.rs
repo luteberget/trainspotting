@@ -13,10 +13,11 @@ pub struct Config {
 pub type PartialRouteId = (usize,usize); // Route index and partial index into route
 pub type OverlapId = usize;
 pub type TrainId = usize;
+pub type SignalId = usize;
 
 pub struct PartialRoute {
-    pub entry: RouteEntryExit,
-    pub exit: RouteEntryExit,
+    pub entry: Option<SignalId>,
+    pub exit: Option<SignalId>,
     pub conflicts: Vec<Vec<(PartialRouteId, usize)>>, // ??
     pub wait_conflict :Option<OverlapId>,
     pub contains_nodes :Vec<NodeId>,

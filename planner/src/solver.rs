@@ -1,6 +1,6 @@
 use rolling::input::staticinfrastructure::{NodeId};
 use minisat::{*, symbolic::*};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use log::{debug};
 
 use crate::movement::*;
@@ -33,7 +33,7 @@ pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config, problem :&Problem, test
 
     debug!("Adding initial state");
     let mut states = Vec::new();
-    states.push(mk_state(&mut s, problem));
+    states.push(mk_state(&mut s, None, problem));
 
     loop {
         debug!("Solving with n={}.", states.len());
@@ -79,7 +79,7 @@ pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config, problem :&Problem, test
             failed_steps = failed_steps.map(|x| x+1);
             if increase {
                 debug!("Adding new state.");
-                states.push(mk_state(&mut s, problem));
+                states.push(mk_state(&mut s, states.last(), problem));
                 continue;
             } else {
                 break None;
@@ -89,7 +89,7 @@ pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config, problem :&Problem, test
 }
 
 
-fn mk_state(s :&mut Solver, problem :&Problem) -> State {
+fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> State {
     use std::iter::{once};
 
     // Each partial route can be occupied by a train,
@@ -112,6 +112,94 @@ fn mk_state(s :&mut Solver, problem :&Problem) -> State {
                     r2.occupation.has_value(&None),
                     !r2.overlap_choice.has_value(&confl_overlap)]);
                     
+            }
+        }
+    }
+    
+    // At most one alternative route is taken. 
+    // This means that 
+    //   (1) a train at a signal can only take one of the routes starting in that signal
+    //       in the same step. This should already be disallowed by conflicting routes,
+    //       but in case it is not, this constraint is needed to ensure train consistency.
+    //   (2) a train entering from a border can only do so at one place, because all of the
+    //       border entry train routes share the None value for their entry field.
+    //
+    for entry in problem.partial_routes.iter().map(|(_,r)| r.entry).collect::<HashSet<_>>() {
+        for (train_id,train) in &problem.trains {
+            s.assert_at_most_one(problem.partial_routes.iter()
+                     .filter(|(_,r)| r.entry == entry)
+                     .map(|(i,_)| partial_routes[i].occupation.has_value(&Some(*train_id))));
+        }
+    }
+
+    let did_activate = |s :&mut Solver, r :&PartialRouteId, t :&TrainId| 
+        s.and_literal(vec![       partial_routes[r].occupation.has_value(&Some(*t)),
+            prev_state.map(|p| !p.partial_routes[r].occupation.has_value(&Some(*t)))
+              .unwrap_or(true.into())]);
+
+    //
+    // Partial routes are allocated together.
+    //
+    for (train_id,train) in problem.trains.iter() {
+        for route_set in problem.elementary_routes.iter() {
+            for (r1,r2) in route_set.iter().zip(route_set.iter().skip(1)) {
+
+                let r1_activated = did_activate(s,r1,train_id);
+                let r2_activated = did_activate(s,r2,train_id);
+                s.equal(&r1_activated, &r2_activated);
+            }
+        }
+    }
+
+    //
+    // One of the conflict sets (overlap choices) might be excluded on allocation,
+    // which would then be the conflict set after timeout.
+    // 
+    for (train_id,train) in problem.trains.iter() {
+        for (rn,r) in partial_routes.iter() {
+            if let Some(confl) = problem.partial_routes[rn].wait_conflict {
+                let activated = did_activate(s, rn, train_id);
+                s.add_clause(vec![ !activated, !r.overlap_choice.has_value(&confl)]);
+            }
+        }
+    }
+
+
+    // TODO don't swing the overlap unless conflict
+
+    // Route allocation constraints:
+    //
+    // New allocations must have a preceding route active in the same step.
+    // Trains cannot swap places in one step.
+    //
+    for (train_id, train) in problem.trains.iter() {
+        for (rn,r) in partial_routes.iter() {
+            if let Some(signal) = problem.partial_routes[rn].entry {
+                let was_allocated = prev_state.map(|p|
+                   p.partial_routes[rn].occupation.has_value(&Some(*train_id)));
+                let not_allocated = Some(!r.occupation.has_value(&Some(*train_id)));
+                let prev_is_allocated = problem.partial_routes.iter()
+                    .filter(|(_,r)| r.exit == Some(signal))
+                    .map(|(id,_)| Some(partial_routes[id].occupation.has_value(&Some(*train_id))));
+
+                s.add_clause(once(not_allocated).chain(once(was_allocated)).chain(prev_is_allocated)
+                             .filter_map(|x| x));
+            }
+        }
+    }
+
+    // Route free constraints:
+    // 
+    // Can only free routes when train has sufficient length allocated ahead of 
+    // the route.  If this is the case, then the route _must_ also be freed to 
+    // ensure maximal progress.
+    //
+    if let Some(prev) = prev_state {
+        for (train_id, train) in problem.trains.iter() {
+            for (rn,r) in partial_routes.iter() {
+
+                //Bool::assert_equal_or(s, vec![
+
             }
         }
     }
