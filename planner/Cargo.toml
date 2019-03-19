@@ -1,0 +1,11 @@
+[package]
+name = "planner"
+version = "0.1.0"
+authors = ["Bjørnar Luteberget <luteberget@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+rolling = { path = "../rolling" }
+smallvec = "*"
+minisat = "*"
+log = "0.4"
