@@ -1,6 +1,6 @@
 use rolling::input::staticinfrastructure::{NodeId, RouteEntryExit};
 use crate::movement::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 
 // Plan interface
@@ -20,15 +20,15 @@ pub struct PartialRoute {
     pub exit: Option<SignalId>,
     pub conflicts: Vec<Vec<(PartialRouteId, usize)>>, // ??
     pub wait_conflict :Option<OverlapId>,
-    pub contains_nodes :Vec<NodeId>,
+    pub contains_nodes :HashSet<NodeId>,
     pub length: f32,
 }
 
-type ElementaryRoute = Vec<PartialRouteId>;
+type ElementaryRoute = HashSet<PartialRouteId>;
 
 pub struct Train {
     pub length: f32,
-    pub visits: Vec<Vec<NodeId>>,
+    pub visits: Vec<HashSet<NodeId>>,
     pub vehicle: Vehicle,
 }
 

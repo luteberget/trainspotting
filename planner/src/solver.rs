@@ -20,9 +20,9 @@ struct Occupation {
 }
 
 struct TrainState {
-    progress_before: Vec<(PartialRouteId, Lit)>,
-    born_before:     Lit,
-    visit_before:    Vec<(Vec<NodeId>, Lit)>,
+    progress_before: HashMap<PartialRouteId, Bool>,
+    born_before:     Bool,
+    visit_before:    Vec<Bool>,
 }
 
 
@@ -98,7 +98,7 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
         .map(|(name,r)| (*name,Occupation {
             occupation: Symbolic::new(s, 
               once(None).chain((0..problem.trains.len()).map(|x| Some(x))).collect()),
-            overlap_choice: Symbolic::new(s, (0..r.conflicts.len()-1).collect())
+            overlap_choice: Symbolic::new(s, (0..r.conflicts.len()).collect())
         })).collect();
 
     // Conflicting routes are excluded
@@ -194,20 +194,245 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     // the route.  If this is the case, then the route _must_ also be freed to 
     // ensure maximal progress.
     //
-    if let Some(prev) = prev_state {
+    if let Some(prev_state) = prev_state {
         for (train_id, train) in problem.trains.iter() {
             for (rn,r) in partial_routes.iter() {
 
-                //Bool::assert_equal_or(s, vec![
+                let freeable_paths = is_freeable_after(
+                    s, &problem.partial_routes[rn], &problem.partial_routes, 
+                    &prev_state.partial_routes, *train_id, train.length);
+                let free = s.or_literal(freeable_paths);
 
+                let was_occupied = prev_state.partial_routes[rn].occupation.has_value(&Some(*train_id));
+                let  is_occupied = r.occupation.has_value(&Some(*train_id));
+                Bool::assert_equal_or(s, vec![!was_occupied], &!free, &is_occupied);
             }
         }
     }
 
+    //
+    // Train state
+    //
+    //
+    let mut empty_prev_trains = None;
+    let prev_trains = if let Some(p) = prev_state { &p.trains } else {
+        empty_prev_trains = Some(problem.trains.iter().map(|(train_id,train)| {
+            (*train_id, TrainState {
+                progress_before: problem.partial_routes.iter().map(|(rn,_)| (*rn,false.into())).collect(),
+                born_before: false.into(),
+                visit_before: train.visits.iter().map(|_| false.into()).collect(),
+            })
+        }).collect());
 
-    let trains = unimplemented!();
+        empty_prev_trains.as_ref().unwrap()
+    };
 
-    State { partial_routes, trains }
+    // Forced progress: 
+    // each train needs to allocate unless it has deferred progress,
+    // which means that it will allocate something in the future after a conflict has been
+    // resolved. That is, it is currently yielding to a train (either another train or itself).
+
+    let mut trains_state = HashMap::new();
+    for (train_id, train) in problem.trains.iter() {
+        let mut r_pr = HashMap::new();
+        for (rn, progress_before) in prev_trains[train_id].progress_before.iter() {
+            if let Some(signal) = problem.partial_routes[rn].exit {
+                let is_allocated = partial_routes[rn].occupation.has_value(&Some(*train_id));
+
+                let progress_now = problem.partial_routes.iter()
+                    .filter(|(rn,r)| r.entry == Some(signal))
+                    .map(|(rn,_)| partial_routes[rn].occupation.has_value(&Some(*train_id)));
+
+                let progress_future = s.new_lit();
+
+                let mut alternatives = progress_now.collect::<Vec<_>>();
+                alternatives.push(progress_future);
+                alternatives.push(!is_allocated);
+                s.add_clause(alternatives);
+
+                if let Some(prev_state) = prev_state {
+                    let next_routes : Vec<_> = problem.partial_routes.iter()
+                        .filter(|(rn,r)| r.entry == Some(signal))
+                        .map(|(rn,r)| *rn).collect();
+                    let mut conflict_resolved = resolve_conflict_with(s, &problem.partial_routes,
+                          &problem.elementary_routes, *train_id, 
+                          &prev_state.partial_routes, &partial_routes,
+                          &next_routes);
+
+                    conflict_resolved.push(*progress_before);
+                    conflict_resolved.push(progress_future);
+                    s.add_clause(conflict_resolved);
+                }
+
+                r_pr.insert(*rn, !progress_future);
+            } else {
+                // Boundary exit routes do not require progress
+                r_pr.insert(*rn, true.into());
+            }
+        }
+
+
+        // Born: each train can only appear once.
+        let mut born_now_alternatives = Vec::new();
+        for (rn, r) in problem.partial_routes.iter() {
+            // Can the train be born here?
+            if r.contains_nodes.intersection(&train.visits[0]).nth(0).is_some() {
+                born_now_alternatives.push(did_activate(s, rn, train_id));
+            } else {
+                // Don't go here
+                s.add_clause(vec![ !partial_routes[rn].occupation.has_value(&Some(*train_id)) ]);
+            }
+        }
+        let born_before = prev_trains[train_id].born_before;
+        let born_now    = s.or_literal(born_now_alternatives);
+        let born_future = s.new_lit();
+        exactly_one(s, vec![born_before, born_now, born_future]);
+
+        if let Some(prev_state) = prev_state {
+            let birth_candidates = problem.partial_routes.iter()
+                .filter(|(rn,r)| r.contains_nodes.intersection(&train.visits[0]).nth(0).is_some())
+                .map(|(rn,r)| *rn).collect::<Vec<_>>();
+
+            let mut conflict_resolved =  resolve_conflict_with(s, &problem.partial_routes,
+                           &problem.elementary_routes, *train_id,
+                           &prev_state.partial_routes, &partial_routes,
+                           &birth_candidates);
+
+            conflict_resolved.push(!born_now);
+            s.add_clause(conflict_resolved);
+        }
+
+        // Visits:
+        // Each visit has to happen some time.
+        let mut train_visit = Vec::new();
+        for (i,visit_before) in prev_trains[train_id].visit_before.iter().enumerate() {
+            let alternative_nodes  = &problem.trains[train_id].visits[i];
+            let alternative_routes = problem.partial_routes.iter()
+                .filter(|(rn,r)| r.contains_nodes.intersection(alternative_nodes).nth(0).is_some())
+                .map(|(rn,r)| partial_routes[rn].occupation.has_value(&Some(*train_id)));
+
+            let visit_now = s.or_literal(alternative_routes);
+            let visit_future = s.new_lit();
+
+            s.add_clause(vec![*visit_before, visit_now, visit_future]);
+            train_visit.push(!visit_future);
+        }
+
+
+
+        trains_state.insert(*train_id, TrainState {
+            progress_before: r_pr,
+            born_before: !born_future,
+            visit_before: train_visit,
+        });
+
+    }
+    // Visits need to happen in order
+    for ord in problem.train_ord.iter() {
+        let (t1,v1) = &ord.a;
+        let (t2,v2) = &ord.b;
+
+        // if v2 happens now or before, v1 must have happened now of before.
+        // !v2_future => v1_before || v1_now
+        // !v2_future => !v1_future.
+
+        // This is an unfortunate naming, because visit_before refers to
+        // how the next_state will use the value. Actually it contains 
+        // !visit_future in this state.
+        let v1_future = !trains_state[t2].visit_before[*v2];
+        let v2_future = !trains_state[t1].visit_before[*v1];
+
+        s.add_clause(vec![v2_future, !v1_future]);
+    }
+
+    State { partial_routes, trains: trains_state }
+}
+
+fn exactly_one(s :&mut Solver, v :Vec<Bool>) {
+    s.assert_at_most_one(v.iter().cloned());
+    s.add_clause(v);
+}
+
+fn resolve_conflict_with(s :&mut Solver,
+                         problem_partial_routes :&HashMap<PartialRouteId, PartialRoute>,
+                         problem_elementary_routes :&Vec<HashSet<PartialRouteId>>,
+                         train_id :TrainId,
+                         prev_state :&HashMap<PartialRouteId, Occupation>,
+                              state :&HashMap<PartialRouteId, Occupation>,
+                         candidates :&[PartialRouteId]) -> Vec<Bool> {
+
+    let mut result = Vec::new();
+
+    for next_route in candidates {
+        let elementary_route :&HashSet<PartialRouteId> = problem_elementary_routes.iter()
+            .find(|x| x.contains(next_route)).unwrap();
+        let elementary_and_overlap = elementary_route.iter()
+            .flat_map(move |r| (0..problem_partial_routes[r].conflicts.len()).map(move |i| (r,i)));
+
+        for (new_route,new_overlap) in elementary_and_overlap {
+            // parts of a new route and overlap which we want to allocate,
+            // but have yielded for because of conflict in previous step.
+
+            let mut conflicts :HashSet<(PartialRouteId,Option<OverlapId>)>= HashSet::new();
+
+            // Any conflicting routes with new_route can be used to show yielding.
+            for (i,set) in problem_partial_routes[new_route].conflicts.iter().enumerate() {
+                for (conflicting_route,conflicting_overlap) in set {
+                    conflicts.insert((*conflicting_route, Some(*conflicting_overlap)));
+                }
+            }
+
+            // The route itself is conflicting with itself, with any overlap.
+            // TODO: is this new_route instead of next_route?
+            conflicts.insert((*new_route, None));
+
+
+            for (prev_route, opt_prev_overlap) in conflicts {
+                let had_conflict_route = !prev_state[&prev_route].occupation.has_value(&None);
+                let opt_had_conflict_overlap = opt_prev_overlap
+                    .map(|o| prev_state[&prev_route].overlap_choice.has_value(&o)).unwrap_or(true.into());
+
+                let was_allocated = prev_state[new_route].occupation.has_value(&Some(train_id));
+                let  is_allocated =      state[new_route].occupation.has_value(&Some(train_id));
+                let has_overlap   =      state[new_route].overlap_choice.has_value(&new_overlap);
+
+                result.push(s.and_literal(vec![
+                  had_conflict_route, 
+                  opt_had_conflict_overlap,
+                  !was_allocated,
+                  is_allocated,
+                  has_overlap]));
+            }
+        }
+    }
+
+    result
+}
+
+fn is_freeable_after(s :&mut Solver,
+                     r :&PartialRoute, 
+                     all_routes :&HashMap<PartialRouteId, PartialRoute>,
+                     partial_routes :&HashMap<PartialRouteId, Occupation>, 
+                     train_id :TrainId,
+                     remaining_length :f32) -> Vec<Bool> {
+    match r.exit {
+        None => return vec![true.into()],
+        Some(signal) => {
+            let mut alternatives = Vec::new();
+            for (next_route_id,next_route) in all_routes.iter().filter(|(_,r)| r.entry == Some(signal)) {
+                let occupied = partial_routes[next_route_id].occupation.has_value(&Some(train_id));
+                if next_route.length >= remaining_length {
+                    alternatives.push(occupied);
+                } else {
+                    let nexts = is_freeable_after(s, next_route, all_routes, partial_routes, train_id, 
+                                                  remaining_length - next_route.length);
+                    let any_next = s.or_literal(nexts);
+                    alternatives.push(s.and_literal(vec![ occupied, any_next ]));
+                }
+            }
+            alternatives
+        },
+    }
 }
 
 fn mk_schedule(model :&Model) -> RoutePlan {
