@@ -40,7 +40,7 @@ pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config, problem :&Problem, test
         if let Ok(model) = s.solve_under_assumptions(
             end_state_condition(states.last().unwrap())) {
 
-            let schedule = mk_schedule(&model);
+            let schedule = mk_schedule(&states, &model);
 
             // Built-in checks:
             // Loop check
@@ -165,7 +165,39 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     }
 
 
-    // TODO don't swing the overlap unless conflict
+    //
+    // Don't swing the overlap unless it is needed (someone need to use 
+    // a conflicting route)
+    //
+    if let Some(prev_state) = prev_state {
+        for (rn,r) in partial_routes.iter() {
+            let overlaps = r.overlap_choice.domain().cloned().collect::<Vec<_>>();
+            let overlap_pairs = overlaps.iter().flat_map(|a| overlaps.iter().map(move |b| (*a,*b)))
+                .filter(|(a,b)| a != b).collect::<Vec<_>>();
+
+            for (ol1,ol2) in overlap_pairs {
+
+                let mut clause = Vec::new();
+
+                clause.push(r.occupation.has_value(&None));                             // Is active
+                clause.push(prev_state.partial_routes[rn].occupation.has_value(&None)); // Was active
+
+                clause.push(!prev_state.partial_routes[rn].overlap_choice.has_value(&ol1));  // Switched 
+                clause.push(!r.overlap_choice.has_value(&ol2));                              // from ol1 to ol2.
+
+                let conflict_diff = problem.partial_routes[rn].conflicts[ol1].difference(
+                                   &problem.partial_routes[rn].conflicts[ol2]);
+                for (conflicting_route, conflicting_overlap) in conflict_diff {
+                    let using_conflicting = s.and_literal(vec![
+                            !partial_routes[conflicting_route].occupation.has_value(&None),
+                             partial_routes[conflicting_route].overlap_choice.has_value(conflicting_overlap)]);
+                    clause.push(using_conflicting);
+                }
+
+                s.add_clause(clause);
+            }
+        }
+    }
 
     // Route allocation constraints:
     //
@@ -383,9 +415,7 @@ fn resolve_conflict_with(s :&mut Solver,
             }
 
             // The route itself is conflicting with itself, with any overlap.
-            // TODO: is this new_route instead of next_route?
             conflicts.insert((*new_route, None));
-
 
             for (prev_route, opt_prev_overlap) in conflicts {
                 let had_conflict_route = !prev_state[&prev_route].occupation.has_value(&None);
@@ -435,22 +465,34 @@ fn is_freeable_after(s :&mut Solver,
     }
 }
 
-fn mk_schedule(model :&Model) -> RoutePlan {
-    unimplemented!()
+fn mk_schedule(states :&[State], model :&Model) -> RoutePlan {
+    states.iter().map(|state| {
+        state.partial_routes.iter().map(|(rn,r)| {
+            (*rn, *model.value(&r.occupation))
+        }).collect()
+    }).collect()
 }
 
 fn end_state_condition(state :&State) -> Vec<Bool> {
-    unimplemented!()
+    let mut condition = Vec::new();
+    for (train_id,ts) in state.trains.iter() {
+        condition.push(ts.born_before);
+        for v in &ts.visit_before { condition.push(*v); }
+        for (k,v) in &ts.progress_before { condition.push(*v); }
+    }
+    condition
 }
 
 pub struct Loop {}
 fn loop_check(plan :&RoutePlan) -> Result<(), Loop> {
-    unimplemented!()
+    // TODO
+    Ok(())
 }
 
 pub struct Repeat {}
 fn repeat_check(problem :&Problem, plan :&RoutePlan) -> Result<(), Repeat> {
-    unimplemented!()
+    // TODO
+    Ok(())
 }
 
 

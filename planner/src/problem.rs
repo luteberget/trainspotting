@@ -18,7 +18,7 @@ pub type SignalId = usize;
 pub struct PartialRoute {
     pub entry: Option<SignalId>,
     pub exit: Option<SignalId>,
-    pub conflicts: Vec<Vec<(PartialRouteId, usize)>>, // ??
+    pub conflicts: Vec<HashSet<(PartialRouteId, usize)>>, // ??
     pub wait_conflict :Option<OverlapId>,
     pub contains_nodes :HashSet<NodeId>,
     pub length: f32,
