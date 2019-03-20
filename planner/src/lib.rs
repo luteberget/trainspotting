@@ -1,3 +1,2 @@
-pub mod movement; // Spec input 
-pub mod problem;  // Other problem input 
+pub mod input; 
 pub mod solver;

@@ -3,8 +3,7 @@ use minisat::{*, symbolic::*};
 use std::collections::{HashMap, HashSet};
 use log::{debug};
 
-use crate::movement::*;
-use crate::problem::*;
+use crate::input::*;
 
 // State management types (private)
 

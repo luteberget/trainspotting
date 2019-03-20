@@ -1,5 +1,4 @@
 use rolling::input::staticinfrastructure::{NodeId, RouteEntryExit};
-use crate::movement::*;
 use std::collections::{HashMap, HashSet};
 
 
@@ -10,10 +9,11 @@ pub struct Config {
     pub n_after: usize,
 }
 
-pub type PartialRouteId = (usize,usize); // Route index and partial index into route
-pub type OverlapId = usize;
-pub type TrainId = usize;
-pub type SignalId = usize;
+pub type PartialRouteId = (usize,usize); // Index into Problem.partial_routes
+pub type OverlapId = usize; // index into PartialRoute.conflicts
+pub type TrainId = usize; // Index into Problem.trains
+pub type SignalId = usize; // Arbitrary identification for signals
+pub type VisitId = usize; // Index into Train.visits
 
 pub struct PartialRoute {
     pub entry: Option<SignalId>,
@@ -29,7 +29,17 @@ type ElementaryRoute = HashSet<PartialRouteId>;
 pub struct Train {
     pub length: f32,
     pub visits: Vec<HashSet<NodeId>>,
-    pub vehicle: Vehicle,
+    pub vehicle: Vehicle, // TODO only length/reference is needed?
+                          // Could instead parameterize VehicleId for library consumers
+                          //  (same with SignalId).
+}
+
+pub struct Vehicle {
+    pub name :String,
+    pub length :f32,
+    pub max_accel :f32,
+    pub max_brake :f32,
+    pub max_velocity :f32,
 }
 
 pub struct TrainOrd {
