@@ -274,8 +274,8 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
                 let is_allocated = partial_routes[rn].occupation.has_value(&Some(*train_id));
 
                 let progress_now = problem.partial_routes.iter()
-                    .filter(|(rn,r_next)| r_next.entry == problem.partial_routes[rn].exit)
-                    .map(|(rn,_)| partial_routes[rn].occupation.has_value(&Some(*train_id)));
+                    .filter(|(_,r_next)| r_next.entry == problem.partial_routes[rn].exit)
+                    .map(|(r2,_)| partial_routes[r2].occupation.has_value(&Some(*train_id)));
 
                 let progress_future = s.new_lit();
 
