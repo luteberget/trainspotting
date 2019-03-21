@@ -205,12 +205,12 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     //
     for (train_id, train) in problem.trains.iter() {
         for (rn,r) in partial_routes.iter() {
-            if let Some(signal) = problem.partial_routes[rn].entry {
+            if !problem.partial_routes[rn].entry.is_boundary() {
                 let was_allocated = prev_state.map(|p|
                    p.partial_routes[rn].occupation.has_value(&Some(*train_id)));
                 let not_allocated = Some(!r.occupation.has_value(&Some(*train_id)));
                 let prev_is_allocated = problem.partial_routes.iter()
-                    .filter(|(_,r)| r.exit == Some(signal))
+                    .filter(|(_,r_prev)| r_prev.exit == problem.partial_routes[rn].entry)
                     .map(|(id,_)| Some(partial_routes[id].occupation.has_value(&Some(*train_id))));
 
                 s.add_clause(once(not_allocated).chain(once(was_allocated)).chain(prev_is_allocated)
@@ -267,11 +267,14 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     for (train_id, train) in problem.trains.iter() {
         let mut r_pr = HashMap::new();
         for (rn, progress_before) in prev_trains[train_id].progress_before.iter() {
-            if let Some(signal) = problem.partial_routes[rn].exit {
+            if problem.partial_routes[rn].exit.is_boundary() {
+                // Boundary exit routes do not require progress
+                r_pr.insert(*rn, true.into());
+            } else {
                 let is_allocated = partial_routes[rn].occupation.has_value(&Some(*train_id));
 
                 let progress_now = problem.partial_routes.iter()
-                    .filter(|(rn,r)| r.entry == Some(signal))
+                    .filter(|(rn,r_next)| r_next.entry == problem.partial_routes[rn].exit)
                     .map(|(rn,_)| partial_routes[rn].occupation.has_value(&Some(*train_id)));
 
                 let progress_future = s.new_lit();
@@ -283,7 +286,7 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
 
                 if let Some(prev_state) = prev_state {
                     let next_routes : Vec<_> = problem.partial_routes.iter()
-                        .filter(|(rn,r)| r.entry == Some(signal))
+                        .filter(|(rn,r_next)| r_next.entry == problem.partial_routes[rn].exit)
                         .map(|(rn,r)| *rn).collect();
                     let mut conflict_resolved = resolve_conflict_with(s, &problem.partial_routes,
                           &problem.elementary_routes, *train_id, 
@@ -296,33 +299,41 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
                 }
 
                 r_pr.insert(*rn, !progress_future);
-            } else {
-                // Boundary exit routes do not require progress
-                r_pr.insert(*rn, true.into());
-            }
+            } 
         }
 
 
         // Born: each train can only appear once.
         let mut born_now_alternatives = Vec::new();
-        for (rn, r) in problem.partial_routes.iter() {
+        let first_visit_nodes = train.visits.get(0);
+
+        // TODO This section got a bit messy
+        for (rn, r) in problem.partial_routes.iter().filter(|(rn,r)| r.entry == SignalId::Boundary) {
             // Can the train be born here?
-            if r.contains_nodes.intersection(&train.visits[0]).nth(0).is_some() {
-                born_now_alternatives.push(did_activate(s, rn, train_id));
+            if let Some(first_visit_nodes) = first_visit_nodes {
+                if r.contains_nodes.intersection(first_visit_nodes).nth(0).is_some() {
+                    born_now_alternatives.push(did_activate(s, rn, train_id));
+                } else {
+                    // Don't go here ever.
+                    s.add_clause(vec![ !partial_routes[rn].occupation.has_value(&Some(*train_id)) ]);
+                }
             } else {
-                // Don't go here
-                s.add_clause(vec![ !partial_routes[rn].occupation.has_value(&Some(*train_id)) ]);
+                // There are no visits. That's strange, but then every route is allowed.
+                born_now_alternatives.push(did_activate(s, rn, train_id));
             }
         }
+
         let born_before = prev_trains[train_id].born_before;
         let born_now    = s.or_literal(born_now_alternatives);
         let born_future = s.new_lit();
         exactly_one(s, vec![born_before, born_now, born_future]);
 
         if let Some(prev_state) = prev_state {
-            let birth_candidates = problem.partial_routes.iter()
-                .filter(|(rn,r)| r.contains_nodes.intersection(&train.visits[0]).nth(0).is_some())
-                .map(|(rn,r)| *rn).collect::<Vec<_>>();
+            let birth_candidates = problem.partial_routes.iter().filter(|(rn,r)| r.entry == SignalId::Boundary);
+            let birth_candidates : Vec<_> = if let Some(first_visit_nodes) = first_visit_nodes {
+                    birth_candidates.filter(|(rn,r)| r.contains_nodes.intersection(first_visit_nodes).nth(0).is_some()).collect()
+                } else { birth_candidates.collect() };
+            let birth_candidates = birth_candidates.into_iter().map(|(rn,r)| *rn).collect::<Vec<_>>();
 
             let mut conflict_resolved =  resolve_conflict_with(s, &problem.partial_routes,
                            &problem.elementary_routes, *train_id,
@@ -444,23 +455,22 @@ fn is_freeable_after(s :&mut Solver,
                      partial_routes :&HashMap<PartialRouteId, Occupation>, 
                      train_id :TrainId,
                      remaining_length :f32) -> Vec<Bool> {
-    match r.exit {
-        None => return vec![true.into()],
-        Some(signal) => {
-            let mut alternatives = Vec::new();
-            for (next_route_id,next_route) in all_routes.iter().filter(|(_,r)| r.entry == Some(signal)) {
-                let occupied = partial_routes[next_route_id].occupation.has_value(&Some(train_id));
-                if next_route.length >= remaining_length {
-                    alternatives.push(occupied);
-                } else {
-                    let nexts = is_freeable_after(s, next_route, all_routes, partial_routes, train_id, 
-                                                  remaining_length - next_route.length);
-                    let any_next = s.or_literal(nexts);
-                    alternatives.push(s.and_literal(vec![ occupied, any_next ]));
-                }
+    if r.exit.is_boundary() {
+        vec![true.into()]
+    } else {
+        let mut alternatives = Vec::new();
+        for (next_route_id,next_route) in all_routes.iter().filter(|(_,r_next)| r_next.entry == r.exit) {
+            let occupied = partial_routes[next_route_id].occupation.has_value(&Some(train_id));
+            if next_route.length >= remaining_length {
+                alternatives.push(occupied);
+            } else {
+                let nexts = is_freeable_after(s, next_route, all_routes, partial_routes, train_id, 
+                                              remaining_length - next_route.length);
+                let any_next = s.or_literal(nexts);
+                alternatives.push(s.and_literal(vec![ occupied, any_next ]));
             }
-            alternatives
-        },
+        }
+        alternatives
     }
 }
 

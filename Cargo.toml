@@ -7,4 +7,5 @@ members = [
     "milelang",
     "livehtml",
     "diffsolver",
+    "planner",
 ]
