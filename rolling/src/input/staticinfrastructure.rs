@@ -60,7 +60,7 @@ pub enum StaticObject {
     TVDSection,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SwitchPosition {
     Left,
     Right,
@@ -73,7 +73,7 @@ pub enum SwitchPosition {
 
 pub type Routes<Ref> = HashMap<Ref, Route>;
 
-#[derive(Debug,Clone)]
+#[derive(Debug,Copy,Clone,PartialEq,Eq)]
 pub enum RouteEntryExit {
     Boundary(Option<NodeId>),
     Signal(ObjectId),

@@ -8,6 +8,12 @@ pub struct History {
     pub trains: Vec<(String, TrainParams, Vec<TrainLogEvent>)>,
 }
 
+impl Default for History {
+    fn default() -> History { 
+        History { inf: vec![], trains: vec![] }
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 pub enum RouteStatus {
     Pending, Active, Released,
@@ -16,20 +22,20 @@ pub enum RouteStatus {
 #[derive(Debug)]
 pub enum InfrastructureLogEvent {
     Wait(f64),
-    Route(usize,RouteStatus),
-    Authority(usize, Option<f64>),
-    Reserved(usize, bool),
-    Occupied(usize, bool),
-    Position(usize, SwitchPosition),
+    Route(usize,RouteStatus), // TODO route identification is wrong?
+    Authority(usize, Option<f64>), // signal objectid
+    Reserved(usize, bool), // tvd objectid
+    Occupied(usize, bool), // tvd objectid
+    Position(usize, SwitchPosition), // switch objectid
 }
 
 #[derive(Debug)]
 pub enum TrainLogEvent {
     Wait(f64),
-    Node(usize),
-    Edge(usize, Option<usize>),
-    Sight(usize, bool),
-    Move(f64, DriverAction, DistanceVelocity),
+    Node(usize), // refer to nodeid
+    Edge(usize, Option<usize>), // refer to two nodeid. if the second one is None then train is exiting model
+    Sight(usize, bool), // has sight to signal objectid
+    Move(f64, DriverAction, DistanceVelocity), 
 }
 
 /// Print one train node visits per line on the following format:
