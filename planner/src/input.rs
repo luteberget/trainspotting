@@ -1,4 +1,4 @@
-use rolling::input::staticinfrastructure::{NodeId, RouteEntryExit};
+use rolling::input::staticinfrastructure::{NodeId};
 use std::collections::{HashMap, HashSet};
 
 
@@ -7,6 +7,8 @@ use std::collections::{HashMap, HashSet};
 pub struct Config {
     pub n_before: usize,
     pub n_after: usize,
+    pub exact_n: Option<usize>,
+    pub optimize_signals: bool,
 }
 
 pub type PartialRouteId = (usize,usize); // Index into Problem.partial_routes
@@ -25,6 +27,13 @@ pub enum SignalId {
 impl SignalId {
     pub fn is_boundary(&self) -> bool {
         if let SignalId::Boundary = self { true } else { false }
+    }
+    pub fn is_signal(&self) -> bool {
+        if let SignalId::ExternalId(_) = self { true } else { false }
+    }
+
+    pub fn is_anonymous(&self) -> bool {
+        if let SignalId::Anonymous(_) = self { true } else { false }
     }
 }
 
@@ -53,9 +62,12 @@ pub struct TrainOrd {
 }
 
 #[derive(Debug)]
-pub struct Problem {
+pub struct Infrastructure {
     pub partial_routes: HashMap<PartialRouteId, PartialRoute>,
     pub elementary_routes: Vec<ElementaryRoute>,
+}
+
+pub struct Usage {
     pub trains: HashMap<TrainId,Train>,
     pub train_ord: Vec<TrainOrd>,
 }

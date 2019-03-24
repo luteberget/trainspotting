@@ -1,5 +1,5 @@
 use rolling::input::staticinfrastructure::{NodeId};
-use minisat::{*, symbolic::*};
+use minisat::{*, symbolic::*, unary::*};
 use std::collections::{HashMap, HashSet};
 use log::{debug};
 
@@ -9,76 +9,203 @@ use crate::input::*;
 
 
 struct State {
-    partial_routes: HashMap<PartialRouteId, Occupation>,
-    trains: HashMap<TrainId, TrainState>,
+    infrastructure: HashMap<PartialRouteId, InfrastructureState>,
+    trains: HashMap<TrainId, TrainsState>,
 }
 
-struct Occupation {
+struct InfrastructureState {
     occupation:     Symbolic<Option<TrainId>>,
     overlap_choice: Symbolic<OverlapId>,
 }
 
-struct TrainState {
+#[derive(Debug, Clone)]
+struct TrainsState {
     progress_before: HashMap<PartialRouteId, Bool>,
     born_before:     Bool,
     visit_before:    Vec<Bool>,
 }
 
 
+pub fn optimize_signals<F: Fn(usize, &RoutePlan) -> bool>(n_states :usize,
+                                                   relative_cost: usize,
+                                                   infrastructure :&Infrastructure,
+                                                   usages :&[Usage],
+                                                   test :F) -> Result<HashSet<SignalId>,String> {
+    let mut s = Solver::new();
+    use std::iter::once;
+    let all_signals = infrastructure.partial_routes.iter()
+        .flat_map(|(_,r)| once(r.entry).chain(once(r.exit)))
+        .filter(|e| e != &SignalId::Boundary).collect::<HashSet<_>>();
+    let active_signals :HashMap<SignalId,Bool> 
+        = all_signals.into_iter().map(|x| (x, s.new_lit())).collect();
 
-pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config, problem :&Problem, test :F) -> Option<RoutePlan> {
+    // First create each usage with n states.
+    let mut instances = Vec::new();
+    for usage in usages {
+        let mut states = Vec::new();
+        let mut prev_state = None;
+        for i in 0..n_states {
+            states.push(mk_state(&mut s, prev_state, infrastructure, usage, Some(&active_signals)));
+            prev_state = states.last();
+        }
+        instances.push(states);
+    }
+
+    let all_end_state_conditions = instances.iter().flat_map(|i| i.last().unwrap().trains.clone())
+        .collect::<HashMap<TrainId, TrainsState>>();
+    // Just add the end state conditions unconditionally since we're not doing incremental here
+    s.add_clause(end_state_condition(&all_end_state_conditions));
+
+    // try to solve basic, caller should already be convinced that this will work
+    let (n_signals,n_detectors) = 'testloop: loop {
+        if let Ok(model) = s.solve() {
+
+            for (i,(usage,instance)) in usages.iter().zip(instances.iter()).enumerate() {
+                let schedule = mk_schedule(&instance, &model);
+
+                // TODO loop check and repeat check
+                // User check: e.g. simulation
+                if !test(i, &schedule) {
+                    println!("User check failed.");
+                    disallow_schedule(&mut s, &schedule);
+                    continue 'testloop;
+                }
+
+            }
+
+            let n_signals = active_signals.iter()
+                .filter(|(s,_)| if let SignalId::ExternalId(_) = s { true } else { false })
+                .map(|(_,v)| model.value(v)).count();
+
+            let n_detectors = active_signals.iter()
+                .filter(|(s,_)| if let SignalId::Anonymous(_) = s { true } else { false })
+                .map(|(_,v)| model.value(v)).count();
+
+            break 'testloop (n_signals,n_detectors);
+        } else {
+            return Err(format!("In optimize_signals: SAT query failed unexpectedly."));
+        }
+    };
+
+    // try to optimize the number of signals
+    // first count the number of signals and detectors and make
+    // a truncated unary number containing the relative values
+
+    let signal_cost = active_signals.iter()
+        .filter(|(s,_)| if let SignalId::ExternalId(_) = s { true } else { false })
+        .map(|(_,v)| Unary::from_bool(*v).mul_const(relative_cost));
+
+    let detector_cost = active_signals.iter()
+        .filter(|(s,_)| if let SignalId::Anonymous(_) = s { true } else { false })
+        .map(|(_,v)| Unary::from_bool(*v));
+
+    let init_cost :usize = n_signals*relative_cost + n_detectors;
+    let costs = signal_cost.chain(detector_cost).collect::<Vec<Unary>>();
+    let sum_cost = Unary::sum_truncate(&mut s, costs, init_cost+1);
+
+    let bound : usize = {
+        // optimize
+        let (mut lo, mut hi) :(usize,usize) = (0,init_cost);
+
+        'testloop: loop {
+            let mid : usize = (lo + hi)/2;
+            println!("In optimize_signals: Solving with mid={}", mid);
+            if let Ok(model) = s.solve_under_assumptions(vec![sum_cost.lte_const(mid as isize)]) {
+                for (i,(usage,instance)) in usages.iter().zip(instances.iter()).enumerate() {
+                    let schedule = mk_schedule(&instance, &model);
+
+                    // TODO loop check and repeat check
+                    // User check: e.g. simulation
+                    if !test(i, &schedule) {
+                        println!("User check failed.");
+                        disallow_schedule(&mut s, &schedule);
+                        continue 'testloop;
+                    }
+
+                }
+
+                // sucess, lower hi bound
+                hi = mid;
+                s.add_clause(vec![sum_cost.lte_const(mid as isize)]);
+            }  else {
+                lo = mid;
+            }
+
+            if lo >= hi {
+                break 'testloop;
+            }
+        };
+
+        lo
+    };
+
+    // Get model
+    let redundant_signals = if let Ok(model) = s.solve_under_assumptions(vec![sum_cost.lte_const(bound as isize)]) {
+        active_signals.iter().filter_map(|(sig,val)| if !model.value(val) { Some(*sig) } else { None }).collect()
+    } else {
+            return Err(format!("In optimize_signals: SAT query failed unexpectedly."));
+    };
+
+    Ok(redundant_signals)
+}
+
+pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config, 
+                                        infrastructure :&Infrastructure,
+                                        usage :&Usage,
+                                        test :F) -> Option<RoutePlan> {
     let mut s = Solver::new();
     let mut failed_steps = None;
 
-    debug!("Adding initial state");
+
+    println!("Adding initial state");
     let mut states = Vec::new();
-    states.push(mk_state(&mut s, None, problem));
+    states.push(mk_state(&mut s, None, infrastructure, usage, None));
 
     loop {
-        debug!("Solving with n={}.", states.len());
+        println!("Solving with n={}.", states.len());
         if let Ok(model) = s.solve_under_assumptions(
-            end_state_condition(states.last().unwrap())) {
+            end_state_condition(&states.last().unwrap().trains)) {
 
             let schedule = mk_schedule(&states, &model);
 
             // Built-in checks:
             // Loop check
             if let Err(loop_) = loop_check(&schedule) {
-                debug!("Loop check failed. Removing loop.");
+                println!("Loop check failed. Removing loop.");
                 disallow_loop(&mut s, &loop_);
                 continue;
             } 
-            debug!("Loop check succeeded.");
+            println!("Loop check succeeded.");
             // Repeat check
-            if let Err(repeat) = repeat_check(&problem, &schedule) {
-                debug!("Repeat check failed. Removing.");
+            if let Err(repeat) = repeat_check(&infrastructure, &schedule) {
+                println!("Repeat check failed. Removing.");
                 disallow_repeat(&mut s, &repeat);
                 continue;
             }
-            debug!("Repeat check succeeded.");
+            println!("Repeat check succeeded.");
 
             // User check: e.g. simulation
             if !test(&schedule) {
-                debug!("User check failed.");
+                println!("User check failed.");
                 disallow_schedule(&mut s, &schedule);
                 continue;
             }
-            debug!("User check suceeded, returning resulting plan.");
+            println!("User check suceeded, returning resulting plan.");
             failed_steps = Some(0);
 
             // Everything is ok
             break Some(schedule);
 
         } else {
-            debug!("No more plans for n={}", states.len());
+            println!("No more plans for n={}", states.len());
             let increase = match failed_steps {
                 None => states.len() < config.n_before,
                 Some(f) => f < config.n_after,
             };
             failed_steps = failed_steps.map(|x| x+1);
             if increase {
-                debug!("Adding new state.");
-                states.push(mk_state(&mut s, states.last(), problem));
+                println!("Adding new state.");
+                states.push(mk_state(&mut s, states.last(), infrastructure, usage, None));
                 continue;
             } else {
                 break None;
@@ -88,23 +215,28 @@ pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config, problem :&Problem, test
 }
 
 
-fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> State {
+fn mk_state(s :&mut Solver, 
+            prev_state :Option<&State>, 
+            infrastructure :&Infrastructure,
+            usage :&Usage,
+            active_signals: Option<&HashMap<SignalId, Bool>>,
+            ) -> State  {
     use std::iter::{once};
 
     // Each partial route can be occupied by a train,
     // and if so, there is (might be) a choice of overlap.
-    let partial_routes :HashMap<PartialRouteId, Occupation> = problem.partial_routes.iter()
-        .map(|(name,r)| (*name,Occupation {
+    let inf_state :HashMap<PartialRouteId, InfrastructureState> = infrastructure.partial_routes.iter()
+        .map(|(name,r)| (*name,InfrastructureState {
             occupation: Symbolic::new(s, 
-              once(None).chain((0..problem.trains.len()).map(|x| Some(x))).collect()),
+              once(None).chain((0..usage.trains.len()).map(|x| Some(x))).collect()),
             overlap_choice: Symbolic::new(s, (0..r.conflicts.len()).collect())
         })).collect();
 
     // Conflicting routes are excluded
-    for (r1n,r1) in partial_routes.iter() {
+    for (r1n,r1) in inf_state.iter() {
         for overlap in r1.overlap_choice.domain() {
-            for (confl_r, confl_overlap) in &problem.partial_routes[r1n].conflicts[*overlap] {
-                let r2 = &partial_routes[confl_r];
+            for (confl_r, confl_overlap) in &infrastructure.partial_routes[r1n].conflicts[*overlap] {
+                let r2 = &inf_state[confl_r];
                 s.add_clause(vec![
                     r1.occupation.has_value(&None),
                     !r1.overlap_choice.has_value(&overlap),
@@ -123,24 +255,29 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     //   (2) a train entering from a border can only do so at one place, because all of the
     //       border entry train routes share the None value for their entry field.
     //
-    for entry in problem.partial_routes.iter().map(|(_,r)| r.entry).collect::<HashSet<_>>() {
-        for (train_id,train) in &problem.trains {
-            s.assert_at_most_one(problem.partial_routes.iter()
+    for entry in infrastructure.partial_routes.iter().map(|(_,r)| r.entry).collect::<HashSet<_>>() {
+        for (train_id,train) in &usage.trains {
+            s.assert_at_most_one(infrastructure.partial_routes.iter()
                      .filter(|(_,r)| r.entry == entry)
-                     .map(|(i,_)| partial_routes[i].occupation.has_value(&Some(*train_id))));
+                     .map(|(i,_)| inf_state[i].occupation.has_value(&Some(*train_id))));
         }
     }
 
     let did_activate = |s :&mut Solver, r :&PartialRouteId, t :&TrainId| 
-        s.and_literal(vec![       partial_routes[r].occupation.has_value(&Some(*t)),
-            prev_state.map(|p| !p.partial_routes[r].occupation.has_value(&Some(*t)))
+        s.and_literal(vec![            inf_state[r].occupation.has_value(&Some(*t)),
+            prev_state.map(|p| !p.infrastructure[r].occupation.has_value(&Some(*t)))
               .unwrap_or(true.into())]);
+
+    let did_deactivate = |s :&mut Solver, r :&PartialRouteId, t :&TrainId| 
+        s.and_literal(vec![          !inf_state[r].occupation.has_value(&Some(*t)),
+            prev_state.map(|p| p.infrastructure[r].occupation.has_value(&Some(*t)))
+              .unwrap_or(false.into())]);
 
     //
     // Partial routes are allocated together.
     //
-    for (train_id,train) in problem.trains.iter() {
-        for route_set in problem.elementary_routes.iter() {
+    for (train_id,train) in usage.trains.iter() {
+        for route_set in infrastructure.elementary_routes.iter() {
             for (r1,r2) in route_set.iter().zip(route_set.iter().skip(1)) {
 
                 let r1_activated = did_activate(s,r1,train_id);
@@ -154,9 +291,9 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     // One of the conflict sets (overlap choices) might be excluded on allocation,
     // which would then be the conflict set after timeout.
     // 
-    for (train_id,train) in problem.trains.iter() {
-        for (rn,r) in partial_routes.iter() {
-            if let Some(confl) = problem.partial_routes[rn].wait_conflict {
+    for (train_id,train) in usage.trains.iter() {
+        for (rn,r) in inf_state.iter() {
+            if let Some(confl) = infrastructure.partial_routes[rn].wait_conflict {
                 let activated = did_activate(s, rn, train_id);
                 s.add_clause(vec![ !activated, !r.overlap_choice.has_value(&confl)]);
             }
@@ -169,7 +306,7 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     // a conflicting route)
     //
     if let Some(prev_state) = prev_state {
-        for (rn,r) in partial_routes.iter() {
+        for (rn,r) in inf_state.iter() {
             let overlaps = r.overlap_choice.domain().cloned().collect::<Vec<_>>();
             let overlap_pairs = overlaps.iter().flat_map(|a| overlaps.iter().map(move |b| (*a,*b)))
                 .filter(|(a,b)| a != b).collect::<Vec<_>>();
@@ -179,17 +316,17 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
                 let mut clause = Vec::new();
 
                 clause.push(r.occupation.has_value(&None));                             // Is active
-                clause.push(prev_state.partial_routes[rn].occupation.has_value(&None)); // Was active
+                clause.push(prev_state.infrastructure[rn].occupation.has_value(&None)); // Was active
 
-                clause.push(!prev_state.partial_routes[rn].overlap_choice.has_value(&ol1));  // Switched 
+                clause.push(!prev_state.infrastructure[rn].overlap_choice.has_value(&ol1));  // Switched 
                 clause.push(!r.overlap_choice.has_value(&ol2));                              // from ol1 to ol2.
 
-                let conflict_diff = problem.partial_routes[rn].conflicts[ol1].difference(
-                                   &problem.partial_routes[rn].conflicts[ol2]);
+                let conflict_diff = infrastructure.partial_routes[rn].conflicts[ol1].difference(
+                                   &infrastructure.partial_routes[rn].conflicts[ol2]);
                 for (conflicting_route, conflicting_overlap) in conflict_diff {
                     let using_conflicting = s.and_literal(vec![
-                            !partial_routes[conflicting_route].occupation.has_value(&None),
-                             partial_routes[conflicting_route].overlap_choice.has_value(conflicting_overlap)]);
+                            !inf_state[conflicting_route].occupation.has_value(&None),
+                             inf_state[conflicting_route].overlap_choice.has_value(conflicting_overlap)]);
                     clause.push(using_conflicting);
                 }
 
@@ -203,18 +340,83 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     // New allocations must have a preceding route active in the same step.
     // Trains cannot swap places in one step.
     //
-    for (train_id, train) in problem.trains.iter() {
-        for (rn,r) in partial_routes.iter() {
-            if !problem.partial_routes[rn].entry.is_boundary() {
+    for (train_id, train) in usage.trains.iter() {
+        for (rn,r) in inf_state.iter() {
+            if !infrastructure.partial_routes[rn].entry.is_boundary() {
                 let was_allocated = prev_state.map(|p|
-                   p.partial_routes[rn].occupation.has_value(&Some(*train_id)));
+                   p.infrastructure[rn].occupation.has_value(&Some(*train_id)));
                 let not_allocated = Some(!r.occupation.has_value(&Some(*train_id)));
-                let prev_is_allocated = problem.partial_routes.iter()
-                    .filter(|(_,r_prev)| r_prev.exit == problem.partial_routes[rn].entry)
-                    .map(|(id,_)| Some(partial_routes[id].occupation.has_value(&Some(*train_id))));
+                let prev_is_allocated = infrastructure.partial_routes.iter()
+                    .filter(|(_,r_prev)| r_prev.exit == infrastructure.partial_routes[rn].entry)
+                    .map(|(id,_)| Some(inf_state[id].occupation.has_value(&Some(*train_id)))).collect::<Vec<_>>();
 
-                s.add_clause(once(not_allocated).chain(once(was_allocated)).chain(prev_is_allocated)
+                s.add_clause(once(not_allocated).chain(once(was_allocated)).chain(prev_is_allocated.iter().cloned())
                              .filter_map(|x| x));
+            }
+        }
+    }
+
+    // Signal active: is false if two consecutive partial routes separated by a signal
+    // are always activated together:   equal_or(signal_used, did_activate(sig), did_activate(sig))
+    if let Some(active_signals) = active_signals {
+        let starts_in : HashMap<SignalId, HashSet<PartialRouteId>> = active_signals
+            .iter().filter(|(sig,_)| sig.is_signal())
+            .map(|(sig,_)| (*sig, infrastructure.partial_routes.iter()
+                 .filter(|(_,r)| r.entry == *sig)
+                 .map(|(n,_)| *n).collect())).collect();
+
+        let ends_in : HashMap<SignalId, HashSet<PartialRouteId>> = active_signals
+            .iter().filter(|(sig,_)| sig.is_signal())
+            .map(|(sig,_)| (*sig, infrastructure.partial_routes.iter()
+                 .filter(|(_,r)| r.exit == *sig)
+                 .map(|(n,_)| *n).collect())).collect();
+
+        for (t,_) in usage.trains.iter() {
+            for (sig,is_active) in active_signals.iter().filter(|(sig,_)| sig.is_signal()) {
+                // is any route ending in this signal activated?
+                let end_activated_alternatives = ends_in[sig].iter()
+                    .map(|r| did_activate(s, r, t)).collect::<Vec<_>>();
+                let end_activated = s.or_literal(end_activated_alternatives);
+                // is any route beginning in this signal activated?
+                let start_activated_alternatives = starts_in[sig].iter()
+                    .map(|r| did_activate(s, r, t)).collect::<Vec<_>>();
+                let start_activated = s.or_literal(start_activated_alternatives);
+
+                Bool::assert_equal_or(s, vec![*is_active], &end_activated, &start_activated);
+            }
+        }
+    }
+
+    // Detector active: ?
+    if let Some(active_signals) = active_signals {
+        let starts_in : HashMap<SignalId, HashSet<PartialRouteId>> = active_signals
+            .iter().filter(|(sig,_)| !sig.is_boundary())
+            .map(|(sig,_)| (*sig, infrastructure.partial_routes.iter()
+                 .filter(|(_,r)| r.entry == *sig)
+                 .map(|(n,_)| *n).collect())).collect();
+
+        let ends_in : HashMap<SignalId, HashSet<PartialRouteId>> = active_signals
+            .iter().filter(|(sig,_)| !sig.is_boundary())
+            .map(|(sig,_)| (*sig, infrastructure.partial_routes.iter()
+                 .filter(|(_,r)| r.exit == *sig)
+                 .map(|(n,_)| *n).collect())).collect();
+
+        for (t,_) in usage.trains.iter() {
+            for (sig,is_active) in active_signals.iter().filter(|(sig,_)| sig.is_signal()) {
+
+                // is any route ending in this signal deactivated?
+                let end_deactivated_alternatives = ends_in[sig].iter()
+                    .map(|r| did_deactivate(s, r, t)).collect::<Vec<_>>();
+                let end_deactivated = s.or_literal(end_deactivated_alternatives);
+
+
+                // is any route beginning in this signal deactivated?
+                let start_deactivated_alternatives = starts_in[sig].iter()
+                    .map(|r| did_deactivate(s, r, t)).collect::<Vec<_>>();
+                let start_deactivated = s.or_literal(start_deactivated_alternatives);
+
+
+                Bool::assert_equal_or(s, vec![*is_active], &end_deactivated, &start_deactivated);
             }
         }
     }
@@ -226,15 +428,15 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     // ensure maximal progress.
     //
     if let Some(prev_state) = prev_state {
-        for (train_id, train) in problem.trains.iter() {
-            for (rn,r) in partial_routes.iter() {
+        for (train_id, train) in usage.trains.iter() {
+            for (rn,r) in inf_state.iter() {
 
                 let freeable_paths = is_freeable_after(
-                    s, &problem.partial_routes[rn], &problem.partial_routes, 
-                    &prev_state.partial_routes, *train_id, train.length);
+                    s, &infrastructure.partial_routes[rn], &infrastructure.partial_routes, 
+                    &prev_state.infrastructure, active_signals, *train_id, train.length);
                 let free = s.or_literal(freeable_paths);
 
-                let was_occupied = prev_state.partial_routes[rn].occupation.has_value(&Some(*train_id));
+                let was_occupied = prev_state.infrastructure[rn].occupation.has_value(&Some(*train_id));
                 let  is_occupied = r.occupation.has_value(&Some(*train_id));
                 Bool::assert_equal_or(s, vec![!was_occupied], &!free, &is_occupied);
             }
@@ -247,9 +449,9 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     //
     let mut empty_prev_trains = None;
     let prev_trains = if let Some(p) = prev_state { &p.trains } else {
-        empty_prev_trains = Some(problem.trains.iter().map(|(train_id,train)| {
-            (*train_id, TrainState {
-                progress_before: problem.partial_routes.iter().map(|(rn,_)| (*rn,false.into())).collect(),
+        empty_prev_trains = Some(usage.trains.iter().map(|(train_id,train)| {
+            (*train_id, TrainsState {
+                progress_before: infrastructure.partial_routes.iter().map(|(rn,_)| (*rn,false.into())).collect(),
                 born_before: false.into(),
                 visit_before: train.visits.iter().map(|_| false.into()).collect(),
             })
@@ -264,18 +466,18 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
     // resolved. That is, it is currently yielding to a train (either another train or itself).
 
     let mut trains_state = HashMap::new();
-    for (train_id, train) in problem.trains.iter() {
+    for (train_id, train) in usage.trains.iter() {
         let mut r_pr = HashMap::new();
         for (rn, progress_before) in prev_trains[train_id].progress_before.iter() {
-            if problem.partial_routes[rn].exit.is_boundary() {
+            if infrastructure.partial_routes[rn].exit.is_boundary() {
                 // Boundary exit routes do not require progress
                 r_pr.insert(*rn, true.into());
             } else {
-                let is_allocated = partial_routes[rn].occupation.has_value(&Some(*train_id));
+                let is_allocated = inf_state[rn].occupation.has_value(&Some(*train_id));
 
-                let progress_now = problem.partial_routes.iter()
-                    .filter(|(_,r_next)| r_next.entry == problem.partial_routes[rn].exit)
-                    .map(|(r2,_)| partial_routes[r2].occupation.has_value(&Some(*train_id)));
+                let progress_now = infrastructure.partial_routes.iter()
+                    .filter(|(_,r_next)| r_next.entry == infrastructure.partial_routes[rn].exit)
+                    .map(|(r2,_)| inf_state[r2].occupation.has_value(&Some(*train_id)));
 
                 let progress_future = s.new_lit();
 
@@ -285,12 +487,12 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
                 s.add_clause(alternatives);
 
                 if let Some(prev_state) = prev_state {
-                    let next_routes : Vec<_> = problem.partial_routes.iter()
-                        .filter(|(rn,r_next)| r_next.entry == problem.partial_routes[rn].exit)
+                    let next_routes : Vec<_> = infrastructure.partial_routes.iter()
+                        .filter(|(rn,r_next)| r_next.entry == infrastructure.partial_routes[rn].exit)
                         .map(|(rn,r)| *rn).collect();
-                    let mut conflict_resolved = resolve_conflict_with(s, &problem.partial_routes,
-                          &problem.elementary_routes, *train_id, 
-                          &prev_state.partial_routes, &partial_routes,
+                    let mut conflict_resolved = resolve_conflict_with(s, &infrastructure.partial_routes,
+                          &infrastructure.elementary_routes, *train_id, 
+                          &prev_state.infrastructure, &inf_state,
                           &next_routes);
 
                     conflict_resolved.push(*progress_before);
@@ -308,14 +510,14 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
         let first_visit_nodes = train.visits.get(0);
 
         // TODO This section got a bit messy
-        for (rn, r) in problem.partial_routes.iter().filter(|(rn,r)| r.entry == SignalId::Boundary) {
+        for (rn, r) in infrastructure.partial_routes.iter().filter(|(rn,r)| r.entry == SignalId::Boundary) {
             // Can the train be born here?
             if let Some(first_visit_nodes) = first_visit_nodes {
                 if r.contains_nodes.intersection(first_visit_nodes).nth(0).is_some() {
                     born_now_alternatives.push(did_activate(s, rn, train_id));
                 } else {
                     // Don't go here ever.
-                    s.add_clause(vec![ !partial_routes[rn].occupation.has_value(&Some(*train_id)) ]);
+                    s.add_clause(vec![ !inf_state[rn].occupation.has_value(&Some(*train_id)) ]);
                 }
             } else {
                 // There are no visits. That's strange, but then every route is allowed.
@@ -329,15 +531,15 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
         exactly_one(s, vec![born_before, born_now, born_future]);
 
         if let Some(prev_state) = prev_state {
-            let birth_candidates = problem.partial_routes.iter().filter(|(rn,r)| r.entry == SignalId::Boundary);
+            let birth_candidates = infrastructure.partial_routes.iter().filter(|(rn,r)| r.entry == SignalId::Boundary);
             let birth_candidates : Vec<_> = if let Some(first_visit_nodes) = first_visit_nodes {
                     birth_candidates.filter(|(rn,r)| r.contains_nodes.intersection(first_visit_nodes).nth(0).is_some()).collect()
                 } else { birth_candidates.collect() };
             let birth_candidates = birth_candidates.into_iter().map(|(rn,r)| *rn).collect::<Vec<_>>();
 
-            let mut conflict_resolved =  resolve_conflict_with(s, &problem.partial_routes,
-                           &problem.elementary_routes, *train_id,
-                           &prev_state.partial_routes, &partial_routes,
+            let mut conflict_resolved =  resolve_conflict_with(s, &infrastructure.partial_routes,
+                           &infrastructure.elementary_routes, *train_id,
+                           &prev_state.infrastructure, &inf_state,
                            &birth_candidates);
 
             conflict_resolved.push(!born_now);
@@ -348,10 +550,10 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
         // Each visit has to happen some time.
         let mut train_visit = Vec::new();
         for (i,visit_before) in prev_trains[train_id].visit_before.iter().enumerate() {
-            let alternative_nodes  = &problem.trains[train_id].visits[i];
-            let alternative_routes = problem.partial_routes.iter()
+            let alternative_nodes  = &usage.trains[train_id].visits[i];
+            let alternative_routes = infrastructure.partial_routes.iter()
                 .filter(|(rn,r)| r.contains_nodes.intersection(alternative_nodes).nth(0).is_some())
-                .map(|(rn,r)| partial_routes[rn].occupation.has_value(&Some(*train_id)));
+                .map(|(rn,r)| inf_state[rn].occupation.has_value(&Some(*train_id)));
 
             let visit_now = s.or_literal(alternative_routes);
             let visit_future = s.new_lit();
@@ -362,7 +564,7 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
 
 
 
-        trains_state.insert(*train_id, TrainState {
+        trains_state.insert(*train_id, TrainsState {
             progress_before: r_pr,
             born_before: !born_future,
             visit_before: train_visit,
@@ -370,7 +572,7 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
 
     }
     // Visits need to happen in order
-    for ord in problem.train_ord.iter() {
+    for ord in usage.train_ord.iter() {
         let (t1,v1) = &ord.a;
         let (t2,v2) = &ord.b;
 
@@ -387,7 +589,8 @@ fn mk_state(s :&mut Solver, prev_state :Option<&State>, problem :&Problem) -> St
         s.add_clause(vec![v2_future, !v1_future]);
     }
 
-    State { partial_routes, trains: trains_state }
+    println!("mk_state: Trains state {:?}", trains_state);
+    State { infrastructure: inf_state, trains: trains_state }
 }
 
 fn exactly_one(s :&mut Solver, v :Vec<Bool>) {
@@ -399,8 +602,8 @@ fn resolve_conflict_with(s :&mut Solver,
                          problem_partial_routes :&HashMap<PartialRouteId, PartialRoute>,
                          problem_elementary_routes :&Vec<HashSet<PartialRouteId>>,
                          train_id :TrainId,
-                         prev_state :&HashMap<PartialRouteId, Occupation>,
-                              state :&HashMap<PartialRouteId, Occupation>,
+                         prev_state :&HashMap<PartialRouteId, InfrastructureState>,
+                              state :&HashMap<PartialRouteId, InfrastructureState>,
                          candidates :&[PartialRouteId]) -> Vec<Bool> {
 
     let mut result = Vec::new();
@@ -452,7 +655,8 @@ fn resolve_conflict_with(s :&mut Solver,
 fn is_freeable_after(s :&mut Solver,
                      r :&PartialRoute, 
                      all_routes :&HashMap<PartialRouteId, PartialRoute>,
-                     partial_routes :&HashMap<PartialRouteId, Occupation>, 
+                     partial_routes :&HashMap<PartialRouteId, InfrastructureState>, 
+                     active_signals: Option<&HashMap<SignalId, Bool>>,
                      train_id :TrainId,
                      remaining_length :f32) -> Vec<Bool> {
     if r.exit.is_boundary() {
@@ -461,13 +665,24 @@ fn is_freeable_after(s :&mut Solver,
         let mut alternatives = Vec::new();
         for (next_route_id,next_route) in all_routes.iter().filter(|(_,r_next)| r_next.entry == r.exit) {
             let occupied = partial_routes[next_route_id].occupation.has_value(&Some(train_id));
+
+            let detector_works = active_signals.map(|m| m[&r.exit]).unwrap_or(true.into());
             if next_route.length >= remaining_length {
                 alternatives.push(occupied);
             } else {
-                let nexts = is_freeable_after(s, next_route, all_routes, partial_routes, train_id, 
-                                              remaining_length - next_route.length);
+                let nexts = is_freeable_after(s, next_route, all_routes, partial_routes, 
+                                              active_signals, train_id, remaining_length - next_route.length);
                 let any_next = s.or_literal(nexts);
-                alternatives.push(s.and_literal(vec![ occupied, any_next ]));
+                alternatives.push(s.and_literal(vec![ detector_works,  occupied, any_next ]));
+
+                // TODO this might do infinite loops on looping infrastructure (use memoization?)
+                if let Some(active_signals) = active_signals {
+                    let nexts_deactivated = 
+                        is_freeable_after(s, next_route, all_routes, partial_routes, 
+                                          Some(active_signals), train_id, remaining_length);
+                    let any_next_deactivated = s.or_literal(nexts_deactivated);
+                    alternatives.push(s.and_literal(vec![ !detector_works, occupied, any_next_deactivated ]));
+                }
             }
         }
         alternatives
@@ -476,15 +691,15 @@ fn is_freeable_after(s :&mut Solver,
 
 fn mk_schedule(states :&[State], model :&Model) -> RoutePlan {
     states.iter().map(|state| {
-        state.partial_routes.iter().map(|(rn,r)| {
+        state.infrastructure.iter().map(|(rn,r)| {
             (*rn, *model.value(&r.occupation))
         }).collect()
     }).collect()
 }
 
-fn end_state_condition(state :&State) -> Vec<Bool> {
+fn end_state_condition(trains :&HashMap<TrainId, TrainsState>) -> Vec<Bool> {
     let mut condition = Vec::new();
-    for (train_id,ts) in state.trains.iter() {
+    for (train_id,ts) in trains.iter() {
         condition.push(ts.born_before);
         for v in &ts.visit_before { condition.push(*v); }
         for (k,v) in &ts.progress_before { condition.push(*v); }
@@ -499,7 +714,7 @@ fn loop_check(plan :&RoutePlan) -> Result<(), Loop> {
 }
 
 pub struct Repeat {}
-fn repeat_check(problem :&Problem, plan :&RoutePlan) -> Result<(), Repeat> {
+fn repeat_check(problem :&Infrastructure, plan :&RoutePlan) -> Result<(), Repeat> {
     // TODO
     Ok(())
 }
