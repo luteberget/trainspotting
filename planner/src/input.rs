@@ -67,6 +67,7 @@ pub struct Infrastructure {
     pub elementary_routes: Vec<ElementaryRoute>,
 }
 
+#[derive(Debug)]
 pub struct Usage {
     pub trains: HashMap<TrainId,Train>,
     pub train_ord: Vec<TrainOrd>,

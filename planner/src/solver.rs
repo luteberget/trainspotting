@@ -26,6 +26,7 @@ struct TrainsState {
 }
 
 
+
 pub fn optimize_signals<F: Fn(usize, &RoutePlan) -> bool>(n_states :usize,
                                                    relative_cost: usize,
                                                    infrastructure :&Infrastructure,
