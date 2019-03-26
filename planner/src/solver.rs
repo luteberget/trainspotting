@@ -26,129 +26,201 @@ struct TrainsState {
 }
 
 
+pub struct SignalOptimizer<'a> {
+    solver :Solver,
+    active_signals :HashMap<SignalId, Bool>,
+    states :Vec<Vec<State>>,
+    infrastructure :&'a Infrastructure,
+    usages :&'a [Usage],
+    current_signals :Option<HashSet<SignalId>>,
+    last_signal_set_lit :Option<Bool>,
+}
 
-pub fn optimize_signals<F: Fn(usize, &RoutePlan) -> bool>(n_states :usize,
-                                                   relative_cost: usize,
-                                                   infrastructure :&Infrastructure,
-                                                   usages :&[Usage],
-                                                   test :F) -> Result<HashSet<SignalId>,String> {
-    let mut s = Solver::new();
-    use std::iter::once;
-    let all_signals = infrastructure.partial_routes.iter()
-        .flat_map(|(_,r)| once(r.entry).chain(once(r.exit)))
-        .filter(|e| e != &SignalId::Boundary).collect::<HashSet<_>>();
-    let active_signals :HashMap<SignalId,Bool> 
-        = all_signals.into_iter().map(|x| (x, s.new_lit())).collect();
+impl<'a> SignalOptimizer<'a> {
+    pub fn new(inf :&'a Infrastructure, usages :&'a [Usage]) -> SignalOptimizer<'a> {
+        let mut solver = Solver::new();
 
-    // First create each usage with n states.
-    let mut instances = Vec::new();
-    for usage in usages {
-        let mut states = Vec::new();
-        let mut prev_state = None;
-        for i in 0..n_states {
-            states.push(mk_state(&mut s, prev_state, infrastructure, usage, Some(&active_signals)));
-            prev_state = states.last();
-        }
-        instances.push(states);
+        use std::iter::once;
+        let all_signals = inf.partial_routes.iter()
+            .flat_map(|(_,r)| once(r.entry).chain(once(r.exit)))
+            .filter(|e| e != &SignalId::Boundary).collect::<HashSet<_>>();
+        let active_signals :HashMap<SignalId,Bool>
+            = all_signals.into_iter().map(|x| (x, solver.new_lit())).collect();
+
+
+        let mut s = SignalOptimizer {
+            solver,
+            active_signals,
+            states: (0..usages.len()).map(|_| vec![]).collect(),
+            infrastructure: inf,
+            usages,
+            current_signals: None,
+            last_signal_set_lit: None,
+        };
+        //
+        // add the first state
+        s.add_state();
+        s
     }
 
-    let all_end_state_conditions = instances.iter().flat_map(|i| i.last().unwrap().trains.clone())
-        .collect::<HashMap<TrainId, TrainsState>>();
-    // Just add the end state conditions unconditionally since we're not doing incremental here
-    s.add_clause(end_state_condition(&all_end_state_conditions));
-
-    // try to solve basic, caller should already be convinced that this will work
-    let (n_signals,n_detectors) = 'testloop: loop {
-        if let Ok(model) = s.solve() {
-
-            for (i,(usage,instance)) in usages.iter().zip(instances.iter()).enumerate() {
-                let schedule = mk_schedule(&instance, &model);
-
-                // TODO loop check and repeat check
-                // User check: e.g. simulation
-                if !test(i, &schedule) {
-                    println!("User check failed.");
-                    disallow_schedule(&mut s, &schedule);
-                    continue 'testloop;
-                }
-
-            }
-
-            let n_signals = active_signals.iter()
-                .filter(|(s,_)| if let SignalId::ExternalId(_) = s { true } else { false })
-                .map(|(_,v)| model.value(v)).count();
-
-            let n_detectors = active_signals.iter()
-                .filter(|(s,_)| if let SignalId::Anonymous(_) = s { true } else { false })
-                .map(|(_,v)| model.value(v)).count();
-
-            break 'testloop (n_signals,n_detectors);
-        } else {
-            return Err(format!("In optimize_signals: SAT query failed unexpectedly."));
+    pub fn add_state(&mut self) {
+        for (usage_idx,usage) in self.usages.iter().enumerate() {
+            let prev_state = self.states[usage_idx].last();
+            let new_state = mk_state(&mut self.solver, prev_state, 
+                       &self.infrastructure, usage,
+                       Some(&self.active_signals));
+            self.states.get_mut(usage_idx).unwrap().push(new_state);
         }
-    };
+    }
 
-    // try to optimize the number of signals
-    // first count the number of signals and detectors and make
-    // a truncated unary number containing the relative values
+    pub fn next_signal_set(&'a mut self) -> Option<SignalSet<'a>> {
+        use std::iter::once;
+        // TODO parameter
+        let relative_cost :usize = 3;
 
-    let signal_cost = active_signals.iter()
-        .filter(|(s,_)| if let SignalId::ExternalId(_) = s { true } else { false })
-        .map(|(_,v)| Unary::from_bool(*v).mul_const(relative_cost));
+        // If we have already found a set of signals, exclude that one
+        if let Some(prev) = self.last_signal_set_lit.take() {
+            self.solver.add_clause(once(!prev));
+        }
 
-    let detector_cost = active_signals.iter()
-        .filter(|(s,_)| if let SignalId::Anonymous(_) = s { true } else { false })
-        .map(|(_,v)| Unary::from_bool(*v));
+        // see if we can solve it now
+        'next: loop {
+            let all_end_state_conditions = self.states.iter()
+                .flat_map(|i| i.last().unwrap().trains.clone()) 
+                .collect::<HashMap<TrainId, TrainsState>>();
 
-    let init_cost :usize = n_signals*relative_cost + n_detectors;
-    let costs = signal_cost.chain(detector_cost).collect::<Vec<Unary>>();
-    let sum_cost = Unary::sum_truncate(&mut s, costs, init_cost+1);
+            let assumption = end_state_condition(&all_end_state_conditions);
+            let (n_signals, n_detectors) = 
+                if let Ok(model) = self.solver.solve_under_assumptions(assumption) {
+                // the number of states (and the maximal design) works.
+                // Now it is time to optimize for the number of signals.
 
-    let bound : usize = {
-        // optimize
-        let (mut lo, mut hi) :(usize,usize) = (0,init_cost);
+                let n_signals = self.active_signals.iter()
+                    .filter(|(s,_)| if let SignalId::ExternalId(_) = s 
+                            { true } else { false })
+                    .map(|(_,v)| model.value(v)).count();
 
-        'testloop: loop {
-            let mid : usize = (lo + hi)/2;
-            println!("In optimize_signals: Solving with mid={}", mid);
-            if let Ok(model) = s.solve_under_assumptions(vec![sum_cost.lte_const(mid as isize)]) {
-                for (i,(usage,instance)) in usages.iter().zip(instances.iter()).enumerate() {
-                    let schedule = mk_schedule(&instance, &model);
+                let n_detectors = self.active_signals.iter()
+                    .filter(|(s,_)| if let SignalId::Anonymous(_) = s 
+                            { true } else { false })
+                    .map(|(_,v)| model.value(v)).count();
 
-                    // TODO loop check and repeat check
-                    // User check: e.g. simulation
-                    if !test(i, &schedule) {
-                        println!("User check failed.");
-                        disallow_schedule(&mut s, &schedule);
-                        continue 'testloop;
+                (n_signals,n_detectors)
+            } else {
+                self.add_state();
+                continue 'next;
+            };
+
+
+            // try to optimize the number of signals
+            // first count the number of signals and detectors and make
+            // a truncated unary number containing the relative values
+
+            let signal_cost = self.active_signals.iter()
+                .filter(|(s,_)| if let SignalId::ExternalId(_) = s 
+                        { true } else { false })
+                .map(|(_,v)| Unary::from_bool(*v).mul_const(relative_cost));
+
+            let detector_cost = self.active_signals.iter()
+                .filter(|(s,_)| if let SignalId::Anonymous(_) = s 
+                        { true } else { false })
+                .map(|(_,v)| Unary::from_bool(*v));
+
+
+            let init_cost :usize = n_signals*relative_cost + n_detectors;
+            let costs = signal_cost.chain(detector_cost).collect::<Vec<Unary>>();
+            let sum_cost = Unary::sum_truncate(&mut self.solver, costs, init_cost+1);
+
+
+
+            let bound : usize = {
+                // optimize
+                let (mut lo, mut hi) :(usize,usize) = (0,init_cost);
+
+                'minimize: loop {
+                    let mid : usize = (lo + hi)/2;
+                    println!("In optimize_signals: Solving with mid={}", mid);
+                    if let Ok(model) = self.solver.solve_under_assumptions(
+                            vec![sum_cost.lte_const(mid as isize)]) {
+                        // sucess, lower hi bound
+                        hi = mid;
+                        // TODO make this conditional for later increase 
+                        // in the number of signals.
+                        self.solver.add_clause(vec![sum_cost.lte_const(mid as isize)]);
+                    }  else {
+                        lo = mid;
                     }
 
+                    if lo >= hi {
+                        break 'minimize;
+                    }
+                };
+
+                lo
+            };
+
+                // Get model
+            if let Ok(model) = self.solver.solve_under_assumptions(
+                    vec![sum_cost.lte_const(bound as isize)]) {
+
+                let signals : HashMap<SignalId,bool> = self.active_signals.iter()
+                    .map(|(sig,val)| (*sig, model.value(val))).collect();
+                let this_set_lit = self.solver.new_lit();
+                for (sig,v) in self.active_signals.iter() {
+                    // this_set_lit implies that v has its current value
+                    self.solver.add_clause(vec![!this_set_lit,
+                                           if signals[sig] { *v } else { !*v }]);
                 }
 
-                // sucess, lower hi bound
-                hi = mid;
-                s.add_clause(vec![sum_cost.lte_const(mid as isize)]);
-            }  else {
-                lo = mid;
-            }
+                self.last_signal_set_lit = Some(this_set_lit);
+                return Some(SignalSet { 
+                    solver: &mut self.solver,
+                    states: &self.states,
+                    usages: self.usages,
+                    this_set_lit: this_set_lit,
+                    signals: signals });
+            } else {
+                    //return Err(format!("In optimize_signals: SAT query failed unexpectedly."));
+                    println!("In optimize_signals: SAT query failed unexpectedly.");
+                    return None;
+            };
 
-            if lo >= hi {
-                break 'testloop;
-            }
-        };
-
-        lo
-    };
-
-    // Get model
-    let redundant_signals = if let Ok(model) = s.solve_under_assumptions(vec![sum_cost.lte_const(bound as isize)]) {
-        active_signals.iter().filter_map(|(sig,val)| if !model.value(val) { Some(*sig) } else { None }).collect()
-    } else {
-            return Err(format!("In optimize_signals: SAT query failed unexpectedly."));
-    };
-
-    Ok(redundant_signals)
+        }
+    }
 }
+
+pub struct SignalSet<'a> {
+    solver :&'a mut Solver, 
+    states :&'a Vec<Vec<State>>,
+    usages :&'a [Usage],
+    this_set_lit :Bool,
+    signals :HashMap<SignalId, bool>
+}
+
+impl<'a> SignalSet<'a> {
+
+    pub fn get_signals(&self) -> &HashMap<SignalId, bool> {
+        &self.signals
+    }
+
+    pub fn get_dispatches(&mut self) -> Vec<Vec<RoutePlan>> {
+        self.usages.iter().enumerate()
+            .map(|(i,u)| self.get_usage_dispatch(u, &self.states[i])).collect()
+    }
+
+    fn get_usage_dispatch(&mut self, usage :&Usage, states :&[State]) -> Vec<RoutePlan> {
+        let usage_lit = self.solver.new_lit();
+        let mut results = Vec::new();
+        while let Ok(model) = self.solver.solve_under_assumptions(vec![self.this_set_lit, usage_lit]) {
+            let schedule = mk_schedule(states, &model);
+            disallow_schedule(&mut self.solver, vec![usage_lit], states, &schedule);
+            results.push(schedule);
+        }
+
+        results
+    }
+}
+
 
 pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config, 
                                         infrastructure :&Infrastructure,
@@ -188,7 +260,7 @@ pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config,
             // User check: e.g. simulation
             if !test(&schedule) {
                 println!("User check failed.");
-                disallow_schedule(&mut s, &schedule);
+                disallow_schedule(&mut s, vec![], &states, &schedule);
                 continue;
             }
             println!("User check suceeded, returning resulting plan.");
@@ -727,8 +799,7 @@ fn disallow_loop(s :&mut Solver, loop_ :&Loop) {
 fn disallow_repeat(s :&mut Solver, repeat :&Repeat) {
 }
 
-fn disallow_schedule(s :&mut Solver, plan :&RoutePlan) {
+fn disallow_schedule(s :&mut Solver, prefix :Vec<Bool>, states :&[State], plan :&RoutePlan) {
 }
-
 
 
