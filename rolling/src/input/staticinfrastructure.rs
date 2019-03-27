@@ -73,7 +73,7 @@ pub enum SwitchPosition {
 
 pub type Routes<Ref> = HashMap<Ref, Route>;
 
-#[derive(Debug,Copy,Clone,PartialEq,Eq)]
+#[derive(Debug,Copy,Clone,PartialEq,Eq,Hash,PartialOrd,Ord)]
 pub enum RouteEntryExit {
     Boundary(Option<NodeId>),
     Signal(ObjectId),
