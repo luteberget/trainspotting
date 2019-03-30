@@ -586,7 +586,8 @@ fn mk_state(s :&mut Solver,
         for (rn, r) in infrastructure.partial_routes.iter().filter(|(rn,r)| r.entry == SignalId::Boundary) {
             // Can the train be born here?
             if let Some(first_visit_nodes) = first_visit_nodes {
-                if r.contains_nodes.intersection(first_visit_nodes).nth(0).is_some() {
+                //if r.contains_nodes.intersection(first_visit_nodes).nth(0).is_some() {
+                if first_visit_nodes.contains(&rn.0) {
                     born_now_alternatives.push(did_activate(s, rn, train_id));
                 } else {
                     // Don't go here ever.
@@ -606,7 +607,7 @@ fn mk_state(s :&mut Solver,
         if let Some(prev_state) = prev_state {
             let birth_candidates = infrastructure.partial_routes.iter().filter(|(rn,r)| r.entry == SignalId::Boundary);
             let birth_candidates : Vec<_> = if let Some(first_visit_nodes) = first_visit_nodes {
-                    birth_candidates.filter(|(rn,r)| r.contains_nodes.intersection(first_visit_nodes).nth(0).is_some()).collect()
+                    birth_candidates.filter(|(rn,r)| first_visit_nodes.contains(&rn.0)).collect()
                 } else { birth_candidates.collect() };
             let birth_candidates = birth_candidates.into_iter().map(|(rn,r)| *rn).collect::<Vec<_>>();
 
@@ -623,9 +624,8 @@ fn mk_state(s :&mut Solver,
         // Each visit has to happen some time.
         let mut train_visit = Vec::new();
         for (i,visit_before) in prev_trains[train_id].visit_before.iter().enumerate() {
-            let alternative_nodes  = &usage.trains[train_id].visits[i];
             let alternative_routes = infrastructure.partial_routes.iter()
-                .filter(|(rn,r)| r.contains_nodes.intersection(alternative_nodes).nth(0).is_some())
+                .filter(|(rn,r)| usage.trains[train_id].visits[i].contains(&rn.0))
                 .map(|(rn,r)| inf_state[rn].occupation.has_value(&Some(*train_id)));
 
             let visit_now = s.or_literal(alternative_routes);

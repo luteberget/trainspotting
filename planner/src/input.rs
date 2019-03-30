@@ -1,4 +1,3 @@
-use rolling::input::staticinfrastructure::{NodeId};
 use std::collections::{HashMap, HashSet};
 
 
@@ -11,7 +10,8 @@ pub struct Config {
     pub optimize_signals: bool,
 }
 
-pub type PartialRouteId = (usize,usize); // Index into Problem.partial_routes
+pub type RouteId = usize;
+pub type PartialRouteId = (RouteId,usize); // Index into Problem.partial_routes
 pub type OverlapId = usize; // index into PartialRoute.conflicts
 pub type TrainId = usize; // Index into Problem.trains
 pub type VisitId = usize; // Index into Train.visits
@@ -43,7 +43,6 @@ pub struct PartialRoute {
     pub exit: SignalId,
     pub conflicts: Vec<HashSet<(PartialRouteId, usize)>>, // ??
     pub wait_conflict :Option<OverlapId>,
-    pub contains_nodes :HashSet<NodeId>,
     pub length: f32,
 }
 
@@ -52,7 +51,7 @@ type ElementaryRoute = HashSet<PartialRouteId>;
 #[derive(Debug)]
 pub struct Train {
     pub length: f32,
-    pub visits: Vec<HashSet<NodeId>>,
+    pub visits: Vec<HashSet<RouteId>>,
 }
 
 #[derive(Debug)]
