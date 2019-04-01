@@ -553,24 +553,24 @@ fn mk_state(s :&mut Solver,
                     .map(|(r2,_)| inf_state[r2].occupation.has_value(&Some(*train_id)));
 
                 let progress_future = s.new_lit();
-
-                let mut alternatives = progress_now.collect::<Vec<_>>();
-                alternatives.push(progress_future);
-                alternatives.push(!is_allocated);
-                s.add_clause(alternatives);
+                let progress_now = s.or_literal(progress_now);
+                s.add_clause(vec![!is_allocated, progress_now, progress_future]);
 
                 if let Some(prev_state) = prev_state {
                     let next_routes : Vec<_> = infrastructure.partial_routes.iter()
-                        .filter(|(rn,r_next)| r_next.entry == infrastructure.partial_routes[rn].exit)
-                        .map(|(rn,r)| *rn).collect();
+                        .filter(|(rn_next,r_next)| r_next.entry == infrastructure.partial_routes[rn].exit)
+                        .map(|(rn_next,r)| *rn_next).collect();
+                    //println!("alloc conflict {:?}", (rn,train_id));
                     let mut conflict_resolved = resolve_conflict_with(s, &infrastructure.partial_routes,
                           &infrastructure.elementary_routes, *train_id, 
                           &prev_state.infrastructure, &inf_state,
                           &next_routes);
 
-                    conflict_resolved.push(*progress_before);
-                    conflict_resolved.push(progress_future);
-                    s.add_clause(conflict_resolved);
+                    let conflict_resolved = s.or_literal(conflict_resolved);
+
+                    s.add_clause(vec![*progress_before, !progress_now, conflict_resolved]);
+                    // TODO why is this needed
+                    s.add_clause(vec![*progress_before, progress_future, conflict_resolved]);
                 }
 
                 r_pr.insert(*rn, !progress_future);
@@ -624,9 +624,11 @@ fn mk_state(s :&mut Solver,
         // Each visit has to happen some time.
         let mut train_visit = Vec::new();
         for (i,visit_before) in prev_trains[train_id].visit_before.iter().enumerate() {
-            let alternative_routes = infrastructure.partial_routes.iter()
-                .filter(|(rn,r)| usage.trains[train_id].visits[i].contains(&rn.0))
-                .map(|(rn,r)| inf_state[rn].occupation.has_value(&Some(*train_id)));
+            //let alternative_routes = infrastructure.partial_routes.iter()
+            //    .filter(|(rn,r)| usage.trains[train_id].visits[i].contains(&rn.0))
+            //    .map(|(rn,r)| inf_state[rn].occupation.has_value(&Some(*train_id)));
+            let alternative_routes = usage.trains[train_id].visits[i].iter()
+                .map(|r| inf_state[&(*r,0)].occupation.has_value(&Some(*train_id)));
 
             let visit_now = s.or_literal(alternative_routes);
             let visit_future = s.new_lit();
@@ -656,8 +658,8 @@ fn mk_state(s :&mut Solver,
         // This is an unfortunate naming, because visit_before refers to
         // how the next_state will use the value. Actually it contains 
         // !visit_future in this state.
-        let v1_future = !trains_state[t2].visit_before[*v2];
-        let v2_future = !trains_state[t1].visit_before[*v1];
+        let v1_future = !trains_state[t1].visit_before[*v1];
+        let v2_future = !trains_state[t2].visit_before[*v2];
 
         s.add_clause(vec![v2_future, !v1_future]);
     }
@@ -681,11 +683,15 @@ fn resolve_conflict_with(s :&mut Solver,
 
     let mut result = Vec::new();
 
+    //println!("resolve_conflict_with {:?}", candidates);
+
     for next_route in candidates {
         let elementary_route :&HashSet<PartialRouteId> = problem_elementary_routes.iter()
             .find(|x| x.contains(next_route)).unwrap();
         let elementary_and_overlap = elementary_route.iter()
             .flat_map(move |r| (0..problem_partial_routes[r].conflicts.len()).map(move |i| (r,i)));
+
+        //println!("    elementary_and_overlap {:?}", elementary_and_overlap);
 
         for (new_route,new_overlap) in elementary_and_overlap {
             // parts of a new route and overlap which we want to allocate,
