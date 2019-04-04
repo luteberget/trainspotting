@@ -469,7 +469,7 @@ pub(crate) fn mk_state(s :&mut Solver,
         s.add_clause(vec![v2_future, !v1_future]);
     }
 
-    println!("mk_state: Trains state {:?}", trains_state);
+    //println!("mk_state: Trains state {:?}", trains_state);
     State { infrastructure: inf_state, trains: trains_state }
 }
 

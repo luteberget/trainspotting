@@ -77,3 +77,22 @@ pub struct Usage {
 
 pub type RoutePlan = Vec<Vec<(PartialRouteId, Option<TrainId>)>>;
 
+
+pub fn format_schedule(p :&RoutePlan) -> String {
+    let mut s = String::new();
+    let mut last_state = HashSet::new();
+    for (state_no, state) in p.iter().enumerate() {
+        let new_state = state.iter().filter(|(r,t)| t.is_some()).collect::<HashSet<_>>();
+        let mut trains = HashMap::new();
+        for (r,t) in new_state.difference(&last_state) {
+            trains.entry(t.unwrap()).or_insert(Vec::new()).push(*r);
+        }
+        s.push_str(&format!("State {}:\n",state_no));
+        for (t,mut rs) in trains {
+            rs.sort();
+            s.push_str(&format!("  Train {}: {:?}\n", t, rs));
+        }
+        last_state = new_state;
+    }
+    s
+}

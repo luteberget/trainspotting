@@ -53,7 +53,7 @@ impl<'a> SignalOptimizer<'a> {
         }
     }
 
-    pub fn next_signal_set(&'a mut self) -> Option<SignalSet<'a>> {
+    pub fn next_signal_set<'b>(&'b mut self) -> Option<SignalSet<'b>> {
         use std::iter::once;
         // TODO parameter
         let relative_cost :usize = 3;
@@ -131,7 +131,8 @@ impl<'a> SignalOptimizer<'a> {
 
                         for (i,usage) in self.usages.iter().enumerate() {
                             let schedule = mk_schedule(&self.states[i], &model);
-                            debug!("Schedule at mid={}:\n{}", mid, print_schedule(&schedule));
+                            debug!("Schedule at mid={}:\n{}", mid, 
+                                   format_schedule(&schedule));
                         }
 
                         // sucess, lower hi bound
@@ -217,21 +218,3 @@ impl<'a> SignalSet<'a> {
     }
 }
 
-pub fn print_schedule(p :&RoutePlan) -> String {
-    let mut s = String::new();
-    let mut last_state = HashSet::new();
-    for (state_no, state) in p.iter().enumerate() {
-        let new_state = state.iter().filter(|(r,t)| t.is_some()).collect::<HashSet<_>>();
-        let mut trains = HashMap::new();
-        for (r,t) in new_state.difference(&last_state) {
-            trains.entry(t.unwrap()).or_insert(Vec::new()).push(*r);
-        }
-        s.push_str(&format!("State {}:\n",state_no));
-        for (t,mut rs) in trains {
-            rs.sort();
-            s.push_str(&format!("  Train {}: {:?}\n", t, rs));
-        }
-        last_state = new_state;
-    }
-    s
-}
