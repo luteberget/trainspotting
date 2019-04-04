@@ -45,6 +45,7 @@ impl Driver {
                timestep: Option<f64>)
                -> Self {
 
+       //println!("INITIAL AUTHORITY {:?}", auth);
         let train = Train {
             params: params,
             location: (0, (Some(node),0.0)),
@@ -54,7 +55,7 @@ impl Driver {
 
         let d = Driver {
             train: train,
-            authority: auth,
+            authority: auth - 20.0,
             step: (DriverAction::Coast, *sim.time()),
             connected_signals: SmallVec::new(),
             logger: logger,
