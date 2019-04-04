@@ -11,14 +11,14 @@ pub mod railway;
 
 pub mod ffi;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::cell::RefCell;
 use output::history::InfrastructureLogEvent;
 use std::hash::Hash;
 use std::fmt::Debug;
 
-pub fn evaluate_plan<RouteRef : Hash + Eq + Debug >
+pub fn evaluate_plan<RouteRef : Hash + Eq + Debug + Clone >
                     (staticinfrastructure: &input::staticinfrastructure::StaticInfrastructure,
                      //names: &input::staticinfrastructure::InfNames<InfRef>,
                      routes: &HashMap<RouteRef,input::staticinfrastructure::Route>,
@@ -41,32 +41,72 @@ pub fn evaluate_plan<RouteRef : Hash + Eq + Debug >
     let mut sim = eventsim::Simulation::new_with_scheduler(world, scheduler);
     sim.set_time_log(time_log);
 
-    let mut events = Vec::new();
+    let mut resource_routes : HashMap<input::staticinfrastructure::ObjectId, HashSet<RouteRef>> = HashMap::new();
+    for (name,route) in routes.iter() {
+        let objs = route.resources.sections.iter().chain(
+            route.resources.switch_positions.iter().map(|(x,_)| x));
+        for obj in objs {
+            resource_routes.entry(*obj).or_insert(HashSet::new()).insert(name.clone());
+        }
+    }
+    fn get_conflicting_routes<RouteRef : Hash + Clone + Eq>(res :&HashMap<input::staticinfrastructure::ObjectId,HashSet<RouteRef>>, r :&input::staticinfrastructure::Route) -> HashSet<RouteRef> {
+        let mut set = HashSet::new();
+        let objs = r.resources.sections.iter().chain(
+            r.resources.switch_positions.iter().map(|(x,_)| x));
+        for o in objs {
+            if let Some(obj_route_set) = res.get(o) {
+                set.extend(obj_route_set.iter().cloned());
+            }
+        }
+        set
+    }
+
+    let mut pending_routes = HashMap::new();
 
     for action in &dispatch.actions {
         use input::dispatch::DispatchAction::*;
         match *action {
             Wait(Some(t)) => sim.advance_by(t),
             Wait(None) =>  {
-                for e in events.drain(0..) {
+                for (_r,e) in pending_routes.drain() {
                     sim.advance_to(e);
                 }
             },
             Route(ref route_name) => match routes.get(route_name) {
+
                 Some(route) => {
-                    let proc_ = sim.start_process(Box::new(
-                        railway::route::ActivateRoute::new(route.clone())));
-                    events.push(proc_);
+                    let mut conflict_events = Vec::new();
+                    for conflicting_name in get_conflicting_routes(&resource_routes, route) {
+                        if let Some(ev) = pending_routes.get(&conflicting_name) {
+                            conflict_events.push(*ev);
+                        }
+                    }
+
+                    let activated = sim.start_process(Box::new(
+                        railway::route::ActivateRoute::new(route.clone(), conflict_events)));
+                    pending_routes.insert(route_name.clone(),activated);
                 },
                 _ => panic!("Unknown route \"{:?}\"", route_name),
             },
             Train(ref name, ref params, ref route_name) =>  {
                 let (activated, node_idx, auth_dist) = match routes.get(route_name) {
                     Some(route) => {
+
+                        let mut conflict_events = Vec::new();
+                        for conflicting_name in get_conflicting_routes(&resource_routes, route) {
+                            if let Some(ev) = pending_routes.get(&conflicting_name) {
+                                conflict_events.push(*ev);
+                            }
+                        }
+
                         match route.entry {
                             staticinfrastructure::RouteEntryExit::Boundary(Some(id)) => {
+
                                 let activated = sim.start_process(Box::new(
-                                    railway::route::ActivateRoute::new(route.clone())));
+                                    railway::route::ActivateRoute::new(route.clone(),
+                                    conflict_events)));
+                                pending_routes.insert(route_name.clone(), activated);
+
                                 (activated, id, route.length)
                             },
                             _ => panic!("Not an boundary entry route"),
@@ -74,8 +114,6 @@ pub fn evaluate_plan<RouteRef : Hash + Eq + Debug >
                     },
                     _ => panic!("Unknown route \"{:?}\"", route_name),
                 };
-
-                events.push(activated);
 
                 let train_log = Rc::new(RefCell::new(Vec::new()));
                 train_logs.push((name.clone(), params.clone(), train_log.clone()));

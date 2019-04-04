@@ -126,6 +126,14 @@ impl Scheduler {
 }
 
 impl<T> Simulation<T> {
+    pub fn has_fired(&self, event :EventId) -> bool {
+        if let EventState::Ready = &self.scheduler.events[event].state {
+            false
+        } else {
+            true
+        }
+    }
+
     pub fn time(&self) -> &f64 { &self.scheduler.time }
 
     pub fn create_timeout(&mut self, dt: f64) -> EventId {
@@ -236,19 +244,35 @@ impl<T> Simulation<T> {
             a.take()
 
         } {
-            match process.resume(self) {
-                ProcessState::Finished => {
-                    self.scheduler.schedule(event_id, 0.0);
-                }
-                ProcessState::Wait(evs) => {
-                    for x in evs {
-                        if !self.scheduler.events[x].listeners.contains(&process_id) {
-                            self.scheduler.events[x].listeners.push(process_id);
-                        }
+            loop {
+                match process.resume(self) {
+                    ProcessState::Finished => {
+                        self.scheduler.schedule(event_id, 0.0);
+                        break;
                     }
+                    ProcessState::Wait(evs) => {
+                        let mut waiting = false;
+                        for x in evs {
+                            let already_listening = self.scheduler.events[x].listeners.contains(&process_id);
+                            let event_pending = !self.has_fired(x);
+                                //if let EventState::Ready = &self.scheduler.events[x].state { true } else { false };
+                            if  event_pending {
+                                waiting = true;
+                                if !already_listening {
+                                    self.scheduler.events[x].listeners.push(process_id);
+                                }
+                            }
+                        }
 
-                    // Put the process back in the array.
-                    self.procs[process_id] = Some((event_id, process));
+                        if waiting {
+                            // Put the process back in the array.
+                            self.procs[process_id] = Some((event_id, process));
+                            break;
+                        }
+
+                        // If none of the events are pending, resume the process
+                        // immediately.
+                    }
                 }
             }
         }

@@ -6,24 +6,27 @@ use super::infrastructure::*;
 use output::history::{InfrastructureLogEvent, RouteStatus};
 
 enum ActivateRouteState {
+    Queued, // Waiting for conflicting routes to activate first
     Allocate, // Waiting for resources
     Move, // Waiting for movable elements
 }
 
 pub struct ActivateRoute {
     route: Route,
+    conditions :Vec<EventId>,
     overlap: Option<usize>,
     state: ActivateRouteState,
 }
 
 impl ActivateRoute {
-    pub fn new(r: Route) -> Self {
+    pub fn new(r: Route, conditions :Vec<EventId>) -> Self {
         let overlap = if r.overlaps.len() > 0 { Some(0) } else { None };
-        println!("NEW ACTIVATE ROUTE {:?} {:?}", overlap, r);
+        //println!("NEW ACTIVATE ROUTE {:?} {:?}", overlap, r);
         ActivateRoute {
             route: r,
             overlap: overlap,
-            state: ActivateRouteState::Allocate,
+            conditions: conditions,
+            state: ActivateRouteState::Queued,
         }
     }
 }
@@ -209,6 +212,17 @@ impl<'a> Process<Infrastructure<'a>> for ActivateRoute {
     fn resume(&mut self, sim: &mut Sim) -> ProcessState {
         let overlap = self.overlap.map(|i| self.route.overlaps[i].clone());
         (sim.world.logger)(InfrastructureLogEvent::Route(0, RouteStatus::Pending)); // TODO id from where?
+
+        if let ActivateRouteState::Queued = self.state {
+            while let Some(c) = self.conditions.pop() {
+                if !sim.has_fired(c) {
+                    self.conditions.push(c);
+                    return ProcessState::Wait(SmallVec::from_slice(&[c]));
+                }
+            }
+            self.state = ActivateRouteState::Allocate;
+        }
+
         if let ActivateRouteState::Allocate = self.state {
             match unavailable_resource(&self.route, overlap.as_ref(), &sim.world) {
                 Ok(()) => {
