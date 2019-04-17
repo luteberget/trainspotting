@@ -1,5 +1,4 @@
-use rolling::input::staticinfrastructure::{NodeId};
-use minisat::{*, symbolic::*, unary::*};
+use minisat::{*, unary::*};
 use std::collections::{HashMap, HashSet};
 use log::*;
 
@@ -12,7 +11,7 @@ pub struct SignalOptimizer<'a> {
     states :Vec<Vec<State>>,
     infrastructure :&'a Infrastructure,
     usages :&'a [Usage],
-    current_signals :Option<HashSet<SignalId>>,
+    // current_signals :Option<HashSet<SignalId>>, // 
     last_signal_set_lit :Option<Bool>,
 }
 
@@ -34,7 +33,7 @@ impl<'a> SignalOptimizer<'a> {
             states: (0..usages.len()).map(|_| vec![]).collect(),
             infrastructure: inf,
             usages,
-            current_signals: None,
+            //current_signals: None,
             last_signal_set_lit: None,
         };
         //
@@ -129,7 +128,7 @@ impl<'a> SignalOptimizer<'a> {
                     if let Ok(model) = self.solver.solve_under_assumptions(
                             vec![sum_cost.lte_const(mid as isize)]) {
 
-                        for (i,usage) in self.usages.iter().enumerate() {
+                        for (i,_) in self.usages.iter().enumerate() {
                             let schedule = mk_schedule(&self.states[i], &model);
                             debug!("Schedule at mid={}:\n{}", mid, 
                                    format_schedule(&schedule));
@@ -200,10 +199,10 @@ impl<'a> SignalSet<'a> {
 
     pub fn get_dispatches(&mut self) -> Vec<Vec<RoutePlan>> {
         self.usages.iter().enumerate()
-            .map(|(i,u)| self.get_usage_dispatch(u, &self.states[i])).collect()
+            .map(|(i,_)| self.get_usage_dispatch(&self.states[i])).collect()
     }
 
-    fn get_usage_dispatch(&mut self, usage :&Usage, states :&[State]) -> Vec<RoutePlan> {
+    fn get_usage_dispatch(&mut self, states :&[State]) -> Vec<RoutePlan> {
         debug!("getusage dispatch");
         //let usage_lit = self.solver.new_lit();
         let mut results = Vec::new();

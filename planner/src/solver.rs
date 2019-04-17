@@ -1,12 +1,8 @@
-use rolling::input::staticinfrastructure::{NodeId};
-use minisat::{*, symbolic::*, unary::*};
+use minisat::{*, symbolic::*};
 use std::collections::{HashMap, HashSet};
-use log::{debug};
-
 use crate::input::*;
 
 // State management types (private)
-
 
 pub(crate) struct State {
     pub infrastructure: HashMap<PartialRouteId, InfrastructureState>,
@@ -62,6 +58,11 @@ pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config,
             }
             println!("Repeat check succeeded.");
 
+            // Keep looking for new solutions as if the current one
+            // was sucesssful, even if the user-supplied test function 
+            // discards the solution.
+            failed_steps = Some(0);
+
             // User check: e.g. simulation
             if !test(&schedule) {
                 println!("User check failed.");
@@ -69,7 +70,6 @@ pub fn plan<F : Fn(&RoutePlan) -> bool>(config :&Config,
                 continue;
             }
             println!("User check suceeded, returning resulting plan.");
-            failed_steps = Some(0);
 
             // Everything is ok
             break Some(schedule);
@@ -134,7 +134,7 @@ pub(crate) fn mk_state(s :&mut Solver,
     //       border entry train routes share the None value for their entry field.
     //
     for entry in infrastructure.partial_routes.iter().map(|(_,r)| r.entry).collect::<HashSet<_>>() {
-        for (train_id,train) in &usage.trains {
+        for (train_id,_) in &usage.trains {
             s.assert_at_most_one(infrastructure.partial_routes.iter()
                      .filter(|(_,r)| r.entry == entry)
                      .map(|(i,_)| inf_state[i].occupation.has_value(&Some(*train_id))));
@@ -154,7 +154,7 @@ pub(crate) fn mk_state(s :&mut Solver,
     //
     // Partial routes are allocated together.
     //
-    for (train_id,train) in usage.trains.iter() {
+    for (train_id,_) in usage.trains.iter() {
         for route_set in infrastructure.elementary_routes.iter() {
             for (r1,r2) in route_set.iter().zip(route_set.iter().skip(1)) {
 
@@ -169,7 +169,7 @@ pub(crate) fn mk_state(s :&mut Solver,
     // One of the conflict sets (overlap choices) might be excluded on allocation,
     // which would then be the conflict set after timeout.
     // 
-    for (train_id,train) in usage.trains.iter() {
+    for (train_id,_) in usage.trains.iter() {
         for (rn,r) in inf_state.iter() {
             if let Some(confl) = infrastructure.partial_routes[rn].wait_conflict {
                 let activated = did_activate(s, rn, train_id);
@@ -218,7 +218,7 @@ pub(crate) fn mk_state(s :&mut Solver,
     // New allocations must have a preceding route active in the same step.
     // Trains cannot swap places in one step.
     //
-    for (train_id, train) in usage.trains.iter() {
+    for (train_id, _) in usage.trains.iter() {
         for (rn,r) in inf_state.iter() {
             if !infrastructure.partial_routes[rn].entry.is_boundary() {
                 let was_allocated = prev_state.map(|p|
@@ -325,7 +325,9 @@ pub(crate) fn mk_state(s :&mut Solver,
     // Train state
     //
     //
+    #[allow(unused_assignments)]
     let mut empty_prev_trains = None;
+
     let prev_trains = if let Some(p) = prev_state { &p.trains } else {
         empty_prev_trains = Some(usage.trains.iter().map(|(train_id,train)| {
             (*train_id, TrainsState {
@@ -363,10 +365,10 @@ pub(crate) fn mk_state(s :&mut Solver,
 
                 if let Some(prev_state) = prev_state {
                     let next_routes : Vec<_> = infrastructure.partial_routes.iter()
-                        .filter(|(rn_next,r_next)| r_next.entry == infrastructure.partial_routes[rn].exit)
-                        .map(|(rn_next,r)| *rn_next).collect();
+                        .filter(|(_,r_next)| r_next.entry == infrastructure.partial_routes[rn].exit)
+                        .map(|(rn_next,_)| *rn_next).collect();
                     //println!("alloc conflict {:?}", (rn,train_id));
-                    let mut conflict_resolved = resolve_conflict_with(s, &infrastructure.partial_routes,
+                    let conflict_resolved = resolve_conflict_with(s, &infrastructure.partial_routes,
                           &infrastructure.elementary_routes, *train_id, 
                           &prev_state.infrastructure, &inf_state,
                           &next_routes);
@@ -388,7 +390,7 @@ pub(crate) fn mk_state(s :&mut Solver,
         let first_visit_nodes = train.visits.get(0);
 
         // TODO This section got a bit messy
-        for (rn, r) in infrastructure.partial_routes.iter().filter(|(rn,r)| r.entry == SignalId::Boundary) {
+        for (rn, _) in infrastructure.partial_routes.iter().filter(|(_,r)| r.entry == SignalId::Boundary) {
             // Can the train be born here?
             if let Some(first_visit_nodes) = first_visit_nodes {
                 //if r.contains_nodes.intersection(first_visit_nodes).nth(0).is_some() {
@@ -410,11 +412,11 @@ pub(crate) fn mk_state(s :&mut Solver,
         exactly_one(s, vec![born_before, born_now, born_future]);
 
         if let Some(prev_state) = prev_state {
-            let birth_candidates = infrastructure.partial_routes.iter().filter(|(rn,r)| r.entry == SignalId::Boundary);
+            let birth_candidates = infrastructure.partial_routes.iter().filter(|(_,r)| r.entry == SignalId::Boundary);
             let birth_candidates : Vec<_> = if let Some(first_visit_nodes) = first_visit_nodes {
-                    birth_candidates.filter(|(rn,r)| first_visit_nodes.contains(&rn.0)).collect()
+                    birth_candidates.filter(|(rn,_)| first_visit_nodes.contains(&rn.0)).collect()
                 } else { birth_candidates.collect() };
-            let birth_candidates = birth_candidates.into_iter().map(|(rn,r)| *rn).collect::<Vec<_>>();
+            let birth_candidates = birth_candidates.into_iter().map(|(rn,_)| *rn).collect::<Vec<_>>();
 
             let mut conflict_resolved =  resolve_conflict_with(s, &infrastructure.partial_routes,
                            &infrastructure.elementary_routes, *train_id,
@@ -505,7 +507,7 @@ fn resolve_conflict_with(s :&mut Solver,
             let mut conflicts :HashSet<(PartialRouteId,Option<OverlapId>)>= HashSet::new();
 
             // Any conflicting routes with new_route can be used to show yielding.
-            for (i,set) in problem_partial_routes[new_route].conflicts.iter().enumerate() {
+            for set in problem_partial_routes[new_route].conflicts.iter() {
                 for (conflicting_route,conflicting_overlap) in set {
                     conflicts.insert((*conflicting_route, Some(*conflicting_overlap)));
                 }
@@ -584,31 +586,31 @@ pub(crate) fn mk_schedule(states :&[State], model :&Model) -> RoutePlan {
 
 pub(crate) fn end_state_condition(trains :&HashMap<TrainId, TrainsState>) -> Vec<Bool> {
     let mut condition = Vec::new();
-    for (train_id,ts) in trains.iter() {
+    for (_,ts) in trains.iter() {
         condition.push(ts.born_before);
         for v in &ts.visit_before { condition.push(*v); }
-        for (k,v) in &ts.progress_before { condition.push(*v); }
+        for (_,v) in &ts.progress_before { condition.push(*v); }
     }
     condition
 }
 
 pub struct Loop {}
-pub(crate) fn loop_check(plan :&RoutePlan) -> Result<(), Loop> {
+pub(crate) fn loop_check(_plan :&RoutePlan) -> Result<(), Loop> {
     // TODO
     Ok(())
 }
 
 pub struct Repeat {}
-pub(crate) fn repeat_check(problem :&Infrastructure, plan :&RoutePlan) -> Result<(), Repeat> {
+pub(crate) fn repeat_check(_problem :&Infrastructure, _plan :&RoutePlan) -> Result<(), Repeat> {
     // TODO
     Ok(())
 }
 
 
-pub(crate) fn disallow_loop(s :&mut Solver, loop_ :&Loop) {
+pub(crate) fn disallow_loop(_s :&mut Solver, _loop_ :&Loop) {
 }
 
-pub(crate) fn disallow_repeat(s :&mut Solver, repeat :&Repeat) {
+pub(crate) fn disallow_repeat(_s :&mut Solver, _repeat :&Repeat) {
 }
 
 pub(crate) fn disallow_schedule(s :&mut Solver, prefix :Vec<Bool>, states :&[State], plan :&RoutePlan) {

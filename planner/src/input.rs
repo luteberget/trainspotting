@@ -82,7 +82,7 @@ pub fn format_schedule(p :&RoutePlan) -> String {
     let mut s = String::new();
     let mut last_state = HashSet::new();
     for (state_no, state) in p.iter().enumerate() {
-        let new_state = state.iter().filter(|(r,t)| t.is_some()).collect::<HashSet<_>>();
+        let new_state = state.iter().filter(|(_,t)| t.is_some()).collect::<HashSet<_>>();
         let mut trains = HashMap::new();
         for (r,t) in new_state.difference(&last_state) {
             trains.entry(t.unwrap()).or_insert(Vec::new()).push(*r);
