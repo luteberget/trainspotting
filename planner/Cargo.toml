@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 rolling = { path = "../rolling" }
 smallvec = "*"
-minisat = { path = "../../minisat-rs" }
+minisat = "0.4"
 log = "0.4"
 
 [dev-dependencies]
